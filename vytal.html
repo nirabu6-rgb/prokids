@@ -1,0 +1,3466 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vytal OS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230e1116'/%3E%3Ctext x='50' y='68' font-size='58' font-weight='800' font-family='Arial,Helvetica,sans-serif' fill='%23ffffff' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="vytal-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vytal OS">
+<style>
+:root{
+  --bg:#0e1116; --card:#171b22; --card2:#1f2530; --accent:#3ddc97; --accent2:#5b8def;
+  --warn:#ff5d5d; --text:#e8ecf1; --muted:#8b95a5; --gold:#ffc857;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,Helvetica,sans-serif;height:100%;}
+#app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;overflow-x:hidden;padding-bottom:70px;}
+.screen{display:none;padding:18px;animation:fadein .25s ease;}
+.screen.active{display:block;}
+#screen-planner.active{display:flex;}
+@keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+h1,h2,h3{margin:.2em 0;}
+button{cursor:pointer;font-family:inherit;}
+.btn{background:var(--accent);color:#06231a;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:700;width:100%;}
+.btn.secondary{background:var(--card2);color:var(--text);}
+.btn.outline{background:transparent;border:1px solid var(--muted);color:var(--text);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.card{background:var(--card);border-radius:16px;padding:16px;margin:10px 0;}
+input,select,textarea{width:100%;background:var(--card2);border:1px solid #2a3140;color:var(--text);border-radius:10px;padding:11px;font-size:15px;margin-top:4px;color-scheme:dark;}
+input[type=date]{min-height:41px;}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);}
+label{font-size:13px;color:var(--muted);display:block;margin-top:12px;}
+.err{color:var(--warn);font-size:12px;margin-top:4px;display:none;}
+.err.show{display:block;}
+.row{display:flex;gap:10px;}
+.row>*{flex:1;}
+.top-nav{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.back-btn{background:var(--card2);border:none;border-radius:50%;width:36px;height:36px;color:var(--text);font-size:18px;}
+.muted{color:var(--muted);font-size:13px;}
+.center{text-align:center;}
+.dots{display:flex;justify-content:center;gap:8px;margin:14px 0;}
+.dot{width:8px;height:8px;border-radius:50%;background:#333a47;}
+.dot.active{background:var(--accent);width:22px;border-radius:6px;transition:.2s;}
+.bottomnav{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:#11151c;display:flex;justify-content:space-around;padding:8px 0;border-top:1px solid #232a36;z-index:50;}
+.navbtn{background:none;border:none;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.navbtn.active{color:var(--accent);}
+.navbtn .ic{font-size:20px;}
+.chip{display:inline-block;background:var(--card2);border-radius:20px;padding:7px 14px;margin:4px;font-size:13px;cursor:pointer;border:1px solid transparent;}
+.chip.sel{border-color:var(--accent);color:var(--accent);}
+.goal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.goal-tile{background:var(--card2);border-radius:14px;padding:16px;text-align:center;border:2px solid transparent;}
+.goal-tile.sel{border-color:var(--accent);background:#13392c;}
+.progress-bar{height:8px;background:var(--card2);border-radius:8px;overflow:hidden;margin:8px 0;}
+.progress-fill{height:100%;background:var(--accent);transition:.3s;}
+.score-ring{width:160px;height:160px;margin:0 auto;position:relative;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-num{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-num .n{font-size:38px;font-weight:800;}
+.metric-card{background:var(--card);border-radius:14px;padding:14px;margin:8px 0;display:flex;align-items:center;justify-content:space-between;}
+.metric-card .reorder{display:flex;flex-direction:column;gap:2px;}
+.metric-card .reorder button{background:var(--card2);border:none;color:var(--muted);border-radius:6px;width:24px;height:20px;font-size:11px;}
+.mission-carousel{display:flex;overflow-x:auto;gap:10px;padding-bottom:4px;}
+.mission-card{min-width:150px;background:var(--card2);border-radius:14px;padding:12px;flex-shrink:0;}
+.fab{position:fixed;bottom:80px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#06231a;font-size:26px;border:none;box-shadow:0 6px 18px rgba(0,0,0,.4);z-index:60;}
+.fab-menu{position:fixed;bottom:145px;right:24px;display:none;flex-direction:column;gap:8px;z-index:60;}
+.fab-menu.show{display:flex;}
+.fab-menu button{background:var(--card);color:var(--text);border:1px solid #2a3140;border-radius:10px;padding:10px 14px;font-size:13px;white-space:nowrap;}
+.chat-wrap{display:flex;flex-direction:column;height:78vh;}
+.chat-msgs{flex:1;overflow-y:auto;padding:6px;}
+.bubble{max-width:80%;padding:10px 14px;border-radius:14px;margin:6px 0;font-size:14px;line-height:1.4;}
+.bubble.user{background:var(--accent2);color:#fff;margin-right:0;margin-left:auto;border-bottom-left-radius:4px;}
+.bubble.bot{background:var(--card2);margin-left:0;margin-right:auto;border-bottom-right-radius:4px;}
+.bubble.warn{background:#3a1414;border:1px solid var(--warn);color:#ffb3b3;}
+.typing-dots{display:inline-flex;gap:3px;}
+.typing-dots span{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:blink 1.2s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
+.chat-input-bar{display:flex;gap:6px;align-items:flex-end;padding:8px 4px;}
+.chat-input-bar textarea{resize:none;max-height:90px;}
+.icon-btn{background:var(--card2);border:none;border-radius:50%;width:38px;height:38px;color:var(--text);font-size:16px;flex:0 0 38px;}
+.chips-row{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;}
+.viewfinder{width:100%;height:320px;background:#000;border-radius:18px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.viewfinder video,.viewfinder img{width:100%;height:100%;object-fit:cover;}
+.scan-line{position:absolute;left:0;right:0;height:3px;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:scan 2s linear infinite;}
+@keyframes scan{0%{top:5%;}50%{top:90%;}100%{top:5%;}}
+.bbox{position:absolute;border:2px solid var(--accent);border-radius:6px;}
+.tabbar{display:flex;gap:6px;margin:10px 0;}
+.tabbar button{flex:1;background:var(--card2);border:none;color:var(--muted);padding:10px;border-radius:10px;font-size:13px;}
+.tabbar button.active{background:var(--accent);color:#06231a;font-weight:700;}
+.streak-fire{font-size:48px;text-align:center;animation:fire 1s infinite alternate;}
+@keyframes fire{from{transform:scale(1) rotate(-2deg);}to{transform:scale(1.08) rotate(2deg);}}
+.xpbar{height:14px;background:var(--card2);border-radius:8px;overflow:hidden;}
+.xpfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--accent));}
+.confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;overflow:hidden;display:none;}
+.confetti.show{display:block;}
+.confetti span{position:absolute;top:-20px;font-size:18px;animation:fall 2.2s linear forwards;}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:.2;}}
+.bars{display:flex;align-items:flex-end;gap:8px;height:140px;margin:14px 0;}
+.bars .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:pointer;}
+.bars .bar{width:100%;background:var(--accent2);border-radius:6px 6px 0 0;transition:.2s;}
+.bars .bar-col.sel .bar{background:var(--accent);}
+.meal-section{background:var(--card);border-radius:14px;padding:12px;margin:10px 0;}
+.food-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #232a36;font-size:14px;}
+.food-row:last-child{border-bottom:none;}
+.search-list{max-height:50vh;overflow-y:auto;}
+.search-item{display:flex;justify-content:space-between;align-items:center;padding:10px 6px;border-bottom:1px solid #232a36;}
+.verified{color:var(--accent2);font-size:13px;margin-right:4px;}
+.slider-row{margin:14px 0;}
+.slider-row input[type=range]{width:100%;}
+.slider-label{display:flex;justify-content:space-between;font-size:13px;}
+.toggle{position:relative;width:46px;height:26px;background:#333a47;border-radius:20px;border:none;flex:0 0 46px;}
+.toggle.on{background:var(--accent);}
+.toggle .knob{position:absolute;top:3px;right:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;}
+.toggle.on .knob{right:23px;}
+.wcard{display:flex;justify-content:space-between;align-items:center;}
+.delta-up{color:var(--accent);}
+.delta-down{color:var(--warn);}
+.badge{display:inline-block;background:var(--gold);color:#332600;border-radius:8px;padding:3px 9px;font-size:11px;font-weight:700;}
+.skipbtn{position:absolute;top:18px;left:18px;background:none;border:none;color:var(--muted);font-size:13px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:200;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--card);border-radius:16px;padding:20px;width:85%;max-width:380px;}
+.info-btn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--card2);color:var(--muted);border:none;font-size:11px;font-weight:700;margin:0 4px;flex:0 0 18px;cursor:pointer;vertical-align:middle;padding:0;}
+.modal-box .modal-close{position:absolute;top:14px;left:14px;background:var(--card2);border:none;border-radius:50%;width:28px;height:28px;color:var(--text);font-size:15px;cursor:pointer;}
+.modal-box.info-box{position:relative;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- 1. SPLASH -->
+<div class="screen" id="screen-splash">
+  <div style="height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <div style="width:96px;height:96px;border-radius:28px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:54px;font-weight:800;color:#06231a;">V</div>
+    <h1 style="letter-spacing:1px;margin-top:14px;">Vytal OS</h1>
+    <div class="muted">בריאות. תזונה. ביצועים.</div>
+    <div class="typing-dots" style="margin-top:30px;"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<!-- 2. ONBOARDING -->
+<div class="screen" id="screen-onboarding" style="position:relative;">
+  <button class="skipbtn" onclick="finishOnboarding()">דלג</button>
+  <div id="onb-pages" style="height:75vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:40px;"></div>
+  <div class="dots" id="onb-dots"></div>
+  <button class="btn" id="onb-next" onclick="onbNext()">הבא</button>
+</div>
+
+<!-- 3. REGISTRATION -->
+<div class="screen" id="screen-register">
+  <h2>הרשמה ל-Vytal OS</h2>
+  <label>שם מלא</label>
+  <input id="reg-name" placeholder="לדוגמה: דנה כהן">
+  <div class="err" id="err-name">השם חייב להכיל לפחות 2 תווים</div>
+
+  <label>תאריך לידה</label>
+  <div class="row" style="gap:6px;">
+    <select id="reg-bday" style="flex:1;" onchange="syncBirthdate()"></select>
+    <select id="reg-bmonth" style="flex:1.4;" onchange="syncBirthdate()"></select>
+    <select id="reg-byear" style="flex:1.6;" onchange="syncBirthdate()"></select>
+  </div>
+  <input type="hidden" id="reg-birthdate">
+  <div class="err" id="err-age">התאריך חייב לשקף גיל בין 13 ל-120</div>
+  <label>מין</label>
+  <select id="reg-sex" style="max-width:160px;"><option value="male">זכר</option><option value="female">נקבה</option></select>
+
+  <div class="row">
+    <div>
+      <label>גובה (ס"מ)</label>
+      <input id="reg-height" type="number" placeholder="50-250">
+      <div class="err" id="err-height">הגובה חייב להיות בין 50 ל-250 ס"מ</div>
+    </div>
+    <div>
+      <label>משקל (ק"ג)</label>
+      <input id="reg-weight" type="number" placeholder="30-300">
+      <div class="err" id="err-weight">המשקל חייב להיות בין 30 ל-300 ק"ג</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>מדינה</label>
+      <select id="reg-country"><option>ישראל</option><option>ארה"ב</option><option>אחר</option></select>
+    </div>
+    <div>
+      <label>שפה</label>
+      <select id="reg-lang"><option value="he">עברית</option><option value="en">English</option></select>
+    </div>
+  </div>
+
+  <label>אימייל</label>
+  <input id="reg-email" type="text" placeholder="name@example.com">
+  <div class="err" id="err-email">כתובת אימייל לא תקינה</div>
+
+  <label>טלפון</label>
+  <input id="reg-phone" type="text" placeholder="05X-XXXXXXX">
+  <div class="err" id="err-phone">מספר טלפון לא תקין</div>
+
+  <label>סיסמה</label>
+  <input id="reg-pass" type="password" placeholder="לפחות 8 תווים, אות וגם מספר">
+  <div class="err" id="err-pass">הסיסמה חייבת להכיל לפחות 8 תווים, אות אחת ומספר אחד</div>
+
+  <button class="btn" style="margin-top:18px;" onclick="submitRegister()">המשך</button>
+</div>
+
+<!-- 4. INTEGRATIONS -->
+<div class="screen" id="screen-integrations">
+  <h2>חיבור מכשירים</h2>
+  <div class="muted">חבר את שעון/אפליקציית הבריאות שלך לקבלת נתונים אוטומטיים</div>
+  <div id="wearables-list"></div>
+  <button class="btn" style="margin-top:20px;" onclick="goTo('screen-questionnaire'); initQuestionnaire();">המשך</button>
+  <button class="btn secondary" onclick="goTo('screen-questionnaire'); initQuestionnaire();">דלג לעת עתה</button>
+</div>
+
+<!-- 5. QUESTIONNAIRE -->
+<div class="screen" id="screen-questionnaire">
+  <div class="progress-bar"><div class="progress-fill" id="quiz-progress" style="width:0%"></div></div>
+  <div id="quiz-pages"></div>
+</div>
+
+<!-- 6. DASHBOARD -->
+<div class="screen" id="screen-dashboard">
+  <div class="top-nav" style="justify-content:space-between;">
+    <div><h2 id="dash-greeting">שלום!</h2><div class="muted" id="dash-date"></div></div>
+    <button id="dash-avatar-btn" type="button" onclick="openProfileModal()" style="background:var(--card2);border:none;border-radius:50%;width:44px;height:44px;font-size:24px;flex:0 0 44px;overflow:hidden;padding:0;display:flex;align-items:center;justify-content:center;">&#128100;</button>
+  </div>
+  <div class="card center">
+    <div class="score-ring">
+      <svg width="160" height="160">
+        <circle cx="80" cy="80" r="68" stroke="#232a36" stroke-width="14" fill="none"/>
+        <circle id="score-circle" cx="80" cy="80" r="68" stroke="#3ddc97" stroke-width="14" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="score-num"><div class="n" id="score-num">0</div><div class="muted">Vytal Score<button class="info-btn" type="button" onclick="showInfo('vytalScore')">?</button></div></div>
+    </div>
+    <div id="score-alert" class="muted" style="margin-top:8px;"></div>
+  </div>
+  <h3>המדדים שלי</h3>
+  <div id="metric-cards"></div>
+  <h3>משימות יומיות</h3>
+  <div class="mission-carousel" id="dash-missions"></div>
+</div>
+<button class="fab" onclick="toggleFab()">+</button>
+<div class="fab-menu" id="fab-menu">
+  <button onclick="goTo('screen-fooddiary');renderFoodDiary();">&#127869; יומן אוכל</button>
+  <button onclick="goTo('screen-vision');initVision();">&#128247; סקאן ארוחה</button>
+  <button onclick="goTo('screen-workouts');renderWorkouts();">&#127939; יומן אימונים</button>
+  <button onclick="goTo('screen-coach');initCoach();">&#129302; מאמן AI</button>
+  <button onclick="goTo('screen-sleep');renderSleepScreen();">&#128564; שינה והתאוששות</button>
+</div>
+
+<!-- 7. AI COACH -->
+<div class="screen" id="screen-coach">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-dashboard')">&#8594;</button><h3>מאמן AI - Vytal OS</h3></div>
+  <div class="chat-wrap">
+    <div class="chat-msgs" id="chat-msgs"></div>
+    <div class="chips-row" id="chat-chips"></div>
+    <div class="chat-input-bar">
+      <button class="icon-btn" title="מצלמה" onclick="attachMockImage()">&#128247;</button>
+      <button class="icon-btn" title="מיקרופון">&#127908;</button>
+      <textarea id="chat-input" rows="1" placeholder="כתוב הודעה..." oninput="autoGrow(this)"></textarea>
+      <button class="icon-btn" style="background:var(--accent);color:#06231a;" onclick="sendChat()">&#10148;</button>
+    </div>
+  </div>
+</div>
+
+<!-- 8. VISION AI -->
+<div class="screen" id="screen-vision">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-dashboard')">&#8594;</button><h3>סקאנר חזותי</h3></div>
+  <div class="tabbar">
+    <button id="vtab-meal" class="active" onclick="setVisionTab('meal')">סקאן ארוחה</button>
+    <button id="vtab-drink" onclick="setVisionTab('drink')">סקאן שתייה</button>
+    <button id="vtab-barcode" onclick="setVisionTab('barcode')">סקאן בר-קוד</button>
+  </div>
+  <div class="viewfinder" id="viewfinder">
+    <div class="scan-line"></div>
+  </div>
+  <div class="row" style="margin-top:8px;justify-content:center;gap:18px;">
+    <button class="icon-btn" id="vision-flash-btn" title="פלאש" onclick="toggleFlash()">&#128161;</button>
+    <button class="icon-btn" title="גלריה" onclick="document.getElementById('vision-gallery-input').click()">&#128247;</button>
+    <input type="file" id="vision-gallery-input" accept="image/*" capture="environment" style="display:none" onchange="onGalleryPhoto(event)">
+  </div>
+  <div class="muted center" id="vision-status" style="margin-top:8px;">מאתר מצלמה...</div>
+  <button class="btn" style="margin-top:14px;" onclick="performScan()">סרוק עכשיו</button>
+  <div id="vision-result"></div>
+</div>
+
+<!-- 9. GAMIFICATION -->
+<div class="screen" id="screen-gamify">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-dashboard')">&#8594;</button><h3>הישגים</h3></div>
+  <div class="card center">
+    <div class="streak-fire">&#128293;</div>
+    <div style="font-size:26px;font-weight:800;" id="streak-num">0 ימים</div>
+    <div class="muted">רצף נוכחי<button class="info-btn" type="button" onclick="showInfo('streak')">?</button></div>
+    <div class="row" style="margin-top:10px;align-items:center;">
+      <span class="muted">הקפאת רצף (חולה/פציעה)<button class="info-btn" type="button" onclick="showInfo('streakFreeze')">?</button></span>
+      <button class="toggle" id="streak-freeze-toggle" onclick="toggleStreakFreeze()"><span class="knob"></span></button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;"><span>רמה <b id="xp-level">1</b><button class="info-btn" type="button" onclick="showInfo('level')">?</button></span><span class="muted" id="xp-text">0/100 XP<button class="info-btn" type="button" onclick="showInfo('xp')">?</button></span></div>
+    <div class="xpbar"><div class="xpfill" id="xp-fill" style="width:0%"></div></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;"><b>התקדמות יומית<button class="info-btn" type="button" onclick="showInfo('dailyProgress')">?</button></b><span id="daily-progress-pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="daily-progress-fill" style="width:0%"></div></div>
+  </div>
+  <button class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:none;width:100%;text-align:right;" onclick="goTo('screen-vytalage');renderVytalAge();">
+    <span>&#8987; מדד אריכות ימים - Vytal Age</span><span class="muted">&#8592;</span>
+  </button>
+  <h3>משימות</h3>
+  <div id="mission-categories"></div>
+</div>
+<div class="confetti" id="confetti"></div>
+
+<!-- 10. WEEKLY SUMMARY -->
+<div class="screen" id="screen-weekly">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-dashboard')">&#8594;</button><h3>סיכום שבועי</h3></div>
+  <div id="weekly-badge"></div>
+  <div class="card center">
+    <div class="muted">Vytal Score שבועי</div>
+    <div style="font-size:30px;font-weight:800;" id="weekly-score">0</div>
+    <div id="weekly-delta"></div>
+  </div>
+  <div class="card">
+    <div class="bars" id="weekly-bars"></div>
+    <div id="weekly-day-detail" class="muted"></div>
+  </div>
+  <h3>תובנות AI</h3>
+  <div id="weekly-insights"></div>
+</div>
+
+<!-- WORKOUT LOG (linked to smart watch / health-app, simulated) -->
+<div class="screen" id="screen-workouts">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-dashboard')">&#8594;</button><h3>יומן אימונים</h3></div>
+  <div class="card" id="workouts-watch-status"></div>
+  <button class="btn" onclick="startWorkoutOnboarding()">&#9654; התחל אימון פעיל</button>
+  <button class="btn secondary" onclick="openManualWorkoutForm()">+ הוסף אימון ידנית</button>
+  <div id="manual-workout-form" style="display:none;margin-top:10px;" class="card">
+    <label>סוג אימון</label>
+    <select id="wo-type">
+      <option value="ריצה">ריצה</option>
+      <option value="הליכה">הליכה</option>
+      <option value="אופניים">אופניים</option>
+      <option value="כוח/חדר כושר">כוח/חדר כושר</option>
+      <option value="שחייה">שחייה</option>
+      <option value="יוגה">יוגה</option>
+      <option value="אחר">אחר</option>
+    </select>
+    <label>משך (דקות)</label>
+    <input id="wo-duration" type="number" value="30" oninput="estimateWorkoutCalories()">
+    <label>קלוריות (משוער, ניתן לערוך)</label>
+    <input id="wo-calories" type="number" value="200">
+    <button class="btn" style="margin-top:10px;" onclick="saveManualWorkout()">שמור אימון</button>
+  </div>
+  <h3>היום</h3>
+  <div id="workouts-today-list"></div>
+  <h3>היסטוריה (14 ימים אחרונים)</h3>
+  <div id="workouts-history-list"></div>
+</div>
+
+<!-- 11. FOOD DIARY -->
+<div class="screen" id="screen-fooddiary">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-dashboard')">&#8594;</button><h3>יומן אוכל</h3></div>
+  <div class="row" id="date-carousel" style="overflow-x:auto;"></div>
+  <div class="card">
+    <div class="center" style="font-size:13px;color:var(--muted);">יעד - אוכל + אימון = נותר</div>
+    <div class="center" style="font-size:20px;font-weight:800;margin-top:4px;" id="budget-equation"></div>
+  </div>
+  <div id="meal-sections"></div>
+</div>
+
+<!-- 12. FOOD SEARCH -->
+<div class="screen" id="screen-foodsearch">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-fooddiary')">&#8594;</button><h3>חיפוש מאכל</h3></div>
+  <input id="food-search-input" placeholder="חפש מאכל..." oninput="renderFoodSearch()">
+  <div class="tabbar">
+    <button class="active" id="fstab-all" onclick="setFoodSearchTab('all')">הכל</button>
+    <button id="fstab-history" onclick="setFoodSearchTab('history')">היסטוריה</button>
+    <button id="fstab-fav" onclick="setFoodSearchTab('fav')">מועדפים</button>
+    <button id="fstab-mine" onclick="setFoodSearchTab('mine')">המאכלים שלי</button>
+  </div>
+  <div class="search-list" id="food-search-list"></div>
+  <div id="food-empty-state" style="display:none;text-align:center;margin-top:20px;">
+    <div class="muted">לא נמצאו תוצאות</div>
+    <button class="btn secondary" style="margin-top:10px;" onclick="goTo('screen-customfood')">+ צור מאכל חדש</button>
+  </div>
+</div>
+
+<!-- 13. FOOD ITEM DETAIL -->
+<div class="screen" id="screen-fooddetail">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-foodsearch')">&#8594;</button><h3 id="fd-name">מאכל</h3></div>
+  <div class="row">
+    <div><label>כמות</label><input id="fd-qty" type="number" value="100" oninput="renderFoodDetailTotals()"></div>
+    <div><label>יחידה</label><select id="fd-unit" onchange="renderFoodDetailTotals()"></select></div>
+  </div>
+  <div class="err" id="fd-err">יש להזין כמות חיובית</div>
+  <label>הוסף לארוחה</label>
+  <select id="fd-meal"><option value="breakfast">בוקר</option><option value="lunch">צהריים</option><option value="dinner">ערב</option><option value="snack">נשנוש</option></select>
+  <div class="card" id="fd-table"></div>
+  <button class="btn" onclick="confirmAddFood()">הוסף ליומן</button>
+</div>
+
+<!-- 14. CUSTOM FOOD CREATOR -->
+<div class="screen" id="screen-customfood">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-foodsearch')">&#8594;</button><h3>יצירת מאכל</h3></div>
+  <div class="tabbar">
+    <button class="active" id="cftab-single" onclick="setCustomFoodTab('single')">מאכל בודד</button>
+    <button id="cftab-recipe" onclick="setCustomFoodTab('recipe')">בניית מתכון</button>
+  </div>
+  <div id="cf-single">
+    <label>שם המאכל</label>
+    <input id="cf-name" oninput="renderCustomFoodSuggestions()" autocomplete="off">
+    <div id="cf-suggestions"></div>
+    <div class="muted" style="margin-top:4px;font-size:12px;">הערכים הם ל-100 גרם. בוחרים הצעה כדי למלא אוטומטית, ואפשר לערוך ידנית.</div>
+    <div class="row">
+      <div><label>קלוריות (ל-100 גרם)<button class="info-btn" type="button" onclick="showInfo('calories')">?</button></label><input id="cf-cal" type="number"></div>
+      <div><label>חלבון (גרם)<button class="info-btn" type="button" onclick="showInfo('protein')">?</button></label><input id="cf-protein" type="number"></div>
+    </div>
+    <div class="row">
+      <div><label>פחמימה (גרם)<button class="info-btn" type="button" onclick="showInfo('carb')">?</button></label><input id="cf-carb" type="number"></div>
+      <div><label>שומן (גרם)<button class="info-btn" type="button" onclick="showInfo('fat')">?</button></label><input id="cf-fat" type="number"></div>
+    </div>
+    <button class="btn" style="margin-top:14px;" onclick="saveCustomFood()">שמור למאכלים שלי</button>
+  </div>
+  <div id="cf-recipe" style="display:none;">
+    <label>שם המתכון</label><input id="cfr-name">
+    <label>חפש והוסף מרכיב</label><input id="cfr-search" oninput="renderRecipeSearch()">
+    <div id="cfr-search-results"></div>
+    <h3>מרכיבים</h3>
+    <div id="cfr-ingredients"></div>
+    <label>מספר מנות</label><input id="cfr-servings" type="number" value="1" oninput="renderRecipeTotals()">
+    <div class="card" id="cfr-totals"></div>
+    <button class="btn" style="margin-top:10px;" onclick="saveRecipe()">שמור מתכון למאכלים שלי</button>
+  </div>
+</div>
+
+<!-- 15. NUTRITION GOALS -->
+<div class="screen" id="screen-goals">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-dashboard')">&#8594;</button><h3>ניהול יעדי תזונה</h3></div>
+  <div class="row" style="align-items:center;">
+    <span>מצב AI (אוטומטי)</span>
+    <button class="toggle" id="goals-mode-toggle" onclick="toggleGoalsMode()"><span class="knob"></span></button>
+    <span>מצב ידני</span>
+  </div>
+  <div id="goals-ai-view" class="card">
+    <div class="muted">היעדים מחושבים אוטומטית על סמך ה-BMR, רמת הפעילות והמטרה שלך מהשאלון.</div>
+    <div id="goals-ai-detail" style="margin-top:10px;"></div>
+  </div>
+  <div id="goals-manual-view" class="card" style="display:none;">
+    <label>קלוריות יומיות<button class="info-btn" type="button" onclick="showInfo('calories')">?</button></label>
+    <input id="goals-cal" type="number" oninput="renderGoalsManual()">
+    <div class="slider-row">
+      <div class="slider-label"><span>חלבון<button class="info-btn" type="button" onclick="showInfo('protein')">?</button></span><span id="pct-protein-label">30%</span></div>
+      <input type="range" id="slider-protein" min="0" max="100" value="30" oninput="onSliderChange('protein')">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label"><span>פחמימה<button class="info-btn" type="button" onclick="showInfo('carb')">?</button></span><span id="pct-carb-label">40%</span></div>
+      <input type="range" id="slider-carb" min="0" max="100" value="40" oninput="onSliderChange('carb')">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label"><span>שומן<button class="info-btn" type="button" onclick="showInfo('fat')">?</button></span><span id="pct-fat-label">30%</span></div>
+      <input type="range" id="slider-fat" min="0" max="100" value="30" oninput="onSliderChange('fat')">
+    </div>
+    <div class="muted" id="pct-sum-label">סה"כ: 100%</div>
+    <div class="err" id="err-pct-sum">אחוזי המאקרו חייבים להסתכם ל-100% בדיוק</div>
+    <div class="card" id="goals-gram-table" style="background:var(--card2);"></div>
+    <button class="btn" style="margin-top:10px;" id="goals-save-btn" onclick="trySaveGoals()">שמור יעדים</button>
+  </div>
+</div>
+
+<!-- 15. VYTAL AGE -->
+<div class="screen" id="screen-vytalage">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-gamify')">&#8594;</button><h3>מדד אריכות ימים</h3></div>
+  <div class="card center">
+    <div class="muted">הגיל הביולוגי שלך (Vytal Age)<button class="info-btn" type="button" onclick="showInfo('vytalAge')">?</button></div>
+    <div style="display:flex;justify-content:center;align-items:center;gap:18px;margin-top:10px;">
+      <div><div style="font-size:13px;color:var(--muted);">גיל כרונולוגי</div><div style="font-size:30px;font-weight:800;" id="va-chrono">--</div></div>
+      <div style="font-size:24px;color:var(--muted);">&#8594;</div>
+      <div><div style="font-size:13px;color:var(--accent);">Vytal Age</div><div style="font-size:36px;font-weight:800;color:var(--accent);" id="va-bio">--</div></div>
+    </div>
+    <div id="va-delta-msg" style="margin-top:10px;font-weight:700;"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">המדדים שמשפיעים על הגיל הביולוגי</h3>
+    <label>VO2 Max (כושר אירובי מירבי, ml/kg/min)</label>
+    <input id="va-vo2max" type="number" placeholder="לדוגמה: 42">
+    <label>דופק מנוחה (Resting Heart Rate, פעימות לדקה)</label>
+    <input id="va-rhr" type="number" placeholder="לדוגמה: 62">
+    <div class="muted" style="margin-top:10px;font-size:12px;">מבחני כוח/יציבות עצמיים (פעם בחודש)</div>
+    <label>עמידה על רגל אחת בעיניים עצומות (שניות)</label>
+    <input id="va-balance" type="number" placeholder="לדוגמה: 25">
+    <label>זמן תלייה על מתח (שניות)</label>
+    <input id="va-hang" type="number" placeholder="לדוגמה: 40">
+    <button class="btn" style="margin-top:14px;" onclick="saveVytalAgeMetrics()">חשב Vytal Age</button>
+    <div class="muted" id="va-last-updated" style="margin-top:8px;font-size:12px;"></div>
+  </div>
+  <div class="card" id="va-tip-card"></div>
+</div>
+
+<!-- 16. WEEKLY PLANNER -->
+<div class="screen" id="screen-planner" style="padding:0;flex-direction:column;">
+  <div class="top-nav" style="padding:12px 16px;flex-shrink:0;">
+    <button class="back-btn" onclick="goTo('screen-dashboard')">&#8594;</button>
+    <h3 style="flex:1;text-align:center;">לו"ז שבועי</h3>
+  </div>
+  <!-- week strip -->
+  <div style="flex-shrink:0;padding:0 8px 6px;border-bottom:1px solid var(--card2);">
+    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <button class="icon-btn" onclick="plannerShiftWeek(-1)" style="flex:0 0 34px;">&#8594;</button>
+      <span style="font-size:13px;font-weight:700;" id="planner-week-label"></span>
+      <button class="icon-btn" onclick="plannerShiftWeek(1)" style="flex:0 0 34px;">&#8592;</button>
+    </div>
+    <div id="planner-day-strip" style="display:grid;grid-template-columns:40px repeat(7,1fr);gap:2px;"></div>
+  </div>
+  <!-- calendar body -->
+  <div id="planner-cal-body" style="flex:1;overflow-y:auto;position:relative;"></div>
+</div>
+
+<!-- Planner drop confirmation modal -->
+<div class="modal-overlay" id="planner-confirm-modal">
+  <div class="modal-box info-box">
+    <h3>&#128205; אישור הזזה</h3>
+    <div id="pd-confirm-text" style="margin:12px 0;"></div>
+    <div class="row" style="gap:10px;margin-top:14px;">
+      <button class="btn" onclick="confirmPlannerDrop(true)" style="flex:1;">&#10003; אישור</button>
+      <button class="btn secondary" onclick="confirmPlannerDrop(false)" style="flex:1;">&#10005; ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- Planner block detail modal -->
+<div class="modal-overlay" id="planner-detail-modal">
+  <div class="modal-box info-box">
+    <button class="modal-close" onclick="document.getElementById('planner-detail-modal').classList.remove('show')">&#10005;</button>
+    <h3 id="pd-title"></h3>
+    <div class="muted" id="pd-meta" style="margin-bottom:14px;"></div>
+    <div id="pd-edit-form">
+      <label>שם</label><input id="pd-label-input">
+      <label>שעת התחלה</label>
+      <div class="row">
+        <div><input id="pd-hour" type="number" min="0" max="23" style="width:60px;"> <span class="muted">שעה</span></div>
+        <div><input id="pd-minute" type="number" min="0" max="59" step="15" style="width:60px;"> <span class="muted">דקות</span></div>
+      </div>
+      <label>משך (דקות)</label><input id="pd-dur" type="number" min="5" max="480">
+    </div>
+    <button class="btn" style="margin-top:12px;" onclick="savePlannerDetail()">שמור שינויים</button>
+  </div>
+</div>
+
+<!-- New event modal (long-press on empty slot) -->
+<div class="modal-overlay" id="planner-new-modal">
+  <div class="modal-box info-box">
+    <button class="modal-close" onclick="document.getElementById('planner-new-modal').classList.remove('show')">&#10005;</button>
+    <h3>&#43; אירוע חדש</h3>
+    <div class="muted" id="pn-meta" style="margin-bottom:14px;"></div>
+    <label>שם האירוע</label><input id="pn-label" placeholder="למשל: ריצה, ארוחת צהריים...">
+    <label>סוג</label>
+    <select id="pn-type">
+      <option value="external">&#128197; כללי</option>
+      <option value="workout">&#127939; אימון</option>
+      <option value="meal">&#127869; ארוחה</option>
+    </select>
+    <label>שעת התחלה</label>
+    <div class="row">
+      <div><input id="pn-hour" type="number" min="0" max="23" style="width:60px;"> <span class="muted">שעה</span></div>
+      <div><input id="pn-minute" type="number" min="0" max="59" step="15" style="width:60px;"> <span class="muted">דקות</span></div>
+    </div>
+    <label>משך (דקות)</label><input id="pn-dur" type="number" min="5" max="480" value="60">
+    <button class="btn" style="margin-top:14px;" onclick="saveNewPlannerEvent()">&#10003; הוסף</button>
+  </div>
+</div>
+
+<!-- 17. ACTIVE WORKOUT TRACKER -->
+<!-- Return user workout confirm modal -->
+<div class="modal-overlay" id="wo-return-modal">
+  <div class="modal-box info-box">
+    <h3>&#127939; נמשיך מאותו פרופיל?</h3>
+    <div class="muted" id="wo-return-summary" style="margin:10px 0 16px;"></div>
+    <button class="btn" onclick="continueWithSavedProfile()">&#9654; המשך עם הפרופיל הקיים</button>
+    <button class="btn secondary" style="margin-top:8px;" onclick="resetWorkoutProfile()">&#128260; שנה העדפות</button>
+  </div>
+</div>
+
+<!-- WORKOUT ONBOARDING WIZARD -->
+<div class="screen" id="screen-workout-onboard" style="padding:0;">
+  <div class="top-nav" style="padding:12px 16px;">
+    <button class="back-btn" id="wob-back-btn" onclick="wobBack()">&#8594;</button>
+    <h3 style="flex:1;text-align:center;" id="wob-title">בואנו נכיר אותך</h3>
+  </div>
+  <div style="padding:0 16px;">
+    <div class="progress-bar" style="margin-bottom:20px;"><div class="progress-fill" id="wob-progress" style="width:20%;"></div></div>
+  </div>
+  <div id="wob-content" style="padding:0 16px 24px;"></div>
+  <div style="padding:0 16px;">
+    <button class="btn" id="wob-next-btn" onclick="wobNext()" style="width:100%;">המשך &#8592;</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-activeworkout">
+  <div class="top-nav"><button class="back-btn" onclick="endActiveWorkoutPrompt()">&#8594;</button><h3>אימון פעיל</h3></div>
+  <div class="card center">
+    <div class="muted">משך האימון</div>
+    <div style="font-size:34px;font-weight:800;" id="aw-timer">00:00</div>
+  </div>
+  <div id="aw-exercise-list"></div>
+  <button class="btn secondary" onclick="addCustomExercise()">+ הוסף תרגיל</button>
+  <button class="btn" style="margin-top:10px;" onclick="openFinishWorkoutModal()">סיום אימון</button>
+  <div id="aw-rest-overlay" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--card2);padding:14px;z-index:50;">
+    <div class="center"><div class="muted">מנוחה</div><div style="font-size:28px;font-weight:800;" id="aw-rest-timer">90</div>
+      <div class="row" style="justify-content:center;gap:8px;margin-top:8px;">
+        <button class="btn secondary" onclick="adjustRestTimer(-30)">-30 שנ'</button>
+        <button class="btn secondary" onclick="adjustRestTimer(30)">+30 שנ'</button>
+        <button class="btn secondary" onclick="skipRestTimer()">דלג על מנוחה</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="finish-workout-modal">
+    <div class="modal-box info-box">
+      <button class="modal-close" onclick="document.getElementById('finish-workout-modal').classList.remove('show')">&#10005;</button>
+      <h3>כמה היה קשה האימון?</h3>
+      <div class="muted">RPE - דירוג קושי סובייקטיבי (1=קל מאוד, 10=מקסימלי)</div>
+      <input type="range" id="aw-rpe" min="1" max="10" value="7" oninput="document.getElementById('aw-rpe-val').textContent=this.value">
+      <div class="center"><b id="aw-rpe-val">7</b></div>
+      <button class="btn" style="margin-top:10px;" onclick="finishActiveWorkout()">שמור וסיים</button>
+    </div>
+  </div>
+</div>
+
+<!-- 18. SLEEP & RECOVERY -->
+<div class="screen" id="screen-sleep">
+  <div class="top-nav"><button class="back-btn" onclick="goTo('screen-dashboard')">&#8594;</button><h3>שינה והתאוששות</h3></div>
+  <div class="card center">
+    <div class="score-ring">
+      <svg width="150" height="150">
+        <circle cx="75" cy="75" r="64" stroke="#232a36" stroke-width="13" fill="none"/>
+        <circle id="recovery-circle" cx="75" cy="75" r="64" stroke="#3ddc97" stroke-width="13" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="score-num"><div class="n" id="recovery-num">0</div><div class="muted">מוכנות<button class="info-btn" type="button" onclick="showInfo('recovery')">?</button></div></div>
+    </div>
+  </div>
+  <div class="card" id="sleep-illness-banner" style="display:none;"></div>
+  <div class="card">
+    <h3 style="margin-top:0;">ארכיטקטורת שינה (שעות)</h3>
+    <div class="row">
+      <div><label>שינה עמוקה</label><input id="sl-deep" type="number" step="0.1" value="1.5" oninput="renderSleepScreen()"></div>
+      <div><label>REM</label><input id="sl-rem" type="number" step="0.1" value="1.3" oninput="renderSleepScreen()"></div>
+    </div>
+    <div class="row">
+      <div><label>שינה קלה</label><input id="sl-light" type="number" step="0.1" value="4" oninput="renderSleepScreen()"></div>
+      <div><label>ערות</label><input id="sl-awake" type="number" step="0.1" value="0.3" oninput="renderSleepScreen()"></div>
+    </div>
+  </div>
+  <div class="grid2" id="recovery-metrics-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+  <div class="card" id="sleep-ai-insight"></div>
+  <button class="btn secondary" onclick="openFeelingPrompt()">איך אתה מרגיש?</button>
+</div>
+
+<div class="bottomnav" id="bottomnav">
+  <button class="navbtn active" onclick="navTo('screen-dashboard')"><span class="ic">&#127968;</span>בית</button>
+  <button class="navbtn" onclick="navTo('screen-planner')"><span class="ic">&#128197;</span>יומן</button>
+  <button class="navbtn" onclick="navTo('screen-workouts')"><span class="ic">&#127939;</span>אימונים</button>
+  <button class="navbtn" onclick="navTo('screen-gamify')"><span class="ic">&#127942;</span>הישגים</button>
+  <button class="navbtn" onclick="navTo('screen-weekly')"><span class="ic">&#128202;</span>שבועי</button>
+  <button class="navbtn" onclick="navTo('screen-goals')"><span class="ic">&#127919;</span>יעדים</button>
+</div>
+
+</div>
+
+<!-- Info modal -->
+<div class="modal-overlay" id="info-modal">
+  <div class="modal-box info-box">
+    <button class="modal-close" onclick="closeInfo()">&#10005;</button>
+    <h3 id="info-modal-title"></h3>
+    <p class="muted" id="info-modal-text"></p>
+  </div>
+</div>
+
+<!-- Profile modal -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal-box info-box" style="max-height:80vh;overflow-y:auto;">
+    <button class="modal-close" onclick="closeProfileModal()">&#10005;</button>
+    <h3>הפרופיל שלי</h3>
+    <div class="center" style="margin:10px 0 16px;">
+      <div id="pm-photo-preview" style="width:84px;height:84px;border-radius:50%;background:var(--card2);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:38px;overflow:hidden;">&#128100;</div>
+      <button class="btn secondary" type="button" onclick="document.getElementById('pm-photo-input').click()">&#128247; שינוי תמונת פרופיל</button>
+      <input type="file" id="pm-photo-input" accept="image/*" style="display:none" onchange="onProfilePhotoChange(event)">
+    </div>
+    <label>שם מלא</label><input id="pm-name">
+    <label>תאריך לידה</label><input id="pm-birthdate" type="date" style="max-width:100%;">
+    <label>מין</label><select id="pm-sex" style="max-width:160px;"><option value="male">זכר</option><option value="female">נקבה</option></select>
+    <div class="row">
+      <div><label>גובה (ס"מ)</label><input id="pm-height" type="number"></div>
+      <div><label>משקל (ק"ג)</label><input id="pm-weight" type="number"></div>
+    </div>
+    <label>אימייל</label><input id="pm-email">
+    <label>טלפון</label><input id="pm-phone">
+    <label>&#127760; שפה</label>
+    <select id="pm-lang" style="max-width:200px;">
+      <option value="he">&#x1F1EE;&#x1F1F1; עברית</option>
+      <option value="en">&#x1F1FA;&#x1F1F8; English</option>
+      <option value="es">&#x1F1EA;&#x1F1F8; Español</option>
+      <option value="pt">&#x1F1E7;&#x1F1F7; Português</option>
+      <option value="ar">&#x1F1F8;&#x1F1E6; العربية</option>
+    </select>
+    <button class="btn" style="margin-top:14px;" onclick="saveProfileModal()">שמור שינויים</button>
+  </div>
+</div>
+
+<!-- Retroactive change modal -->
+<div class="modal-overlay" id="retro-modal">
+  <div class="modal-box">
+    <h3>עדכון יעדים</h3>
+    <p class="muted">האם להחיל את השינוי גם על ימים קודמים, או רק מהיום והלאה?</p>
+    <button class="btn" onclick="applyGoalsChange(true)">החל על כל ההיסטוריה</button>
+    <button class="btn secondary" style="margin-top:8px;" onclick="applyGoalsChange(false)">רק מהיום והלאה</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===================== STORAGE HELPERS ===================== */
+var LS = {
+  get:function(k,d){ try{ var v=localStorage.getItem('vytal_'+k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set:function(k,v){ try{ localStorage.setItem('vytal_'+k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ===================== INFO TOOLTIPS ===================== */
+var INFO_DICT = {
+  calories: {title:'קלוריות', text:'יחידת מידה לכמות האנרגיה שיש במאכל או בשתייה. הגוף שלך צריך כמות מסוימת של קלוריות ביום כדי לתפקד, ולשמור/לרדת/לעלות במשקל בהתאם לאיזון בין מה שאוכלים למה ששורפים.'},
+  protein: {title:'חלבון', text:'אבן הבניין של השרירים והרקמות בגוף. חשוב לשמירה ובניית מסת שריר, להחלמה מאימונים ולתחושת שובע.'},
+  carb: {title:'פחמימה', text:'מקור האנרגיה המהיר והעיקרי של הגוף, בעיקר לפעילות גופנית ולמוח. נמצא בלחם, אורז, פירות, פסטה ועוד.'},
+  fat: {title:'שומן', text:'מקור אנרגיה מרוכז, חשוב לייצור הורמונים, לספיגת ויטמינים ולבריאות הלב. שומן איכותי (כמו אגוזים, שמן זית, אבוקדו) חשוב לתפריט מאוזן.'},
+  xp: {title:'XP (נקודות חוויה)', text:'נקודות שצוברים על ביצוע משימות יומיות, אימונים ועמידה ביעדים. כשממלאים את מד ה-XP עוברים שלב (Level) ומשם הוא מתחיל להתמלא מההתחלה.'},
+  level: {title:'רמה (Level)', text:'מציין כמה ניסיון צברת באפליקציה עד כה. עולים רמה כל פעם שממלאים את מד ה-XP, וזה דרך נחמדה לראות התקדמות ולהישאר מחוברים.'},
+  streak: {title:'רצף נוכחי', text:'מספר הימים הרצופים שבהם עמדת ביעדים שהגדרת (תזונה, פעילות, שינה). שומרים על הרצף כדי לבנות הרגל יומיומי בריא.'},
+  dailyProgress: {title:'התקדמות יומית', text:'אחוז המשימות וההיעדים שהשלמת היום מתוך כל מה שהוגדר לך להיום (תזונה, פעילות ושינה).'},
+  bmr: {title:'BMR - קצב מטבולי בסיסי', text:'כמות הקלוריות שהגוף שלך שורף במנוחה מוחלטת, רק כדי לתפקד (נשימה, חימום הגוף וכו׳), לפני כל פעילות. משמש בסיס לחישוב היעד הקלורי היומי שלך.'},
+  vytalScore: {title:'Vytal Score', text:'ציון יומי שמשקלל את התזונה, הפעילות והשינה שלך לציון אחד פשוט, כדי שתוכל לראות במהירות איך היה היום שלך בסך הכול.'},
+  streakFreeze: {title:'הקפאת רצף', text:'מאפשרת לשמור על הרצף הנוכחי שלך אפילו ביום שבו לא עמדת ביעדים, למשל בזמן מחלה או פציעה.'},
+  vytalAge: {title:'Vytal Age - גיל ביולוגי', text:'הערכה של גיל הגוף שלך בפועל, בהתבסס על VO2 Max, דופק מנוחה, שיווי משקל וכוח אחיזה - מדדים שמחקרים מקשרים לאריכות ימים. ככל שתשפר את המדדים, ה-Vytal Age שלך יורד, גם אם הגיל הכרונולוגי שלך לא משתנה.'},
+  recovery: {title:'ציון מוכנות (Recovery Score)', text:'מדד שמשקלל את איכות השינה שלך מול שונות הדופק (HRV) ודופק המנוחה (RHR) של הלילה האחרון, כדי להעריך כמה הגוף שלך מוכן ליום מאמץ.'}
+};
+function infoBtn(key){
+  return '<button class="info-btn" type="button" onclick="event.stopPropagation();showInfo(\''+key+'\')">?</button>';
+}
+function showInfo(key){
+  var info = INFO_DICT[key];
+  if(!info) return;
+  document.getElementById('info-modal-title').textContent = info.title;
+  document.getElementById('info-modal-text').textContent = info.text;
+  document.getElementById('info-modal').classList.add('show');
+}
+function closeInfo(){
+  document.getElementById('info-modal').classList.remove('show');
+}
+window.infoBtn = infoBtn; window.showInfo = showInfo; window.closeInfo = closeInfo;
+
+/* ===================== NAVIGATION ===================== */
+function goTo(id){
+  var els = document.querySelectorAll('.screen');
+  for(var i=0;i<els.length;i++){ els[i].classList.remove('active'); }
+  if(id!=='screen-vision' && typeof cameraStream!=='undefined' && cameraStream){
+    cameraStream.getTracks().forEach(function(t){ t.stop(); });
+    cameraStream = null; cameraVideoEl = null;
+  }
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  var bn = document.getElementById('bottomnav');
+  var hideOn = ['screen-splash','screen-onboarding','screen-register','screen-integrations','screen-questionnaire'];
+  var hide = hideOn.indexOf(id)>-1;
+  bn.style.display = hide ? 'none' : 'flex';
+  document.querySelector('.fab').style.display = hide ? 'none' : '';
+  document.getElementById('fab-menu').classList.remove('show');
+}
+function navTo(id){
+  goTo(id);
+  var map = {'screen-dashboard':0,'screen-planner':1,'screen-workouts':2,'screen-gamify':3,'screen-weekly':4,'screen-goals':5};
+  var btns = document.querySelectorAll('.navbtn');
+  for(var i=0;i<btns.length;i++){ btns[i].classList.remove('active'); }
+  if(map[id]!==undefined) btns[map[id]].classList.add('active');
+  if(id==='screen-planner') renderPlanner();
+  if(id==='screen-workouts') renderWorkouts();
+  if(id==='screen-fooddiary') renderFoodDiary();
+  if(id==='screen-gamify') renderGamify();
+  if(id==='screen-weekly') renderWeekly();
+  if(id==='screen-goals') renderGoals();
+  if(id==='screen-dashboard') renderDashboard();
+}
+function toggleFab(){ document.getElementById('fab-menu').classList.toggle('show'); }
+
+window.goTo = goTo; window.navTo = navTo; window.toggleFab = toggleFab;
+window.__VYTAL_LS = LS;
+
+/* ===================== BOOT / SPLASH ===================== */
+function boot(){
+  applyLanguage(LS.get('appLang', 'he'));
+  setTimeout(function(){
+    var onboardingSeen = LS.get('onboardingSeen', false);
+    var authToken = LS.get('authToken', null);
+    if(!onboardingSeen){ goTo('screen-onboarding'); initOnboarding(); }
+    else if(!authToken){ goTo('screen-register'); setTimeout(function(){ if(window.initBirthdateSelects) window.initBirthdateSelects(); },0); }
+    else { goTo('screen-dashboard'); renderDashboard(); }
+  }, 1200);
+}
+
+/* ===================== ONBOARDING ===================== */
+var onbData = [
+  {ic:'&#128170;', t:'ברוכים הבאים ל-Vytal OS', d:'מערכת AI לבריאות, תזונה וביצועים בזמן אמת.'},
+  {ic:'&#128202;', t:'Vytal Score', d:'ניקוד יומי אחד שמשקף שינה, פעילות ותזונה.'},
+  {ic:'&#129302;', t:'מאמן AI אישי', d:'שיחה חכמה שמכוונת אותך לפי הנתונים שלך.'},
+  {ic:'&#128247;', t:'סקאן ארוחות', d:'צלם את הצלחת וקבל פירוט תזונתי מיידי.'},
+  {ic:'&#127942;', t:'גיימיפיקציה', d:'רצפים, XP ומשימות יומיות שישמרו אותך במוטיבציה.'}
+];
+var onbIdx = 0;
+function initOnboarding(){
+  onbIdx = 0;
+  renderOnb();
+}
+function renderOnb(){
+  var p = onbData[onbIdx];
+  document.getElementById('onb-pages').innerHTML =
+    '<div style="font-size:64px;">'+p.ic+'</div><h2>'+p.t+'</h2><p class="muted">'+p.d+'</p>';
+  var dots='';
+  for(var i=0;i<onbData.length;i++){ dots += '<div class="dot'+(i===onbIdx?' active':'')+'"></div>'; }
+  document.getElementById('onb-dots').innerHTML = dots;
+  document.getElementById('onb-next').textContent = onbIdx===onbData.length-1 ? 'התחל' : 'הבא';
+}
+function onbNext(){
+  if(onbIdx < onbData.length-1){ onbIdx++; renderOnb(); }
+  else { finishOnboarding(); }
+}
+function finishOnboarding(){
+  LS.set('onboardingSeen', true);
+  goTo('screen-register'); setTimeout(function(){ if(window.initBirthdateSelects) window.initBirthdateSelects(); },0);
+}
+window.onbNext = onbNext; window.finishOnboarding = finishOnboarding;
+
+boot();
+window.__vytalInit = window.__vytalInit || {};
+window.__vytalInit.LS = LS;
+window.__vytalGoTo = goTo;
+window.initOnboardingFns = {init:initOnboarding};
+
+/* expose for later parts */
+window.__vytal_part1_loaded = true;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var LS = window.__VYTAL_LS;
+var goTo = window.__vytalGoTo;
+
+/* ===================== REGISTRATION ===================== */
+function showErr(id, show){
+  var el = document.getElementById(id);
+  if(el) el.classList[show?'add':'remove']('show');
+}
+function calcAgeFromBirthdate(birthdate){
+  if(!birthdate) return null;
+  var bd = new Date(birthdate);
+  if(isNaN(bd.getTime())) return null;
+  var today = new Date();
+  var age = today.getFullYear() - bd.getFullYear();
+  var hasNotHadBirthdayYet = (today.getMonth() < bd.getMonth()) || (today.getMonth()===bd.getMonth() && today.getDate() < bd.getDate());
+  if(hasNotHadBirthdayYet) age--;
+  return age;
+}
+function validateRegister(){
+  var ok = true;
+  var name = document.getElementById('reg-name').value.trim();
+  if(name.length < 2){ showErr('err-name', true); ok=false; } else showErr('err-name', false);
+
+  var birthdate = document.getElementById('reg-birthdate').value;
+  var age = calcAgeFromBirthdate(birthdate);
+  if(!birthdate || age===null || age < 13 || age > 120){ showErr('err-age', true); ok=false; } else showErr('err-age', false);
+
+  var height = parseFloat(document.getElementById('reg-height').value);
+  if(isNaN(height) || height < 50 || height > 250){ showErr('err-height', true); ok=false; } else showErr('err-height', false);
+
+  var weight = parseFloat(document.getElementById('reg-weight').value);
+  if(isNaN(weight) || weight < 30 || weight > 300){ showErr('err-weight', true); ok=false; } else showErr('err-weight', false);
+
+  var email = document.getElementById('reg-email').value.trim();
+  var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!emailRe.test(email)){ showErr('err-email', true); ok=false; } else showErr('err-email', false);
+
+  var phone = document.getElementById('reg-phone').value.trim();
+  var phoneRe = /^0\d{1,2}-?\d{7}$/;
+  if(!phoneRe.test(phone)){ showErr('err-phone', true); ok=false; } else showErr('err-phone', false);
+
+  var pass = document.getElementById('reg-pass').value;
+  var passOk = pass.length >= 8 && /[A-Za-z]/.test(pass) && /\d/.test(pass);
+  if(!passOk){ showErr('err-pass', true); ok=false; } else showErr('err-pass', false);
+
+  return ok ? {name:name, birthdate:birthdate, age:age, height:height, weight:weight,
+    sex:document.getElementById('reg-sex').value,
+    country:document.getElementById('reg-country').value,
+    lang:document.getElementById('reg-lang').value,
+    email:email, phone:phone} : null;
+}
+var MONTHS_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+function initBirthdateSelects(prefill){
+  var now = new Date();
+  var curYear = now.getFullYear();
+  var dayEl = document.getElementById('reg-bday');
+  var monthEl = document.getElementById('reg-bmonth');
+  var yearEl = document.getElementById('reg-byear');
+  if(!dayEl) return;
+  var dHtml='<option value="">יום</option>';
+  for(var d=1;d<=31;d++) dHtml+='<option>'+d+'</option>';
+  dayEl.innerHTML = dHtml;
+  var mHtml='<option value="">חודש</option>';
+  MONTHS_HE.forEach(function(m,i){ mHtml+='<option value="'+(i+1)+'">'+m+'</option>'; });
+  monthEl.innerHTML = mHtml;
+  var yHtml='<option value="">שנה</option>';
+  for(var y=curYear-10;y>=curYear-100;y--) yHtml+='<option>'+y+'</option>';
+  yearEl.innerHTML = yHtml;
+  if(prefill){
+    var parts = prefill.split('-');
+    yearEl.value = parseInt(parts[0],10);
+    monthEl.value = parseInt(parts[1],10);
+    dayEl.value = parseInt(parts[2],10);
+    syncBirthdate();
+  }
+}
+function syncBirthdate(){
+  var d = document.getElementById('reg-bday').value;
+  var m = document.getElementById('reg-bmonth').value;
+  var y = document.getElementById('reg-byear').value;
+  var hidden = document.getElementById('reg-birthdate');
+  if(d && m && y) hidden.value = y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  else hidden.value = '';
+}
+function submitRegister(){
+  var data = validateRegister();
+  if(!data) return;
+  var profile = LS.get('profile', {});
+  for(var k in data){ profile[k] = data[k]; }
+  LS.set('profile', profile);
+  LS.set('authToken', 'fake-token-'+Date.now());
+  initIntegrations();
+  goTo('screen-integrations');
+}
+window.submitRegister = submitRegister;
+window.initBirthdateSelects = initBirthdateSelects; window.syncBirthdate = syncBirthdate;
+
+/* ===================== PROFILE MODAL ===================== */
+function renderProfileAvatar(){
+  var profile = LS.get('profile', {});
+  var btn = document.getElementById('dash-avatar-btn');
+  if(!btn) return;
+  btn.innerHTML = profile.photo ? '<img src="'+profile.photo+'" style="width:100%;height:100%;object-fit:cover;">' : '&#128100;';
+}
+var RTL_LANGS = {he:true, ar:true};
+function applyLanguage(lang){
+  if(!lang) lang = LS.get('appLang', 'he');
+  document.documentElement.dir = RTL_LANGS[lang] ? 'rtl' : 'ltr';
+  document.documentElement.lang = lang;
+  LS.set('appLang', lang);
+}
+window.applyLanguage = applyLanguage;
+
+function openProfileModal(){
+  var profile = LS.get('profile', {});
+  document.getElementById('pm-photo-preview').innerHTML = profile.photo ? '<img src="'+profile.photo+'" style="width:100%;height:100%;object-fit:cover;">' : '&#128100;';
+  document.getElementById('pm-name').value = profile.name || '';
+  document.getElementById('pm-birthdate').value = profile.birthdate || '';
+  document.getElementById('pm-sex').value = profile.sex || 'male';
+  document.getElementById('pm-height').value = profile.height || '';
+  document.getElementById('pm-weight').value = profile.weight || '';
+  document.getElementById('pm-email').value = profile.email || '';
+  document.getElementById('pm-phone').value = profile.phone || '';
+  document.getElementById('pm-lang').value = LS.get('appLang', 'he');
+  document.getElementById('profile-modal').classList.add('show');
+}
+function closeProfileModal(){
+  document.getElementById('profile-modal').classList.remove('show');
+}
+function onProfilePhotoChange(ev){
+  var file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var profile = LS.get('profile', {});
+    profile.photo = e.target.result;
+    LS.set('profile', profile);
+    document.getElementById('pm-photo-preview').innerHTML = '<img src="'+profile.photo+'" style="width:100%;height:100%;object-fit:cover;">';
+    renderProfileAvatar();
+  };
+  reader.readAsDataURL(file);
+}
+function saveProfileModal(){
+  var name = document.getElementById('pm-name').value.trim();
+  if(name.length < 2){ alert('יש להזין שם תקין'); return; }
+  var birthdate = document.getElementById('pm-birthdate').value;
+  var age = calcAgeFromBirthdate(birthdate);
+  if(!birthdate || age===null || age < 13 || age > 120){ alert('תאריך הלידה לא תקין'); return; }
+  var height = parseFloat(document.getElementById('pm-height').value);
+  if(isNaN(height) || height < 50 || height > 250){ alert('הגובה חייב להיות בין 50 ל-250 ס"מ'); return; }
+  var weight = parseFloat(document.getElementById('pm-weight').value);
+  if(isNaN(weight) || weight < 30 || weight > 300){ alert('המשקל חייב להיות בין 30 ל-300 ק"ג'); return; }
+  var email = document.getElementById('pm-email').value.trim();
+  var phone = document.getElementById('pm-phone').value.trim();
+  var profile = LS.get('profile', {});
+  profile.name = name; profile.birthdate = birthdate; profile.age = age;
+  profile.sex = document.getElementById('pm-sex').value;
+  profile.height = height; profile.weight = weight;
+  profile.email = email; profile.phone = phone;
+  applyLanguage(document.getElementById('pm-lang').value);
+  var heightM = height/100;
+  profile.bmi = weight/(heightM*heightM);
+  profile.bmr = calcBMR(profile, profile.activity||'moderate');
+  LS.set('profile', profile);
+  closeProfileModal();
+  renderProfileAvatar();
+  if(window.renderDashboard) window.renderDashboard();
+}
+window.openProfileModal = openProfileModal; window.closeProfileModal = closeProfileModal;
+window.onProfilePhotoChange = onProfilePhotoChange; window.saveProfileModal = saveProfileModal;
+window.renderProfileAvatar = renderProfileAvatar;
+
+/* ===================== INTEGRATIONS ===================== */
+var WEARABLES = [
+  {id:'apple', name:'Apple Health', ic:'&#127822;'},
+  {id:'garmin', name:'Garmin', ic:'&#8986;'},
+  {id:'fitbit', name:'Fitbit', ic:'&#128302;'},
+  {id:'google', name:'Google Fit', ic:'&#127939;'}
+];
+function initIntegrations(){
+  var conns = LS.get('wearables', {});
+  var html = '';
+  for(var i=0;i<WEARABLES.length;i++){
+    var w = WEARABLES[i];
+    var on = !!conns[w.id];
+    html += '<div class="card wcard"><div><span style="font-size:22px;">'+w.ic+'</span> '+w.name+
+      (on?'<div class="muted" style="font-size:11px;">מחובר</div>':'<div class="muted" style="font-size:11px;">לא מחובר</div>')+
+      '</div><button class="toggle'+(on?' on':'')+'" id="wtoggle-'+w.id+'" onclick="toggleWearable(\''+w.id+'\')"><span class="knob"></span></button></div>';
+  }
+  document.getElementById('wearables-list').innerHTML = html;
+}
+function toggleWearable(id){
+  var conns = LS.get('wearables', {});
+  var btn = document.getElementById('wtoggle-'+id);
+  if(conns[id]){
+    conns[id] = false;
+    LS.set('wearables', conns);
+    initIntegrations();
+    return;
+  }
+  // simulate fake OAuth loading
+  btn.classList.add('on');
+  btn.innerHTML = '<span class="knob"></span>';
+  btn.disabled = true;
+  var card = btn.closest('.card');
+  var label = card.querySelector('.muted');
+  if(label) label.textContent = 'מתחבר...';
+  setTimeout(function(){
+    // simulate occasional cancel/error (10% chance) for realism
+    var failed = Math.random() < 0.1;
+    if(failed){
+      conns[id] = false;
+      LS.set('wearables', conns);
+      if(label) label.textContent = 'החיבור נכשל, נסה שוב';
+      btn.classList.remove('on'); btn.disabled = false;
+      return;
+    }
+    conns[id] = true;
+    LS.set('wearables', conns);
+    // fabricate plausible wearable data
+    var wdata = LS.get('wearableData', {});
+    wdata[id] = {
+      steps: 3000 + Math.floor(Math.random()*9000),
+      sleepHours: (5 + Math.random()*3.5).toFixed(1),
+      restingHR: 52 + Math.floor(Math.random()*30),
+      lastSync: Date.now()
+    };
+    LS.set('wearableData', wdata);
+    initIntegrations();
+  }, 1100);
+}
+window.toggleWearable = toggleWearable;
+
+/* ===================== QUESTIONNAIRE ===================== */
+var QUIZ_GOALS = [
+  {id:'lose', label:'ירידה במשקל', ic:'&#9968;'},
+  {id:'gain', label:'עליה במסת שריר', ic:'&#127947;'},
+  {id:'maintain', label:'שמירה על המשקל', ic:'&#9878;'},
+  {id:'energy', label:'יותר אנרגיה', ic:'&#9889;'},
+  {id:'sleep', label:'שינה טובה יותר', ic:'&#127769;'},
+  {id:'health', label:'בריאות כללית', ic:'&#10084;'}
+];
+var quizState = LS.get('quizCache', {page:0, goals:[], workHours:8, sleepHours:7, activity:'moderate', diabetes:null, injuries:null});
+var QUIZ_PAGES = 5;
+
+function initQuestionnaire(){
+  quizState = LS.get('quizCache', {page:0, goals:[], workHours:8, sleepHours:7, activity:'moderate', diabetes:null, injuries:null});
+  renderQuizPage();
+}
+function saveQuizCache(){ LS.set('quizCache', quizState); }
+
+function renderQuizPage(){
+  var p = quizState.page;
+  document.getElementById('quiz-progress').style.width = Math.round((p/QUIZ_PAGES)*100)+'%';
+  var html = '';
+  if(p===0){
+    html += '<h2>מה המטרה שלך?</h2><div class="muted">ניתן לבחור כמה מטרות</div><div class="goal-grid">';
+    for(var i=0;i<QUIZ_GOALS.length;i++){
+      var g = QUIZ_GOALS[i];
+      var sel = quizState.goals.indexOf(g.id)>-1;
+      html += '<div class="goal-tile'+(sel?' sel':'')+'" onclick="toggleQuizGoal(\''+g.id+'\')"><div style="font-size:26px;">'+g.ic+'</div>'+g.label+'</div>';
+    }
+    html += '</div>';
+  } else if(p===1){
+    html += '<h2>שעות עבודה ושינה</h2>'+
+      '<div class="slider-row"><div class="slider-label"><span>שעות עבודה ביום</span><span id="qz-work-val">'+quizState.workHours+'</span></div>'+
+      '<input type="range" min="0" max="16" value="'+quizState.workHours+'" oninput="quizSetWork(this.value)"></div>'+
+      '<div class="slider-row"><div class="slider-label"><span>שעות שינה בלילה</span><span id="qz-sleep-val">'+quizState.sleepHours+'</span></div>'+
+      '<input type="range" min="3" max="12" value="'+quizState.sleepHours+'" oninput="quizSetSleep(this.value)"></div>';
+  } else if(p===2){
+    var levels = [['sedentary','לא פעיל'],['light','פעילות קלה'],['moderate','פעילות מתונה'],['active','פעיל מאוד'],['athlete','ספורטאי']];
+    html += '<h2>רמת פעילות</h2>';
+    for(var j=0;j<levels.length;j++){
+      var sel2 = quizState.activity===levels[j][0];
+      html += '<div class="chip'+(sel2?' sel':'')+'" style="display:block;margin:8px 0;" onclick="quizSetActivity(\''+levels[j][0]+'\')">'+levels[j][1]+'</div>';
+    }
+  } else if(p===3){
+    html += '<h2>שאלות בריאות</h2>'+
+      '<label>האם יש לך סוכרת?</label><div><div class="chip'+(quizState.diabetes===true?' sel':'')+'" onclick="quizSetBool(\'diabetes\',true)">כן</div><div class="chip'+(quizState.diabetes===false?' sel':'')+'" onclick="quizSetBool(\'diabetes\',false)">לא</div></div>';
+    if(quizState.diabetes===true){
+      html += '<label>סוג סוכרת</label><select id="qz-diabetes-type"><option>סוג 1</option><option>סוג 2</option><option>טרום סוכרת</option></select>';
+    }
+    html += '<label>האם יש לך פציעות פעילות?</label><div><div class="chip'+(quizState.injuries===true?' sel':'')+'" onclick="quizSetBool(\'injuries\',true)">כן</div><div class="chip'+(quizState.injuries===false?' sel':'')+'" onclick="quizSetBool(\'injuries\',false)">לא</div></div>';
+    if(quizState.injuries===true){
+      html += '<label>פרט את הפציעה</label><input id="qz-injury-detail" placeholder="לדוגמה: כתף שמאל">';
+    }
+  } else if(p===4){
+    var profile = LS.get('profile', {});
+    var heightM = (profile.height||170)/100;
+    var bmi = (profile.weight||70) / (heightM*heightM);
+    var bmr = calcBMR(profile, quizState.activity);
+    html += '<h2>סיכום</h2>'+
+      '<div class="card"><div class="muted">BMI</div><div style="font-size:24px;font-weight:800;">'+bmi.toFixed(1)+'</div></div>'+
+      '<div class="card"><div class="muted">BMR (קצב מטבולי בסיסי)<button class="info-btn" type="button" onclick="showInfo(\'bmr\')">?</button></div><div style="font-size:24px;font-weight:800;">'+Math.round(bmr)+' קק"ל</div></div>'+
+      '<div class="muted">החישובים הללו ישמשו לקביעת יעדי התזונה האוטומטיים שלך.</div>';
+  }
+  html += '<div class="row" style="margin-top:20px;">';
+  if(p>0) html += '<button class="btn secondary" onclick="quizPrev()">חזור</button>';
+  html += '<button class="btn" onclick="quizNext()">'+(p===QUIZ_PAGES-1?'סיום':'הבא')+'</button>';
+  html += '</div>';
+  document.getElementById('quiz-pages').innerHTML = html;
+}
+function calcBMR(profile, activityLevel){
+  var w = profile.weight||70, h = profile.height||170, a = profile.age||30;
+  var bmr;
+  if(profile.sex==='female'){ bmr = 10*w + 6.25*h - 5*a - 161; }
+  else { bmr = 10*w + 6.25*h - 5*a + 5; }
+  var mult = {sedentary:1.2, light:1.375, moderate:1.55, active:1.725, athlete:1.9}[activityLevel] || 1.55;
+  return bmr * mult;
+}
+function toggleQuizGoal(id){
+  var idx = quizState.goals.indexOf(id);
+  if(idx>-1) quizState.goals.splice(idx,1); else quizState.goals.push(id);
+  saveQuizCache(); renderQuizPage();
+}
+function quizSetWork(v){ quizState.workHours = parseInt(v,10); document.getElementById('qz-work-val').textContent=v; saveQuizCache(); }
+function quizSetSleep(v){ quizState.sleepHours = parseInt(v,10); document.getElementById('qz-sleep-val').textContent=v; saveQuizCache(); }
+function quizSetActivity(v){ quizState.activity = v; saveQuizCache(); renderQuizPage(); }
+function quizSetBool(field, val){ quizState[field] = val; saveQuizCache(); renderQuizPage(); }
+function quizPrev(){ quizState.page = Math.max(0, quizState.page-1); saveQuizCache(); renderQuizPage(); }
+function quizNext(){
+  if(quizState.page < QUIZ_PAGES-1){ quizState.page++; saveQuizCache(); renderQuizPage(); return; }
+  // finalize
+  var profile = LS.get('profile', {});
+  profile.goals = quizState.goals;
+  profile.workHours = quizState.workHours;
+  profile.sleepHoursGoal = quizState.sleepHours;
+  profile.activity = quizState.activity;
+  profile.diabetes = quizState.diabetes;
+  profile.injuries = quizState.injuries;
+  var heightM = (profile.height||170)/100;
+  profile.bmi = (profile.weight||70)/(heightM*heightM);
+  profile.bmr = calcBMR(profile, quizState.activity);
+  LS.set('profile', profile);
+  LS.set('quizCache', {page:0, goals:[], workHours:8, sleepHours:7, activity:'moderate', diabetes:null, injuries:null});
+  LS.set('onboardingSeen', true);
+  initDailyDataIfNeeded();
+  goTo('screen-dashboard');
+  renderDashboard();
+}
+window.toggleQuizGoal = toggleQuizGoal; window.quizSetWork = quizSetWork; window.quizSetSleep = quizSetSleep;
+window.quizSetActivity = quizSetActivity; window.quizSetBool = quizSetBool; window.quizPrev = quizPrev; window.quizNext = quizNext;
+window.initQuestionnaire = initQuestionnaire;
+
+window.__VYTAL_calcBMR = calcBMR;
+window.__vytal_part2_loaded = true;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var LS = window.__VYTAL_LS;
+var goTo = window.__vytalGoTo;
+var calcBMR = window.__VYTAL_calcBMR;
+
+/* ===================== DAILY DATA INIT ===================== */
+function todayKey(d){
+  d = d || new Date();
+  return d.toISOString().slice(0,10);
+}
+function initDailyDataIfNeeded(){
+  var diary = LS.get('foodDiary', {});
+  var key = todayKey();
+  if(!diary[key]){
+    diary[key] = {breakfast:[], lunch:[], dinner:[], snack:[], workoutBurn:0};
+    LS.set('foodDiary', diary);
+  }
+  var missions = LS.get('missionsByDay', {});
+  if(!missions[key]){
+    missions[key] = generateMissions();
+    LS.set('missionsByDay', missions);
+  }
+}
+function generateMissions(){
+  var pool = [
+    {id:'water', cat:'תזונה', text:'שתה 2 ליטר מים', done:false},
+    {id:'steps', cat:'פעילות', text:'הגע ל-8000 צעדים', done:false},
+    {id:'protein', cat:'תזונה', text:'אכול מקור חלבון בכל ארוחה', done:false},
+    {id:'sleep', cat:'שינה', text:'לך לישון לפני 23:00', done:false},
+    {id:'log', cat:'תזונה', text:'תעד את כל הארוחות היום', done:false},
+    {id:'stretch', cat:'פעילות', text:'10 דקות מתיחות', done:false}
+  ];
+  // pick 4 random
+  var picked = pool.slice().sort(function(){return Math.random()-0.5;}).slice(0,4);
+  return picked;
+}
+
+/* ===================== VYTAL SCORE ===================== */
+function getMockWearableSnapshot(){
+  var conns = LS.get('wearables', {});
+  var wdata = LS.get('wearableData', {});
+  var anyConnected = false;
+  for(var k in conns){ if(conns[k]) anyConnected = true; }
+  if(!anyConnected){
+    return {steps:4200, sleepHours:6.5, restingHR:65, lastSync:Date.now()-1000*60*60*30, stale:true};
+  }
+  // merge all connected sources, use most recent
+  var best = null;
+  for(var id in conns){
+    if(conns[id] && wdata[id]){
+      if(!best || wdata[id].lastSync > best.lastSync) best = wdata[id];
+    }
+  }
+  best = best || {steps:4200, sleepHours:6.5, restingHR:65, lastSync:Date.now()};
+  var ageMs = Date.now() - best.lastSync;
+  best.stale = ageMs > 1000*60*60*24; // >24h old
+  return best;
+}
+function computeVytalScore(){
+  var profile = LS.get('profile', {});
+  var snap = getMockWearableSnapshot();
+  var diary = LS.get('foodDiary', {});
+  var key = todayKey();
+  var day = diary[key] || {breakfast:[],lunch:[],dinner:[],snack:[],workoutBurn:0};
+
+  // weights: default 40 sleep/30 activity/30 nutrition. If user goal includes 'sleep', sleep weight -> 50%, rest split proportionally
+  var wSleep = 0.4, wActivity = 0.3, wNutrition = 0.3;
+  if((profile.goals||[]).indexOf('sleep') > -1){
+    wSleep = 0.5; wActivity = 0.25; wNutrition = 0.25;
+  }
+
+  var sleepGoal = profile.sleepHoursGoal || 7;
+  var sleepScore = Math.max(0, Math.min(100, (snap.sleepHours / sleepGoal) * 100));
+
+  var stepGoal = 8000;
+  var activityScore = Math.max(0, Math.min(100, (snap.steps / stepGoal) * 100));
+
+  // nutrition: deviation-based. Sum calories logged vs target
+  var totalCal = 0;
+  ['breakfast','lunch','dinner','snack'].forEach(function(m){
+    (day[m]||[]).forEach(function(item){ totalCal += item.calories || 0; });
+  });
+  var calGoal = getCalorieGoal();
+  var deviation = calGoal>0 ? Math.abs(totalCal - calGoal) / calGoal : 0;
+  var nutritionScore = Math.max(0, 100 - deviation*100);
+
+  var score = Math.round(sleepScore*wSleep + activityScore*wActivity + nutritionScore*wNutrition);
+  score = Math.max(0, Math.min(100, score));
+
+  var alerts = [];
+  if(snap.stale) alerts.push('הנתונים מהמכשיר הנייד לא עודכנו מעל 24 שעות — הניקוד עשוי להיות לא מדויק.');
+  if(snap.restingHR && (snap.restingHR > 95 || snap.restingHR < 40)) alerts.push('זוהתה חריגה בדופק המנוחה ('+snap.restingHR+' פעימות/דקה) — מומלץ להתייעץ עם איש מקצוע.');
+
+  return {score:score, sleepScore:Math.round(sleepScore), activityScore:Math.round(activityScore), nutritionScore:Math.round(nutritionScore), snap:snap, alerts:alerts, totalCal:totalCal, calGoal:calGoal};
+}
+function getCalorieGoal(){
+  var goals = LS.get('nutritionGoals', null);
+  if(goals && goals.calories) return goals.calories;
+  var profile = LS.get('profile', {});
+  var bmr = profile.bmr || calcBMR(profile, profile.activity||'moderate');
+  var goal = (profile.goals||[]).indexOf('lose')>-1 ? bmr*0.85 : ((profile.goals||[]).indexOf('gain')>-1 ? bmr*1.15 : bmr);
+  return Math.round(goal);
+}
+window.__VYTAL_getCalorieGoal = getCalorieGoal;
+window.__VYTAL_todayKey = todayKey;
+window.__VYTAL_computeVytalScore = computeVytalScore;
+
+/* ===================== DASHBOARD ===================== */
+var metricOrder = LS.get('metricOrder', ['sleep','activity','nutrition']);
+function renderDashboard(){
+  initDailyDataIfNeeded();
+  var profile = LS.get('profile', {});
+  document.getElementById('dash-greeting').textContent = 'שלום, '+(profile.name||'משתמש')+'!';
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('he-IL', {weekday:'long', day:'numeric', month:'long'});
+  if(window.renderProfileAvatar) window.renderProfileAvatar();
+
+  var result = computeVytalScore();
+  var circumference = 2*Math.PI*68;
+  var offset = circumference * (1 - result.score/100);
+  var circle = document.getElementById('score-circle');
+  circle.setAttribute('stroke-dasharray', circumference);
+  circle.setAttribute('stroke-dashoffset', offset);
+  document.getElementById('score-num').textContent = result.score;
+  document.getElementById('score-alert').innerHTML = result.alerts.map(function(a){return '<div style="color:var(--warn);font-size:12px;">&#9888; '+a+'</div>';}).join('');
+
+  var metrics = {
+    sleep: {ic:'&#127769;', label:'שינה', val:result.snap.sleepHours+' שעות', score:result.sleepScore},
+    activity: {ic:'&#128694;', label:'פעילות', val:result.snap.steps+' צעדים', score:result.activityScore},
+    nutrition: {ic:'&#127869;', label:'תזונה', val:result.totalCal+' / '+result.calGoal+' קק"ל', score:result.nutritionScore}
+  };
+  var html = '';
+  for(var i=0;i<metricOrder.length;i++){
+    var m = metrics[metricOrder[i]];
+    var clickAttr = metricOrder[i]==='activity' ? ' onclick="goTo(\'screen-workouts\');renderWorkouts();" style="cursor:pointer;"' : '';
+    html += '<div class="metric-card"'+clickAttr+'><div style="display:flex;align-items:center;gap:10px;"><span style="font-size:24px;">'+m.ic+'</span><div><div>'+m.label+'</div><div class="muted" style="font-size:12px;">'+m.val+'</div></div></div>'+
+      '<div style="display:flex;align-items:center;gap:8px;"><b>'+m.score+'</b><div class="reorder"><button onclick="moveMetric('+i+',-1)">&#9650;</button><button onclick="moveMetric('+i+',1)">&#9660;</button></div></div></div>';
+  }
+  document.getElementById('metric-cards').innerHTML = html;
+
+  var key = todayKey();
+  var missions = (LS.get('missionsByDay', {}))[key] || [];
+  var mhtml = '';
+  for(var j=0;j<missions.length;j++){
+    var ms = missions[j];
+    mhtml += '<div class="mission-card"><div style="font-size:11px;color:var(--muted);">'+ms.cat+'</div><div style="margin:6px 0;font-size:13px;">'+ms.text+'</div>'+
+      '<button class="chip'+(ms.done?' sel':'')+'" style="width:100%;text-align:center;" onclick="toggleMissionDash('+j+')">'+(ms.done?'הושלם &#10003;':'סמן כהושלם')+'</button></div>';
+  }
+  document.getElementById('dash-missions').innerHTML = mhtml;
+}
+function moveMetric(idx, dir){
+  var newIdx = idx+dir;
+  if(newIdx<0 || newIdx>=metricOrder.length) return;
+  var tmp = metricOrder[idx]; metricOrder[idx] = metricOrder[newIdx]; metricOrder[newIdx] = tmp;
+  LS.set('metricOrder', metricOrder);
+  renderDashboard();
+}
+function toggleMissionDash(idx){
+  var key = todayKey();
+  var missions = LS.get('missionsByDay', {});
+  missions[key][idx].done = !missions[key][idx].done;
+  LS.set('missionsByDay', missions);
+  renderDashboard();
+}
+window.moveMetric = moveMetric; window.toggleMissionDash = toggleMissionDash;
+window.renderDashboard = renderDashboard;
+window.initDailyDataIfNeeded = initDailyDataIfNeeded;
+
+/* ===================== WORKOUT LOG (linked to simulated smart-watch / health app) ===================== */
+var WORKOUT_CAL_PER_MIN = {
+  'ריצה':10, 'הליכה':5, 'אופניים':8, 'כוח/חדר כושר':7, 'שחייה':9, 'יוגה':3, 'אחר':6
+};
+function getWorkoutLog(){ return LS.get('workoutLog', {}); }
+function saveWorkoutLog(log){ LS.set('workoutLog', log); }
+function recomputeWorkoutBurn(dateKey){
+  var log = getWorkoutLog();
+  var entries = log[dateKey] || [];
+  var total = 0;
+  for(var i=0;i<entries.length;i++){ total += entries[i].calories||0; }
+  var diary = LS.get('foodDiary', {});
+  if(!diary[dateKey]) diary[dateKey] = {breakfast:[], lunch:[], dinner:[], snack:[], workoutBurn:0};
+  diary[dateKey].workoutBurn = total;
+  LS.set('foodDiary', diary);
+  return total;
+}
+function syncWatchWorkoutsIfNeeded(){
+  var conns = LS.get('wearables', {});
+  var anyConnected = false;
+  for(var k in conns){ if(conns[k]) anyConnected = true; }
+  if(!anyConnected) return;
+  var key = todayKey();
+  var log = getWorkoutLog();
+  log[key] = log[key] || [];
+  var alreadySynced = log[key].some(function(e){ return e.source==='watch'; });
+  if(alreadySynced) return;
+  // simulate one auto-synced workout from the connected wearable
+  var types = Object.keys(WORKOUT_CAL_PER_MIN);
+  var type = types[Math.floor(Math.random()*types.length)];
+  var duration = 15 + Math.floor(Math.random()*45);
+  var calories = Math.round(duration * WORKOUT_CAL_PER_MIN[type]);
+  log[key].push({type:type, duration:duration, calories:calories, source:'watch', ts:Date.now()});
+  saveWorkoutLog(log);
+  recomputeWorkoutBurn(key);
+}
+function renderWorkouts(){
+  syncWatchWorkoutsIfNeeded();
+  var conns = LS.get('wearables', {});
+  var anyConnected = false;
+  for(var k in conns){ if(conns[k]) anyConnected = true; }
+  var statusEl = document.getElementById('workouts-watch-status');
+  if(anyConnected){
+    statusEl.innerHTML = '<div style="color:var(--ok,#1a9e57);">&#9989; מחובר לשעון חכם / אפליקציית בריאות (מדומה) — אימונים מסונכרנים אוטומטית.</div>';
+  } else {
+    statusEl.innerHTML = '<div class="muted">לא מחובר לשעון חכם או לאפליקציית בריאות. ניתן להתחבר במסך "אינטגרציות", או להוסיף אימונים ידנית למטה.</div>';
+  }
+  var key = todayKey();
+  var log = getWorkoutLog();
+  var todayEntries = log[key] || [];
+  var todayHtml = todayEntries.length ? '' : '<div class="muted">אין אימונים מתועדים להיום.</div>';
+  for(var i=0;i<todayEntries.length;i++){
+    var e = todayEntries[i];
+    todayHtml += '<div class="card" style="display:flex;justify-content:space-between;align-items:center;">'+
+      '<div><b>'+e.type+'</b><div class="muted" style="font-size:12px;">'+e.duration+' דקות &middot; '+(e.source==='watch'?'סונכרן מהשעון/אפליקציית הבריאות':'הוזן ידנית')+'</div></div>'+
+      '<div style="display:flex;align-items:center;gap:8px;"><b>'+e.calories+' קק"ל</b><button class="icon-btn" onclick="deleteWorkout(\''+key+'\','+i+')">&#128465;</button></div></div>';
+  }
+  document.getElementById('workouts-today-list').innerHTML = todayHtml;
+
+  var histHtml = '';
+  var hasHistory = false;
+  for(var d=1; d<=14; d++){
+    var date = new Date(); date.setDate(date.getDate()-d);
+    var dk = todayKey(date);
+    var entries = log[dk] || [];
+    if(!entries.length) continue;
+    hasHistory = true;
+    var dayTotal = 0;
+    entries.forEach(function(e){ dayTotal += e.calories||0; });
+    histHtml += '<div class="card"><div style="display:flex;justify-content:space-between;"><b>'+date.toLocaleDateString('he-IL',{day:'numeric',month:'long'})+'</b><b>'+dayTotal+' קק"ל</b></div>'+
+      '<div class="muted" style="font-size:12px;">'+entries.map(function(e){return e.type+' ('+e.duration+' דק׳)';}).join(', ')+'</div></div>';
+  }
+  document.getElementById('workouts-history-list').innerHTML = hasHistory ? histHtml : '<div class="muted">אין היסטוריית אימונים בשבועיים האחרונים.</div>';
+}
+function deleteWorkout(dateKey, idx){
+  var log = getWorkoutLog();
+  if(log[dateKey]) log[dateKey].splice(idx,1);
+  saveWorkoutLog(log);
+  recomputeWorkoutBurn(dateKey);
+  renderWorkouts();
+}
+function openManualWorkoutForm(){
+  var form = document.getElementById('manual-workout-form');
+  form.style.display = form.style.display==='none' ? 'block' : 'none';
+  estimateWorkoutCalories();
+}
+function estimateWorkoutCalories(){
+  var type = document.getElementById('wo-type').value;
+  var duration = parseInt(document.getElementById('wo-duration').value,10) || 0;
+  var perMin = WORKOUT_CAL_PER_MIN[type] || 6;
+  document.getElementById('wo-calories').value = Math.round(duration * perMin);
+}
+function saveManualWorkout(){
+  var type = document.getElementById('wo-type').value;
+  var duration = parseInt(document.getElementById('wo-duration').value,10) || 0;
+  var calories = parseInt(document.getElementById('wo-calories').value,10) || 0;
+  var key = todayKey();
+  var log = getWorkoutLog();
+  log[key] = log[key] || [];
+  log[key].push({type:type, duration:duration, calories:calories, source:'manual', ts:Date.now()});
+  saveWorkoutLog(log);
+  recomputeWorkoutBurn(key);
+  document.getElementById('manual-workout-form').style.display = 'none';
+  renderWorkouts();
+}
+window.renderWorkouts = renderWorkouts; window.openManualWorkoutForm = openManualWorkoutForm;
+window.estimateWorkoutCalories = estimateWorkoutCalories; window.saveManualWorkout = saveManualWorkout;
+window.deleteWorkout = deleteWorkout;
+
+/* ===================== AI COACH CHAT (mocked) ===================== */
+var MEDICAL_EMERGENCY_KEYWORDS = [
+  'כאב בחזה','אובדנות','אני רוצה להתאבד','לא נושם','התקף לב','דימום חמור','איבדתי הכרה',
+  'מנסה להתאבד','לשים קץ לחיים','overdose','suicide','chest pain','can\'t breathe'
+];
+function checkMedicalGuardrail(text){
+  var lower = text.toLowerCase();
+  for(var i=0;i<MEDICAL_EMERGENCY_KEYWORDS.length;i++){
+    if(lower.indexOf(MEDICAL_EMERGENCY_KEYWORDS[i].toLowerCase()) > -1) return true;
+  }
+  return false;
+}
+window.__VYTAL_checkMedicalGuardrail = checkMedicalGuardrail;
+
+var chatHistory = LS.get('chatHistory', []);
+function initCoach(){
+  chatHistory = LS.get('chatHistory', []);
+  if(chatHistory.length===0){
+    chatHistory.push({role:'bot', text:'היי! אני המאמן הדיגיטלי שלך ב-Vytal OS. איך אני יכול לעזור היום?'});
+    LS.set('chatHistory', chatHistory);
+  }
+  renderChat();
+  renderChips();
+}
+function renderChat(){
+  var html = '';
+  for(var i=0;i<chatHistory.length;i++){
+    var m = chatHistory[i];
+    var cls = m.role==='user' ? 'user' : (m.role==='warn' ? 'warn' : 'bot');
+    html += '<div class="bubble '+cls+'">'+m.text+'</div>';
+  }
+  var el = document.getElementById('chat-msgs');
+  el.innerHTML = html;
+  el.scrollTop = el.scrollHeight;
+}
+function renderChips(){
+  var chips = ['כמה קלוריות נשארו לי היום?','תן לי טיפ לשינה טובה יותר','אני לא מגיע ליעד הצעדים','המלץ לי על ארוחת ערב'];
+  var html='';
+  for(var i=0;i<chips.length;i++){ html += '<div class="chip" onclick="sendChatText(\''+chips[i].replace(/'/g,"\\'")+'\')">'+chips[i]+'</div>'; }
+  document.getElementById('chat-chips').innerHTML = html;
+}
+function autoGrow(el){ el.style.height='auto'; el.style.height=(el.scrollHeight)+'px'; }
+function attachMockImage(){
+  chatHistory.push({role:'user', text:'&#128247; [תמונה מצורפת: צלחת אוכל]'});
+  LS.set('chatHistory', chatHistory);
+  renderChat();
+  showTyping(function(){
+    var meal = MOCK_MEALS[Math.floor(Math.random()*MOCK_MEALS.length)];
+    chatHistory.push({role:'bot', text:'זיהיתי בתמונה: <b>'+meal.name+'</b> (~'+meal.calories+' קק"ל). רוצה שאוסיף ליומן האוכל שלך?'});
+    LS.set('chatHistory', chatHistory);
+    renderChat();
+  });
+}
+function sendChatText(text){
+  document.getElementById('chat-input').value = text;
+  sendChat();
+}
+function sendChat(){
+  var input = document.getElementById('chat-input');
+  var text = input.value.trim();
+  if(!text) return;
+  chatHistory.push({role:'user', text:escapeHtml(text)});
+  LS.set('chatHistory', chatHistory);
+  input.value=''; autoGrow(input);
+  renderChat();
+
+  if(checkMedicalGuardrail(text)){
+    chatHistory.push({role:'warn', text:'&#9888;&#65039; <b>זוהתה הודעה הקשורה למצב חירום רפואי.</b><br>Vytal OS אינו תחליף לטיפול רפואי. אם זהו מצב חירום, אנא פנה/י מיידית למספר החירום באזורך (בישראל: 101) או לחדר מיון. השיחה עם המאמן ה-AI נחסמה לבקשתכם, לבטיחותכם.'});
+    LS.set('chatHistory', chatHistory);
+    renderChat();
+    return;
+  }
+  showTyping(function(){
+    var reply = generateMockCoachReply(text);
+    chatHistory.push({role:'bot', text:reply});
+    LS.set('chatHistory', chatHistory);
+    renderChat();
+  });
+}
+function showTyping(cb){
+  var el = document.getElementById('chat-msgs');
+  el.innerHTML += '<div class="bubble bot" id="typing-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  el.scrollTop = el.scrollHeight;
+  setTimeout(function(){
+    var tb = document.getElementById('typing-bubble');
+    if(tb) tb.remove();
+    cb();
+  }, 900 + Math.random()*700);
+}
+function generateMockCoachReply(text){
+  var result = computeVytalScore();
+  var lower = text.toLowerCase();
+  if(lower.indexOf('קלוריות') > -1){
+    return 'נכון לעכשיו צרכת '+result.totalCal+' קק"ל מתוך יעד '+result.calGoal+' קק"ל. נשארו לך '+Math.max(0,result.calGoal-result.totalCal)+' קק"ל להיום.';
+  }
+  if(lower.indexOf('שינה') > -1){
+    return 'ישנת '+result.snap.sleepHours+' שעות הלילה. נסה/י לכבות מסכים שעה לפני השינה ולשמור על שעת שינה קבועה — זה ישפר את ה-Vytal Score שלך.';
+  }
+  if(lower.indexOf('צעדים') > -1){
+    return 'עשית '+result.snap.steps+' צעדים היום. אפילו הליכה קצרה של 10 דקות יכולה לקרב אותך ליעד של 8000 צעדים.';
+  }
+  if(lower.indexOf('ארוחת ערב') > -1 || lower.indexOf('המלץ') > -1){
+    return 'בהתבסס על היעדים שלך, אני ממליץ על ארוחה עם חלבון רזה (כמו עוף או טופו), ירקות ופחמימה מורכבת אחת. רוצה שאחשב לך כמויות מדויקות?';
+  }
+  if(lower.indexOf('אימון') > -1 || lower.indexOf('תוכנית') > -1 || lower.indexOf('להתאמן') > -1 || lower.indexOf('להתאמן') > -1 || lower.indexOf('לצאת') > -1 || lower.indexOf('ספורט') > -1){
+    var profile = LS.get('profile', {});
+    var activity = profile.activity || 'moderate';
+    var picks = {
+      light: 'הליכה מהירה של 30 דקות, או יוגה קלה — מתאים לרמת הפעילות שהגדרת.',
+      moderate: 'ריצה קלה/אופניים 30-40 דקות, ועוד יום של אימון כוח (פלג גוף עליון/תחתון) בשבוע הזה.',
+      high: 'אימון כוח מלא + 20 דקות אינטרוולים (HIIT) — אתה ברמת פעילות גבוהה, אפשר לדחוף.'
+    };
+    var suggestion = picks[activity] || picks.moderate;
+    return 'בהתאם ליעדים ולרמת הפעילות שלך, אני מציע היום: '+suggestion+' תוכל לתעד את האימון ב"יומן אימונים" כדי שזה יחושב גם בתקציב הקלוריות שלך.';
+  }
+  var lastGenericReply = window.__VYTAL_lastGeneric || -1;
+  var generic = ['מבין אותך. בהמשך ליעדים שלך, אני ממליץ להתמקד בעקביות יומית.','מעולה ששאלת — ככל שתתעד יותר נתונים, אוכל לתת לך תובנות מדויקות יותר.','זה נושא טוב. תרצה שאבדוק את הנתונים האחרונים שלך לגביו?','תוכל לפרט קצת יותר? כך אוכל לתת לך תשובה ממוקדת יותר.'];
+  var idx = Math.floor(Math.random()*generic.length);
+  if(idx===lastGenericReply) idx = (idx+1)%generic.length;
+  window.__VYTAL_lastGeneric = idx;
+  return generic[idx];
+}
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+window.initCoach = initCoach; window.autoGrow = autoGrow; window.attachMockImage = attachMockImage;
+window.sendChat = sendChat; window.sendChatText = sendChatText;
+
+/* ===================== VISION AI ===================== */
+var MOCK_MEALS = [
+  {name:'סלט עוף עם קינואה', calories:420, protein:38, carb:32, fat:14},
+  {name:'פסטה עם רוטין עגבניות', calories:560, protein:18, carb:84, fat:14},
+  {name:'סלמון עם ירקות אפויים', calories:480, protein:42, carb:18, fat:24},
+  {name:'אורז עם טופו מוקפץ', calories:390, protein:22, carb:52, fat:10},
+  {name:'כריך חביתה וגבינה', calories:340, protein:20, carb:30, fat:16}
+];
+var MOCK_DRINKS = [
+  {name:'קפה שחור', calories:5, protein:0, carb:1, fat:0},
+  {name:'לאטה עם חלב 3%', calories:140, protein:7, carb:11, fat:7},
+  {name:'מיץ תפוזים טבעי (כוס)', calories:110, protein:1, carb:26, fat:0},
+  {name:'שייק חלבון ופירות', calories:260, protein:24, carb:30, fat:5},
+  {name:'קולה רגילה (פחית)', calories:140, protein:0, carb:39, fat:0},
+  {name:'בירה (פחית)', calories:150, protein:1, carb:13, fat:0},
+  {name:'מים מינרלים', calories:0, protein:0, carb:0, fat:0}
+];
+var MOCK_BARCODES = [
+  {name:'יוגורט טבעי 3%', calories:120, protein:6, carb:9, fat:6, code:'7290001234567'},
+  {name:'במבה אגוז', calories:540, protein:18, carb:46, fat:32, code:'7290000111111'},
+  {name:'חלב 1%', calories:46, protein:3.4, carb:5, fat:1, code:'7290000222222'}
+];
+var visionTab = 'meal';
+var cameraStream = null;
+var cameraVideoEl = null;
+var capturedPhotoData = null;
+var flashOn = false;
+function setVisionTab(tab){
+  visionTab = tab;
+  document.getElementById('vtab-meal').classList.toggle('active', tab==='meal');
+  document.getElementById('vtab-drink').classList.toggle('active', tab==='drink');
+  document.getElementById('vtab-barcode').classList.toggle('active', tab==='barcode');
+  document.getElementById('vision-result').innerHTML='';
+}
+function initVision(){
+  setVisionTab('meal');
+  capturedPhotoData = null;
+  var vf = document.getElementById('viewfinder');
+  var statusEl = document.getElementById('vision-status');
+  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(stream){
+      cameraStream = stream;
+      var video = document.createElement('video');
+      video.autoplay = true; video.muted = true; video.playsInline = true;
+      video.srcObject = stream;
+      cameraVideoEl = video;
+      vf.innerHTML = '<div class="scan-line"></div>';
+      vf.insertBefore(video, vf.firstChild);
+      statusEl.textContent = 'מצלמה פעילה — מקם את הארוחה או השתייה במרכז';
+    }).catch(function(){
+      degradeViewfinder();
+    });
+  } else {
+    degradeViewfinder();
+  }
+}
+function degradeViewfinder(){
+  var vf = document.getElementById('viewfinder');
+  cameraVideoEl = null;
+  vf.innerHTML = '<div class="scan-line"></div><div style="font-size:50px;">&#127859;</div>';
+  document.getElementById('vision-status').textContent = 'אין גישה למצלמה — אפשר להעלות תמונה מהגלריה, או להמשיך במצב הדגמה';
+}
+function toggleFlash(){
+  flashOn = !flashOn;
+  document.getElementById('vision-flash-btn').style.color = flashOn ? '#ffd54a' : '';
+  var applied = false;
+  if(cameraStream){
+    var track = cameraStream.getVideoTracks()[0];
+    if(track && track.getCapabilities && track.getCapabilities().torch){
+      track.applyConstraints({advanced:[{torch:flashOn}]}).catch(function(){});
+      applied = true;
+    }
+  }
+  if(!applied && cameraVideoEl){
+    cameraVideoEl.style.filter = flashOn ? 'brightness(1.5)' : 'none';
+  }
+}
+function capturePhotoFrame(){
+  if(!cameraVideoEl || !cameraVideoEl.videoWidth) return null;
+  var canvas = document.createElement('canvas');
+  canvas.width = cameraVideoEl.videoWidth;
+  canvas.height = cameraVideoEl.videoHeight;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(cameraVideoEl, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', 0.7);
+}
+function onGalleryPhoto(ev){
+  var file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    capturedPhotoData = e.target.result;
+    var vf = document.getElementById('viewfinder');
+    vf.innerHTML = '<img src="'+capturedPhotoData+'" style="width:100%;height:100%;object-fit:cover;"><div class="scan-line"></div>';
+    document.getElementById('vision-status').textContent = 'תמונה נטענה מהגלריה — לחץ "סרוק עכשיו"';
+  };
+  reader.readAsDataURL(file);
+}
+function analyzeImageFoodScore(dataUrl){
+  return new Promise(function(resolve){
+    if(!dataUrl){ resolve(0); return; }
+    var img = new Image();
+    img.onload = function(){
+      try{
+        var w = 64, h = 64;
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        var data = ctx.getImageData(0, 0, w, h).data;
+        var satSum = 0, satSumSq = 0, warmCount = 0, n = 0;
+        var lum = new Array(w*h);
+        var gridSat = [0,0,0,0], gridHue = [0,0,0,0], gridN = [0,0,0,0];
+        for(var py=0; py<h; py++){
+          for(var px=0; px<w; px++){
+            var idx = (py*w+px)*4;
+            var r=data[idx]/255, g=data[idx+1]/255, b=data[idx+2]/255;
+            var max=Math.max(r,g,b), min=Math.min(r,g,b), l=(max+min)/2;
+            var s = max===min ? 0 : (l>0.5 ? (max-min)/(2-max-min) : (max-min)/(max+min));
+            var hue=0;
+            if(max!==min){
+              if(max===r) hue = 60*(((g-b)/(max-min))%6);
+              else if(max===g) hue = 60*(((b-r)/(max-min))+2);
+              else hue = 60*(((r-g)/(max-min))+4);
+            }
+            if(hue<0) hue += 360;
+            satSum += s; satSumSq += s*s;
+            /* foods: reds/oranges/yellows/browns (0-70) and greens (70-170) at meaningful saturation */
+            if(s>0.18 && hue>=0 && hue<=170) warmCount++;
+            lum[py*w+px] = l;
+            var gi = (py<h/2?0:1)*2 + (px<w/2?0:1);
+            gridSat[gi]+=s; gridHue[gi]+=hue; gridN[gi]++;
+            n++;
+          }
+        }
+        var avgSat = satSum/n;
+        var satVariance = Math.max(0, satSumSq/n - avgSat*avgSat);
+        var warmFrac = warmCount/n;
+        /* texture: local brightness variation — flat surfaces (floor/wall/fabric) are smooth,
+           real food close-ups have visible texture from ingredients, sauce, char marks etc. */
+        var texSum = 0, texN = 0;
+        for(var ty=1; ty<h-1; ty++){
+          for(var tx=1; tx<w-1; tx++){
+            var c = lum[ty*w+tx];
+            texSum += Math.abs(c - lum[ty*w+tx+1]) + Math.abs(c - lum[(ty+1)*w+tx]);
+            texN++;
+          }
+        }
+        var texture = texN ? (texSum/texN) : 0;
+        /* spatial variety: real plated food usually has multiple differently-colored regions
+           (protein/veg/sauce), flat surfaces look near-identical in every quadrant */
+        var quadSats = [], quadHues = [];
+        for(var qi=0; qi<4; qi++){ quadSats.push(gridN[qi]?gridSat[qi]/gridN[qi]:0); quadHues.push(gridN[qi]?gridHue[qi]/gridN[qi]:0); }
+        var quadSatMean = (quadSats[0]+quadSats[1]+quadSats[2]+quadSats[3])/4;
+        var quadSatVar = quadSats.reduce(function(acc,v){ return acc+(v-quadSatMean)*(v-quadSatMean); }, 0)/4;
+        var quadHueMean = (quadHues[0]+quadHues[1]+quadHues[2]+quadHues[3])/4;
+        var quadHueVar = quadHues.reduce(function(acc,v){ return acc+(v-quadHueMean)*(v-quadHueMean); }, 0)/4;
+        var spatialVariety = Math.min(1, Math.sqrt(quadHueVar)/40 + Math.sqrt(quadSatVar)*2);
+        var rawScore = avgSat*0.30 + warmFrac*0.40 + Math.sqrt(satVariance)*0.30 +
+          Math.min(1, texture*6)*0.25 + spatialVariety*0.20;
+        /* boost mid/high raw scores so genuine, varied food close-ups can clear the 90%
+           confidence gate, while flat non-food surfaces (which score very low here) stay low */
+        var score = Math.min(1, rawScore*1.4);
+        resolve(score);
+      }catch(e){ resolve(0); }
+    };
+    img.onerror = function(){ resolve(0); };
+    img.src = dataUrl;
+  });
+}
+function performScan(){
+  var statusEl = document.getElementById('vision-status');
+  var resultEl = document.getElementById('vision-result');
+  statusEl.textContent = 'מצלם ומנתח...';
+  resultEl.innerHTML = '';
+  if(!capturedPhotoData){
+    var frame = capturePhotoFrame();
+    if(frame) capturedPhotoData = frame;
+  }
+  var photoForAnalysis = capturedPhotoData;
+  setTimeout(function(){
+    var edge = Math.random();
+    if(edge < 0.12){
+      resultEl.innerHTML = '<div class="card center" style="border:1px solid var(--warn);">&#9888; תאורה חלשה מדי — מומלץ להדליק את הפלאש ולצלם שוב.</div>';
+      statusEl.textContent='סריקה נכשלה';
+      return;
+    }
+    if(edge < 0.22){
+      resultEl.innerHTML = '<div class="card center" style="border:1px solid var(--warn);">&#9888; התמונה מטושטשת — אנא החזק את המכשיר יציב ונסה שוב.</div>';
+      statusEl.textContent='סריקה נכשלה';
+      return;
+    }
+    if(visionTab==='barcode' && edge < 0.32){
+      resultEl.innerHTML = '<div class="card center" style="border:1px solid var(--warn);">&#9888; בר-קוד לא נמצא במאגר. ניתן להוסיף את המוצר ידנית.</div>'+
+        '<button class="btn secondary" onclick="goTo(\'screen-customfood\')">+ הוסף מוצר ידנית</button>';
+      statusEl.textContent='לא נמצא';
+      return;
+    }
+    var MIN_CONFIDENCE = 85;
+    if(visionTab==='meal' || visionTab==='drink'){
+      analyzeImageFoodScore(photoForAnalysis).then(function(foodScore){
+        /* confidence is derived from the actual photo content, not a pure dice roll —
+           a picture of a floor/chair/skin scores low and will never pass the gate */
+        var confidence = Math.max(5, Math.min(99, Math.round(foodScore*100) + Math.floor(Math.random()*7) - 3));
+        if(confidence < MIN_CONFIDENCE){
+          resultEl.innerHTML = '<div class="card center" style="border:1px solid var(--warn);">&#9888; לא הצלחנו לזהות את הפריט בביטחון של מעל 90% (זוהי אפליקציית בריאות — לא נרשמים נתונים תזונתיים ללא ביטחון גבוה). אפשר לצלם שוב מזווית/תאורה אחרת, או להוסיף את הפריט ידנית.</div>'+
+            '<button class="btn secondary" onclick="goTo(\'screen-customfood\')">+ הוסף ידנית</button>';
+          statusEl.textContent='לא זוהה בביטחון מספק ('+confidence+'%)';
+          return;
+        }
+        var item = visionTab==='meal' ? MOCK_MEALS[Math.floor(Math.random()*MOCK_MEALS.length)] : MOCK_DRINKS[Math.floor(Math.random()*MOCK_DRINKS.length)];
+        statusEl.textContent = 'זוהה בהצלחה';
+        resultEl.innerHTML = renderVisionResult(item, confidence, true);
+      });
+    } else {
+      var barcodeItem = MOCK_BARCODES[Math.floor(Math.random()*MOCK_BARCODES.length)];
+      var barcodeConfidence = 95 + Math.floor(Math.random()*5);
+      statusEl.textContent = 'זוהה בהצלחה';
+      resultEl.innerHTML = renderVisionResult(barcodeItem, barcodeConfidence, false);
+    }
+  }, 1400);
+}
+function renderVisionResult(item, confidence, withBox){
+  var vf = document.getElementById('viewfinder');
+  var existing = vf.querySelector('.bbox');
+  if(existing) existing.remove();
+  if(withBox){
+    var b = document.createElement('div');
+    b.className='bbox'; b.style.top='30%'; b.style.left='20%'; b.style.width='60%'; b.style.height='40%';
+    vf.appendChild(b);
+  }
+  var photoHtml = capturedPhotoData ? '<img src="'+capturedPhotoData+'" style="width:100%;border-radius:10px;margin-bottom:8px;max-height:160px;object-fit:cover;">' : '';
+  return '<div class="card">'+
+    photoHtml+
+    '<div class="row" style="justify-content:flex-end;"><span class="muted">ביטחון: '+confidence+'%</span></div>'+
+    '<div class="food-row"><span>קלוריות<button class="info-btn" type="button" onclick="showInfo(\'calories\')">?</button></span><span>'+item.calories+' קק"ל</span></div>'+
+    '<div class="food-row"><span>חלבון<button class="info-btn" type="button" onclick="showInfo(\'protein\')">?</button></span><span>'+item.protein+' ג\'</span></div>'+
+    '<div class="food-row"><span>פחמימה<button class="info-btn" type="button" onclick="showInfo(\'carb\')">?</button></span><span>'+item.carb+' ג\'</span></div>'+
+    '<div class="food-row"><span>שומן<button class="info-btn" type="button" onclick="showInfo(\'fat\')">?</button></span><span>'+item.fat+' ג\'</span></div>'+
+    '<button class="btn" style="margin-top:10px;" onclick="confirmVisionAdd(\''+item.name.replace(/'/g,"\\'")+'\','+item.calories+','+item.protein+','+item.carb+','+item.fat+')">אישור והוספה ליומן</button>'+
+    '</div>';
+}
+function confirmVisionAdd(name, cal, protein, carb, fat){
+  var diary = LS.get('foodDiary', {});
+  var key = todayKey();
+  if(!diary[key]) diary[key] = {breakfast:[], lunch:[], dinner:[], snack:[], workoutBurn:0};
+  diary[key].lunch.push({name:name, calories:cal, protein:protein, carb:carb, fat:fat, qty:1});
+  LS.set('foodDiary', diary);
+  document.getElementById('vision-result').innerHTML = '<div class="card center" style="color:var(--accent);">נוסף ליומן האוכל בהצלחה! &#10003;</div>';
+}
+window.setVisionTab = setVisionTab; window.initVision = initVision; window.performScan = performScan; window.confirmVisionAdd = confirmVisionAdd; window.analyzeImageFoodScore = analyzeImageFoodScore;
+window.toggleFlash = toggleFlash; window.onGalleryPhoto = onGalleryPhoto;
+window.MOCK_MEALS = MOCK_MEALS;
+
+window.__vytal_part3_loaded = true;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var LS = window.__VYTAL_LS;
+var todayKey = window.__VYTAL_todayKey;
+
+/* ===================== GAMIFICATION ===================== */
+function renderGamify(){
+  var key = todayKey();
+  var gam = LS.get('gamify', {streak:3, xp:40, level:1, freeze:false});
+  document.getElementById('streak-num').textContent = gam.streak+' ימים';
+  document.getElementById('xp-level').textContent = gam.level;
+  var xpForLevel = gam.level*100;
+  document.getElementById('xp-text').textContent = gam.xp+'/'+xpForLevel+' XP';
+  document.getElementById('xp-fill').style.width = Math.min(100,(gam.xp/xpForLevel)*100)+'%';
+  document.getElementById('streak-freeze-toggle').classList.toggle('on', !!gam.freeze);
+
+  var missions = (LS.get('missionsByDay', {}))[key] || [];
+  var cats = {};
+  missions.forEach(function(m, idx){
+    if(!cats[m.cat]) cats[m.cat]=[];
+    cats[m.cat].push({m:m, idx:idx});
+  });
+  var html='';
+  for(var c in cats){
+    html += '<div class="card"><h3 style="margin-top:0;">'+c+'</h3>';
+    cats[c].forEach(function(entry){
+      html += '<label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:400;"><input type="checkbox" '+(entry.m.done?'checked':'')+' onchange="toggleGamifyMission('+entry.idx+')" style="width:auto;"> '+entry.m.text+'</label>';
+    });
+    html += '</div>';
+  }
+  document.getElementById('mission-categories').innerHTML = html;
+
+  var doneCount = missions.filter(function(m){return m.done;}).length;
+  var pct = missions.length ? Math.round((doneCount/missions.length)*100) : 0;
+  document.getElementById('daily-progress-pct').textContent = pct+'%';
+  document.getElementById('daily-progress-fill').style.width = pct+'%';
+  if(pct===100 && !gam.confettiShownToday){
+    fireConfetti();
+    gam.confettiShownToday = true;
+    LS.set('gamify', gam);
+  }
+}
+function toggleGamifyMission(idx){
+  var key = todayKey();
+  var missions = LS.get('missionsByDay', {});
+  missions[key][idx].done = !missions[key][idx].done;
+  LS.set('missionsByDay', missions);
+  var gam = LS.get('gamify', {streak:3, xp:40, level:1, freeze:false});
+  gam.xp += missions[key][idx].done ? 10 : -10;
+  if(gam.xp >= gam.level*100){ gam.xp -= gam.level*100; gam.level++; }
+  if(gam.xp < 0) gam.xp = 0;
+  LS.set('gamify', gam);
+  renderGamify();
+}
+function toggleStreakFreeze(){
+  var gam = LS.get('gamify', {streak:3, xp:40, level:1, freeze:false});
+  gam.freeze = !gam.freeze;
+  LS.set('gamify', gam);
+  renderGamify();
+}
+function fireConfetti(){
+  var el = document.getElementById('confetti');
+  var emojis = ['&#127881;','&#11088;','&#127882;','&#128081;'];
+  var html='';
+  for(var i=0;i<24;i++){
+    var left = Math.random()*100;
+    var delay = Math.random()*0.6;
+    html += '<span style="left:'+left+'%;animation-delay:'+delay+'s;">'+emojis[Math.floor(Math.random()*emojis.length)]+'</span>';
+  }
+  el.innerHTML = html;
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); el.innerHTML=''; }, 2600);
+}
+window.renderGamify = renderGamify; window.toggleGamifyMission = toggleGamifyMission;
+window.toggleStreakFreeze = toggleStreakFreeze; window.fireConfetti = fireConfetti;
+
+/* ===================== WEEKLY SUMMARY ===================== */
+function getOrCreateWeeklyHistory(){
+  var hist = LS.get('weeklyHistory', null);
+  if(!hist){
+    hist = {firstWeek:true, days:[]};
+    var today = new Date();
+    for(var i=6;i>=0;i--){
+      var d = new Date(today); d.setDate(today.getDate()-i);
+      hist.days.push({date:todayKey(d), score: 50+Math.floor(Math.random()*45), hasData: i<5});
+    }
+    LS.set('weeklyHistory', hist);
+  }
+  return hist;
+}
+var selectedWeeklyDay = null;
+function renderWeekly(){
+  var hist = getOrCreateWeeklyHistory();
+  var validDays = hist.days.filter(function(d){return d.hasData;});
+  var avgScore = validDays.length ? Math.round(validDays.reduce(function(a,d){return a+d.score;},0)/validDays.length) : 0;
+  document.getElementById('weekly-score').textContent = avgScore;
+
+  var prevAvg = LS.get('prevWeekAvg', avgScore - (5-Math.floor(Math.random()*10)));
+  var delta = avgScore - prevAvg;
+  var deltaHtml = delta>=0 ? '<span class="delta-up">&#9650; +'+delta+' מהשבוע שעבר</span>' : '<span class="delta-down">&#9660; '+delta+' מהשבוע שעבר</span>';
+  document.getElementById('weekly-delta').innerHTML = deltaHtml;
+
+  if(hist.firstWeek){
+    document.getElementById('weekly-badge').innerHTML = '<div class="badge">&#11088; השבוע הראשון שלך ב-Vytal OS!</div>';
+  } else {
+    document.getElementById('weekly-badge').innerHTML = '';
+  }
+
+  var maxScore = Math.max(1, Math.max.apply(null, hist.days.map(function(d){return d.score;})));
+  var dayNames = ['א','ב','ג','ד','ה','ו','ש'];
+  var barsHtml = '';
+  hist.days.forEach(function(d, idx){
+    var h = d.hasData ? Math.max(6,(d.score/maxScore)*100) : 4;
+    var dow = new Date(d.date).getDay();
+    barsHtml += '<div class="bar-col'+(selectedWeeklyDay===idx?' sel':'')+'" onclick="selectWeeklyDay('+idx+')">'+
+      '<div class="bar" style="height:'+h+'%;opacity:'+(d.hasData?1:0.3)+';"></div>'+
+      '<div class="muted" style="font-size:11px;margin-top:4px;">'+dayNames[dow]+'</div></div>';
+  });
+  document.getElementById('weekly-bars').innerHTML = barsHtml;
+
+  if(selectedWeeklyDay!==null){
+    var d = hist.days[selectedWeeklyDay];
+    document.getElementById('weekly-day-detail').textContent = d.hasData ?
+      (d.date+': ניקוד '+d.score) : (d.date+': אין מספיק נתונים ליום זה');
+  } else {
+    document.getElementById('weekly-day-detail').textContent = 'לחץ על עמודה לפרטים';
+  }
+
+  var missingDays = hist.days.filter(function(d){return !d.hasData;}).length;
+  var insightsHtml = '';
+  if(missingDays > 0){
+    insightsHtml += '<div class="card" style="border:1px solid var(--gold);">&#9888; חלק מהימים בשבוע זה חסרים נתונים מלאים ('+missingDays+' ימים). התובנות עשויות להיות חלקיות.</div>';
+  }
+  insightsHtml += generateCorrelationInsights();
+  document.getElementById('weekly-insights').innerHTML = insightsHtml;
+}
+function selectWeeklyDay(idx){ selectedWeeklyDay = idx; renderWeekly(); }
+function generateCorrelationInsights(){
+  var profile = LS.get('profile', {});
+  var diary = LS.get('foodDiary', {});
+  var keys = Object.keys(diary);
+  var insights = [];
+  var proteinDays = 0, totalDays = Math.max(1, keys.length);
+  keys.forEach(function(k){
+    var day = diary[k];
+    var protein = 0;
+    ['breakfast','lunch','dinner','snack'].forEach(function(m){ (day[m]||[]).forEach(function(it){ protein += it.protein||0; }); });
+    if(protein > 80) proteinDays++;
+  });
+  if(proteinDays > 0){
+    insights.push('שמנו לב שבימים בהם צריכת החלבון שלך גבוהה (מעל 80 גרם), ה-Vytal Score שלך נוטה להיות גבוה יותר בכ-8 נקודות בממוצע.');
+  }
+  var conns = LS.get('wearables', {});
+  var anyConn = Object.keys(conns).some(function(k){return conns[k];});
+  if(anyConn){
+    insights.push('בלילות עם פחות מ-6 שעות שינה נראית ירידה קלה ברמת הפעילות למחרת. נסה/י לשפר את שגרת השינה.');
+  } else {
+    insights.push('חיבור שעון חכם יאפשר לנו לזהות קשרים מדויקים יותר בין שינה, פעילות ותזונה.');
+  }
+  return insights.map(function(t){ return '<div class="card">&#128161; '+t+'</div>'; }).join('');
+}
+window.renderWeekly = renderWeekly; window.selectWeeklyDay = selectWeeklyDay;
+
+window.__vytal_part4_loaded = true;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var LS = window.__VYTAL_LS;
+var goTo = window.__vytalGoTo;
+var todayKey = window.__VYTAL_todayKey;
+var getCalorieGoal = window.__VYTAL_getCalorieGoal;
+
+/* ===================== MOCK FOOD DATABASE (per 100g) ===================== */
+var FOOD_DB = [
+  {id:1, name:'חזה עוף צלוי', cal:165, protein:31, carb:0, fat:3.6, verified:true, tag:'lunch'},
+  {id:2, name:'אורז לבן מבושל', cal:130, protein:2.7, carb:28, fat:0.3, verified:true, tag:'lunch'},
+  {id:3, name:'אורז מלא מבושל', cal:111, protein:2.6, carb:23, fat:0.9, verified:true, tag:'lunch'},
+  {id:4, name:'ביצה קשה', cal:155, protein:13, carb:1.1, fat:11, verified:true, tag:'breakfast'},
+  {id:5, name:'חביתה', cal:154, protein:11, carb:1, fat:11, verified:true, tag:'breakfast'},
+  {id:6, name:'יוגורט טבעי 3%', cal:60, protein:3.5, carb:4.7, fat:3, verified:true, tag:'breakfast'},
+  {id:7, name:'קוטג\' 5%', cal:98, protein:11, carb:3.5, fat:5, verified:true, tag:'breakfast'},
+  {id:8, name:'לחם מלא', cal:247, protein:13, carb:41, fat:3.4, verified:true, tag:'breakfast'},
+  {id:9, name:'לחם לבן', cal:265, protein:9, carb:49, fat:3.2, verified:false, tag:'breakfast'},
+  {id:10, name:'אבוקדו', cal:160, protein:2, carb:9, fat:15, verified:true, tag:'breakfast'},
+  {id:11, name:'בננה', cal:89, protein:1.1, carb:23, fat:0.3, verified:true, tag:'snack'},
+  {id:12, name:'תפוח', cal:52, protein:0.3, carb:14, fat:0.2, verified:true, tag:'snack'},
+  {id:13, name:'שקדים', cal:579, protein:21, carb:22, fat:50, verified:true, tag:'snack'},
+  {id:14, name:'אגוזי מלך', cal:654, protein:15, carb:14, fat:65, verified:false, tag:'snack'},
+  {id:15, name:'סלמון', cal:208, protein:20, carb:0, fat:13, verified:true, tag:'dinner'},
+  {id:16, name:'טונה משומרת במים', cal:116, protein:26, carb:0, fat:1, verified:true, tag:'lunch'},
+  {id:17, name:'טופו', cal:76, protein:8, carb:1.9, fat:4.8, verified:true, tag:'dinner'},
+  {id:18, name:'עדשים מבושלות', cal:116, protein:9, carb:20, fat:0.4, verified:true, tag:'lunch'},
+  {id:19, name:'חומוס מבושל', cal:164, protein:9, carb:27, fat:2.6, verified:true, tag:'lunch'},
+  {id:20, name:'במבה', cal:534, protein:16, carb:48, fat:32, verified:false, tag:'snack'},
+  {id:21, name:'שוקולד חלב', cal:535, protein:7.6, carb:59, fat:30, verified:false, tag:'snack'},
+  {id:22, name:'גבינה צהובה 28%', cal:350, protein:25, carb:1.3, fat:28, verified:true, tag:'breakfast'},
+  {id:23, name:'חלב 3%', cal:60, protein:3.2, carb:4.8, fat:3.3, verified:true, tag:'breakfast'},
+  {id:24, name:'פסטה מבושלת', cal:158, protein:5.8, carb:31, fat:0.9, verified:true, tag:'dinner'},
+  {id:25, name:'בטטה אפויה', cal:90, protein:2, carb:21, fat:0.1, verified:true, tag:'dinner'},
+  {id:26, name:'ברוקולי מבושל', cal:35, protein:2.4, carb:7, fat:0.4, verified:true, tag:'dinner'},
+  {id:27, name:'עגבניה', cal:18, protein:0.9, carb:3.9, fat:0.2, verified:true, tag:'lunch'},
+  {id:28, name:'מלפפון', cal:15, protein:0.7, carb:3.6, fat:0.1, verified:true, tag:'lunch'},
+  {id:29, name:'שמן זית', cal:884, protein:0, carb:0, fat:100, verified:true, tag:'dinner'},
+  {id:30, name:'יין אדום', cal:85, protein:0.1, carb:2.6, fat:0, verified:false, tag:'snack'},
+  {id:31, name:'קפה שחור', cal:1, protein:0.1, carb:0, fat:0, verified:true, tag:'breakfast'},
+  {id:32, name:'גרנולה', cal:471, protein:10, carb:64, fat:18, verified:false, tag:'breakfast'},
+  {id:33, name:'תירס מבושל', cal:96, protein:3.4, carb:21, fat:1.5, verified:true, tag:'lunch'},
+  {id:34, name:'אבטיח', cal:30, protein:0.6, carb:7.6, fat:0.2, verified:true, tag:'snack'},
+  {id:35, name:'דג טונה טרי', cal:144, protein:23, carb:0, fat:5, verified:true, tag:'dinner'}
+];
+var UNIT_TO_GRAMS = {
+  'גרם':1, 'כוס':150, 'כף':15, 'כפית':5, 'יחידה':100, 'פרוסה':30, 'חופן':30
+};
+
+function getMyFoods(){ return LS.get('myFoods', []); }
+function getAllFoodsForSearch(){ return FOOD_DB.concat(getMyFoods()); }
+
+/* ===================== FOOD DIARY ===================== */
+var diarySelectedDate = todayKey();
+function getDateOffsetKey(offset){
+  var d = new Date(); d.setDate(d.getDate()+offset);
+  return todayKey(d);
+}
+function renderFoodDiary(){
+  var diary = LS.get('foodDiary', {});
+  if(!diary[diarySelectedDate]){
+    diary[diarySelectedDate] = {breakfast:[], lunch:[], dinner:[], snack:[], workoutBurn:0};
+    LS.set('foodDiary', diary);
+  }
+  var html='';
+  for(var i=-1;i<=7;i++){
+    var key = getDateOffsetKey(i);
+    var label = i===0?'היום':(i===-1?'אתמול':new Date(key).toLocaleDateString('he-IL',{day:'numeric',month:'numeric'}));
+    html += '<button class="chip'+(key===diarySelectedDate?' sel':'')+'" style="flex-shrink:0;" onclick="selectDiaryDate(\''+key+'\')">'+label+'</button>';
+  }
+  document.getElementById('date-carousel').innerHTML = html;
+
+  var day = diary[diarySelectedDate];
+  var calGoal = getCalorieGoal();
+  var eaten = 0;
+  ['breakfast','lunch','dinner','snack'].forEach(function(m){ (day[m]||[]).forEach(function(it){ eaten += it.calories||0; }); });
+  var isFuture = diarySelectedDate > todayKey();
+  var workout = isFuture ? 0 : (day.workoutBurn||0);
+  if(isFuture) day.workoutBurn = 0;
+  var remaining = calGoal - eaten + workout;
+  document.getElementById('budget-equation').textContent = calGoal+' - '+eaten+' + '+workout+' = '+remaining;
+
+  var mealNames = {breakfast:'בוקר', lunch:'צהריים', dinner:'ערב', snack:'נשנושים'};
+  var mhtml = '';
+  ['breakfast','lunch','dinner','snack'].forEach(function(m){
+    mhtml += '<div class="meal-section"><div class="row" style="justify-content:space-between;"><h3 style="margin:0;">'+mealNames[m]+'</h3><button class="chip" onclick="goToFoodSearch(\''+m+'\')">+ הוסף</button></div>';
+    (day[m]||[]).forEach(function(item, idx){
+      mhtml += '<div class="food-row"><span>'+item.name+' ('+(item.qty||1)+'x)</span><span>'+Math.round(item.calories)+' קק"ל <button onclick="deleteFoodEntry(\''+m+'\','+idx+')" style="background:none;border:none;color:var(--warn);">&#10005;</button></span></div>';
+    });
+    if((day[m]||[]).length===0) mhtml += '<div class="muted" style="font-size:13px;">אין פריטים</div>';
+    mhtml += '</div>';
+  });
+  document.getElementById('meal-sections').innerHTML = mhtml;
+}
+function selectDiaryDate(key){ diarySelectedDate = key; renderFoodDiary(); }
+function deleteFoodEntry(meal, idx){
+  var diary = LS.get('foodDiary', {});
+  diary[diarySelectedDate][meal].splice(idx,1);
+  LS.set('foodDiary', diary);
+  renderFoodDiary();
+}
+var targetMealForSearch = 'breakfast';
+function goToFoodSearch(meal){
+  targetMealForSearch = meal;
+  goTo('screen-foodsearch');
+  document.getElementById('food-search-input').value='';
+  setFoodSearchTab('all');
+}
+window.renderFoodDiary = renderFoodDiary; window.selectDiaryDate = selectDiaryDate;
+window.deleteFoodEntry = deleteFoodEntry; window.goToFoodSearch = goToFoodSearch;
+window.__VYTAL_diarySelectedDate = function(){ return diarySelectedDate; };
+
+/* ===================== FOOD SEARCH ===================== */
+var foodSearchTab = 'all';
+function setFoodSearchTab(tab){
+  foodSearchTab = tab;
+  ['all','history','fav','mine'].forEach(function(t){
+    document.getElementById('fstab-'+t).classList.toggle('active', t===tab);
+  });
+  renderFoodSearch();
+}
+function getTimeOfDayMealTag(){
+  var h = new Date().getHours();
+  if(h < 11) return 'breakfast';
+  if(h < 16) return 'lunch';
+  if(h < 21) return 'dinner';
+  return 'snack';
+}
+function renderFoodSearch(){
+  var q = (document.getElementById('food-search-input').value||'').trim().toLowerCase();
+  var history = LS.get('foodHistory', []);
+  var favs = LS.get('foodFavorites', []);
+  var pool;
+  if(foodSearchTab==='history') pool = getAllFoodsForSearch().filter(function(f){ return history.indexOf(f.id)>-1; });
+  else if(foodSearchTab==='fav') pool = getAllFoodsForSearch().filter(function(f){ return favs.indexOf(f.id)>-1; });
+  else if(foodSearchTab==='mine') pool = getMyFoods();
+  else pool = getAllFoodsForSearch();
+
+  if(q){ pool = pool.filter(function(f){ return f.name.toLowerCase().indexOf(q)>-1; }); }
+
+  var currentTag = getTimeOfDayMealTag();
+  pool = pool.slice().sort(function(a,b){
+    var aBoost = (a.tag===currentTag)?1:0, bBoost = (b.tag===currentTag)?1:0;
+    return bBoost-aBoost;
+  });
+
+  var listEl = document.getElementById('food-search-list');
+  var emptyEl = document.getElementById('food-empty-state');
+  if(pool.length===0){
+    listEl.innerHTML = '';
+    emptyEl.style.display = 'block';
+    return;
+  }
+  emptyEl.style.display='none';
+  var html='';
+  pool.forEach(function(f){
+    var isFav = favs.indexOf(f.id)>-1;
+    html += '<div class="search-item"><div onclick="openFoodDetail('+f.id+')" style="flex:1;cursor:pointer;">'+
+      (f.verified?'<span class="verified">&#10003;</span>':'')+f.name+
+      '<div class="muted" style="font-size:12px;">'+f.cal+' קק"ל / 100 גרם</div></div>'+
+      '<button onclick="toggleFavorite('+f.id+')" style="background:none;border:none;font-size:18px;color:'+(isFav?'var(--gold)':'var(--muted)')+';">&#9733;</button></div>';
+  });
+  listEl.innerHTML = html;
+}
+function toggleFavorite(id){
+  var favs = LS.get('foodFavorites', []);
+  var idx = favs.indexOf(id);
+  if(idx>-1) favs.splice(idx,1); else favs.push(id);
+  LS.set('foodFavorites', favs);
+  renderFoodSearch();
+}
+window.setFoodSearchTab = setFoodSearchTab; window.renderFoodSearch = renderFoodSearch; window.toggleFavorite = toggleFavorite;
+
+/* ===================== FOOD ITEM DETAIL ===================== */
+var currentFoodDetail = null;
+function openFoodDetail(id){
+  var all = getAllFoodsForSearch();
+  currentFoodDetail = all.filter(function(f){return f.id===id;})[0];
+  if(!currentFoodDetail) return;
+  var history = LS.get('foodHistory', []);
+  if(history.indexOf(id)===-1){ history.push(id); LS.set('foodHistory', history); }
+
+  document.getElementById('fd-name').textContent = currentFoodDetail.name;
+  document.getElementById('fd-qty').value = 100;
+  var unitSel = document.getElementById('fd-unit');
+  var opts='';
+  for(var u in UNIT_TO_GRAMS){ opts += '<option value="'+u+'">'+u+'</option>'; }
+  unitSel.innerHTML = opts;
+  unitSel.value = 'גרם';
+  document.getElementById('fd-meal').value = targetMealForSearch;
+  renderFoodDetailTotals();
+  goTo('screen-fooddetail');
+}
+function renderFoodDetailTotals(){
+  var qtyVal = parseFloat(document.getElementById('fd-qty').value);
+  var unit = document.getElementById('fd-unit').value;
+  var errEl = document.getElementById('fd-err');
+  if(isNaN(qtyVal) || qtyVal <= 0){
+    errEl.classList.add('show');
+    document.getElementById('fd-table').innerHTML = '';
+    return;
+  }
+  errEl.classList.remove('show');
+  var grams = qtyVal * (UNIT_TO_GRAMS[unit]||1);
+  var factor = grams/100;
+  var f = currentFoodDetail;
+  var totals = {
+    cal: f.cal*factor, protein: f.protein*factor, carb: f.carb*factor, fat: f.fat*factor
+  };
+  document.getElementById('fd-table').innerHTML =
+    '<div class="food-row"><span>קלוריות<button class="info-btn" type="button" onclick="showInfo(\'calories\')">?</button></span><span>'+Math.round(totals.cal)+' קק"ל</span></div>'+
+    '<div class="food-row"><span>חלבון<button class="info-btn" type="button" onclick="showInfo(\'protein\')">?</button></span><span>'+totals.protein.toFixed(1)+' ג\'</span></div>'+
+    '<div class="food-row"><span>פחמימה<button class="info-btn" type="button" onclick="showInfo(\'carb\')">?</button></span><span>'+totals.carb.toFixed(1)+' ג\'</span></div>'+
+    '<div class="food-row"><span>שומן<button class="info-btn" type="button" onclick="showInfo(\'fat\')">?</button></span><span>'+totals.fat.toFixed(1)+' ג\'</span></div>';
+}
+function confirmAddFood(){
+  var qtyVal = parseFloat(document.getElementById('fd-qty').value);
+  if(isNaN(qtyVal) || qtyVal <= 0){
+    document.getElementById('fd-err').classList.add('show');
+    return;
+  }
+  var unit = document.getElementById('fd-unit').value;
+  var grams = qtyVal * (UNIT_TO_GRAMS[unit]||1);
+  var factor = grams/100;
+  var f = currentFoodDetail;
+  var meal = document.getElementById('fd-meal').value;
+  var diary = LS.get('foodDiary', {});
+  var key = window.__VYTAL_diarySelectedDate ? window.__VYTAL_diarySelectedDate() : todayKey();
+  if(!diary[key]) diary[key] = {breakfast:[], lunch:[], dinner:[], snack:[], workoutBurn:0};
+  diary[key][meal].push({
+    name:f.name, qty:qtyVal+' '+unit, calories:f.cal*factor, protein:f.protein*factor, carb:f.carb*factor, fat:f.fat*factor
+  });
+  LS.set('foodDiary', diary);
+  goTo('screen-fooddiary');
+  renderFoodDiary();
+}
+window.openFoodDetail = openFoodDetail; window.renderFoodDetailTotals = renderFoodDetailTotals; window.confirmAddFood = confirmAddFood;
+
+/* ===================== CUSTOM FOOD CREATOR ===================== */
+function setCustomFoodTab(tab){
+  document.getElementById('cftab-single').classList.toggle('active', tab==='single');
+  document.getElementById('cftab-recipe').classList.toggle('active', tab==='recipe');
+  document.getElementById('cf-single').style.display = tab==='single'?'block':'none';
+  document.getElementById('cf-recipe').style.display = tab==='recipe'?'block':'none';
+}
+function renderCustomFoodSuggestions(){
+  var q = document.getElementById('cf-name').value.trim();
+  var box = document.getElementById('cf-suggestions');
+  if(!q){ box.innerHTML=''; return; }
+  var matches = FOOD_DB.filter(function(f){ return f.name.indexOf(q)>-1; }).slice(0,5);
+  if(!matches.length){ box.innerHTML=''; return; }
+  box.innerHTML = matches.map(function(f){
+    return '<div class="search-item" style="cursor:pointer;" onclick="applyCustomFoodSuggestion('+f.id+')">'+
+      '<span>'+f.name+'</span><span class="muted">'+f.cal+' קק"ל / 100 גרם</span></div>';
+  }).join('');
+}
+function applyCustomFoodSuggestion(id){
+  var f = FOOD_DB.find(function(x){ return x.id===id; });
+  if(!f) return;
+  document.getElementById('cf-name').value = f.name;
+  document.getElementById('cf-cal').value = f.cal;
+  document.getElementById('cf-protein').value = f.protein;
+  document.getElementById('cf-carb').value = f.carb;
+  document.getElementById('cf-fat').value = f.fat;
+  document.getElementById('cf-suggestions').innerHTML = '';
+}
+function saveCustomFood(){
+  var name = document.getElementById('cf-name').value.trim();
+  if(!name) { alert('יש להזין שם מאכל'); return; }
+  var myFoods = getMyFoods();
+  var newId = 9000 + myFoods.length;
+  myFoods.push({
+    id:newId, name:name,
+    cal: parseFloat(document.getElementById('cf-cal').value)||0,
+    protein: parseFloat(document.getElementById('cf-protein').value)||0,
+    carb: parseFloat(document.getElementById('cf-carb').value)||0,
+    fat: parseFloat(document.getElementById('cf-fat').value)||0,
+    verified:false, tag:'snack', custom:true
+  });
+  LS.set('myFoods', myFoods);
+  goTo('screen-foodsearch');
+  setFoodSearchTab('mine');
+}
+window.setCustomFoodTab = setCustomFoodTab; window.saveCustomFood = saveCustomFood;
+window.renderCustomFoodSuggestions = renderCustomFoodSuggestions; window.applyCustomFoodSuggestion = applyCustomFoodSuggestion;
+
+var recipeIngredients = [];
+function renderRecipeSearch(){
+  var q = (document.getElementById('cfr-search').value||'').trim().toLowerCase();
+  var resEl = document.getElementById('cfr-search-results');
+  if(!q){ resEl.innerHTML=''; return; }
+  var matches = getAllFoodsForSearch().filter(function(f){ return f.name.toLowerCase().indexOf(q)>-1; }).slice(0,6);
+  resEl.innerHTML = matches.map(function(f){
+    return '<div class="search-item"><span>'+f.name+'</span><button class="chip" onclick="addRecipeIngredient('+f.id+')">+ הוסף</button></div>';
+  }).join('');
+}
+function addRecipeIngredient(id){
+  var f = getAllFoodsForSearch().filter(function(x){return x.id===id;})[0];
+  if(!f) return;
+  recipeIngredients.push({food:f, grams:100});
+  document.getElementById('cfr-search').value='';
+  document.getElementById('cfr-search-results').innerHTML='';
+  renderRecipeIngredients();
+}
+function renderRecipeIngredients(){
+  var html = recipeIngredients.map(function(ing, idx){
+    return '<div class="card" style="display:flex;justify-content:space-between;align-items:center;">'+
+      '<span>'+ing.food.name+'</span>'+
+      '<input type="number" value="'+ing.grams+'" style="width:80px;" onchange="updateRecipeGrams('+idx+',this.value)"> גרם'+
+      '<button onclick="removeRecipeIngredient('+idx+')" style="background:none;border:none;color:var(--warn);">&#10005;</button></div>';
+  }).join('');
+  document.getElementById('cfr-ingredients').innerHTML = html;
+  renderRecipeTotals();
+}
+function updateRecipeGrams(idx, val){
+  recipeIngredients[idx].grams = parseFloat(val)||0;
+  renderRecipeTotals();
+}
+function removeRecipeIngredient(idx){
+  recipeIngredients.splice(idx,1);
+  renderRecipeIngredients();
+}
+function renderRecipeTotals(){
+  var servings = parseFloat(document.getElementById('cfr-servings').value)||1;
+  var totals = {cal:0, protein:0, carb:0, fat:0};
+  recipeIngredients.forEach(function(ing){
+    var factor = ing.grams/100;
+    totals.cal += ing.food.cal*factor; totals.protein += ing.food.protein*factor;
+    totals.carb += ing.food.carb*factor; totals.fat += ing.food.fat*factor;
+  });
+  var perServing = {
+    cal: totals.cal/servings, protein: totals.protein/servings, carb: totals.carb/servings, fat: totals.fat/servings
+  };
+  document.getElementById('cfr-totals').innerHTML =
+    '<b>לכל מנה (מתוך '+servings+' מנות):</b>'+
+    '<div class="food-row"><span>קלוריות<button class="info-btn" type="button" onclick="showInfo(\'calories\')">?</button></span><span>'+Math.round(perServing.cal)+' קק"ל</span></div>'+
+    '<div class="food-row"><span>חלבון<button class="info-btn" type="button" onclick="showInfo(\'protein\')">?</button></span><span>'+perServing.protein.toFixed(1)+' ג\'</span></div>'+
+    '<div class="food-row"><span>פחמימה<button class="info-btn" type="button" onclick="showInfo(\'carb\')">?</button></span><span>'+perServing.carb.toFixed(1)+' ג\'</span></div>'+
+    '<div class="food-row"><span>שומן<button class="info-btn" type="button" onclick="showInfo(\'fat\')">?</button></span><span>'+perServing.fat.toFixed(1)+' ג\'</span></div>';
+}
+function saveRecipe(){
+  var name = document.getElementById('cfr-name').value.trim();
+  if(!name || recipeIngredients.length===0){ alert('הזן שם והוסף לפחות מרכיב אחד'); return; }
+  var servings = parseFloat(document.getElementById('cfr-servings').value)||1;
+  var totals = {cal:0, protein:0, carb:0, fat:0};
+  recipeIngredients.forEach(function(ing){
+    var factor = ing.grams/100;
+    totals.cal += ing.food.cal*factor; totals.protein += ing.food.protein*factor;
+    totals.carb += ing.food.carb*factor; totals.fat += ing.food.fat*factor;
+  });
+  var myFoods = getMyFoods();
+  var newId = 9000 + myFoods.length;
+  myFoods.push({
+    id:newId, name:name,
+    cal: totals.cal/servings, protein: totals.protein/servings, carb: totals.carb/servings, fat: totals.fat/servings,
+    verified:false, tag:'lunch', custom:true, recipe:true
+  });
+  LS.set('myFoods', myFoods);
+  recipeIngredients = [];
+  goTo('screen-foodsearch');
+  setFoodSearchTab('mine');
+}
+window.renderRecipeSearch = renderRecipeSearch; window.addRecipeIngredient = addRecipeIngredient;
+window.updateRecipeGrams = updateRecipeGrams; window.removeRecipeIngredient = removeRecipeIngredient;
+window.renderRecipeTotals = renderRecipeTotals; window.saveRecipe = saveRecipe;
+
+window.__vytal_part5_loaded = true;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var LS = window.__VYTAL_LS;
+var calcBMR = window.__VYTAL_calcBMR;
+var todayKey = window.__VYTAL_todayKey;
+
+/* ===================== NUTRITION GOALS ===================== */
+function renderGoals(){
+  var goals = LS.get('nutritionGoals', null);
+  var mode = goals ? (goals.mode||'ai') : 'ai';
+  document.getElementById('goals-mode-toggle').classList.toggle('on', mode==='manual');
+  document.getElementById('goals-ai-view').style.display = mode==='ai' ? 'block':'none';
+  document.getElementById('goals-manual-view').style.display = mode==='manual' ? 'block':'none';
+
+  var profile = LS.get('profile', {});
+  var bmr = profile.bmr || calcBMR(profile, profile.activity||'moderate');
+  var goalAdj = (profile.goals||[]).indexOf('lose')>-1 ? 0.85 : ((profile.goals||[]).indexOf('gain')>-1 ? 1.15 : 1);
+  var autoCal = Math.round(bmr*goalAdj);
+  document.getElementById('goals-ai-detail').innerHTML =
+    '<div class="food-row"><span>BMR בסיסי<button class="info-btn" type="button" onclick="showInfo(\'bmr\')">?</button></span><span>'+Math.round(bmr)+' קק"ל</span></div>'+
+    '<div class="food-row"><span>מטרה</span><span>'+((profile.goals||[]).join(', ')||'שמירה')+'</span></div>'+
+    '<div class="food-row"><span><b>יעד קלוריות יומי</b><button class="info-btn" type="button" onclick="showInfo(\'calories\')">?</button></span><span><b>'+autoCal+' קק"ל</b></span></div>'+
+    '<div class="muted" style="margin-top:8px;">חלוקת מאקרו אוטומטית: 30% חלבון, 40% פחמימה, 30% שומן.</div>';
+
+  if(mode==='manual'){
+    document.getElementById('goals-cal').value = goals && goals.calories ? goals.calories : autoCal;
+    document.getElementById('slider-protein').value = goals && goals.pctProtein!=null ? goals.pctProtein : 30;
+    document.getElementById('slider-carb').value = goals && goals.pctCarb!=null ? goals.pctCarb : 40;
+    document.getElementById('slider-fat').value = goals && goals.pctFat!=null ? goals.pctFat : 30;
+    renderGoalsManual();
+  }
+}
+function toggleGoalsMode(){
+  var goals = LS.get('nutritionGoals', {});
+  goals.mode = (goals.mode==='manual') ? 'ai' : 'manual';
+  LS.set('nutritionGoals', goals);
+  renderGoals();
+}
+function onSliderChange(which){
+  // keep simple: just re-render labels/grams; sum validated on save
+  renderGoalsManual();
+}
+function renderGoalsManual(){
+  var p = parseInt(document.getElementById('slider-protein').value,10);
+  var c = parseInt(document.getElementById('slider-carb').value,10);
+  var f = parseInt(document.getElementById('slider-fat').value,10);
+  document.getElementById('pct-protein-label').textContent = p+'%';
+  document.getElementById('pct-carb-label').textContent = c+'%';
+  document.getElementById('pct-fat-label').textContent = f+'%';
+  var sum = p+c+f;
+  document.getElementById('pct-sum-label').textContent = 'סה"כ: '+sum+'%';
+
+  var cal = parseFloat(document.getElementById('goals-cal').value)||0;
+  var gProtein = (cal*(p/100))/4;
+  var gCarb = (cal*(c/100))/4;
+  var gFat = (cal*(f/100))/9;
+  document.getElementById('goals-gram-table').innerHTML =
+    '<div class="food-row"><span>חלבון<button class="info-btn" type="button" onclick="showInfo(\'protein\')">?</button></span><span>'+gProtein.toFixed(0)+' גרם</span></div>'+
+    '<div class="food-row"><span>פחמימה<button class="info-btn" type="button" onclick="showInfo(\'carb\')">?</button></span><span>'+gCarb.toFixed(0)+' גרם</span></div>'+
+    '<div class="food-row"><span>שומן<button class="info-btn" type="button" onclick="showInfo(\'fat\')">?</button></span><span>'+gFat.toFixed(0)+' גרם</span></div>';
+
+  var errEl = document.getElementById('err-pct-sum');
+  var saveBtn = document.getElementById('goals-save-btn');
+  if(sum !== 100){
+    errEl.classList.add('show');
+    saveBtn.disabled = true;
+  } else {
+    errEl.classList.remove('show');
+    saveBtn.disabled = false;
+  }
+}
+var pendingGoalsSave = null;
+function trySaveGoals(){
+  var p = parseInt(document.getElementById('slider-protein').value,10);
+  var c = parseInt(document.getElementById('slider-carb').value,10);
+  var f = parseInt(document.getElementById('slider-fat').value,10);
+  if(p+c+f !== 100){
+    document.getElementById('err-pct-sum').classList.add('show');
+    return;
+  }
+  var cal = parseFloat(document.getElementById('goals-cal').value)||0;
+  pendingGoalsSave = {mode:'manual', calories:cal, pctProtein:p, pctCarb:c, pctFat:f};
+  // ask retroactive question only if goals already existed before (i.e. this is a change)
+  var existing = LS.get('nutritionGoals', null);
+  if(existing && existing.calories){
+    document.getElementById('retro-modal').classList.add('show');
+  } else {
+    applyGoalsChange(true);
+  }
+}
+function applyGoalsChange(applyToHistory){
+  document.getElementById('retro-modal').classList.remove('show');
+  if(!pendingGoalsSave) return;
+  pendingGoalsSave.effectiveDate = applyToHistory ? null : todayKey();
+  pendingGoalsSave.appliedToHistory = !!applyToHistory;
+  LS.set('nutritionGoals', pendingGoalsSave);
+  pendingGoalsSave = null;
+  renderGoals();
+}
+window.renderGoals = renderGoals; window.toggleGoalsMode = toggleGoalsMode;
+window.onSliderChange = onSliderChange; window.renderGoalsManual = renderGoalsManual;
+window.trySaveGoals = trySaveGoals; window.applyGoalsChange = applyGoalsChange;
+
+window.__vytal_part6_loaded = true;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var LS = window.__VYTAL_LS;
+var goTo = window.__vytalGoTo;
+var todayKey = window.__VYTAL_todayKey;
+
+/* ===================== VYTAL AGE (BIOLOGICAL AGE) ===================== */
+function calcVytalAge(){
+  var profile = LS.get('profile', {});
+  var chrono = profile.age || 30;
+  var m = LS.get('vytalMetrics', {});
+  var hasData = !!(m.vo2max || m.rhr || m.balance || m.hang);
+  if(!hasData) return {chrono:chrono, bio:chrono, hasData:false};
+  var deltaYears = 0;
+  if(m.vo2max){
+    var expectedVO2 = 48 - (chrono-25)*0.35;
+    deltaYears += (m.vo2max - expectedVO2)*0.3;
+  }
+  if(m.rhr){
+    deltaYears += (60 - m.rhr)*0.15;
+  }
+  if(m.balance){
+    var expectedBalance = Math.max(5, 30 - (chrono-20)*0.3);
+    deltaYears += (m.balance - expectedBalance)*0.1;
+  }
+  if(m.hang){
+    var expectedHang = Math.max(5, 45 - (chrono-20)*0.4);
+    deltaYears += (m.hang - expectedHang)*0.08;
+  }
+  var bio = chrono - deltaYears;
+  var minBio = Math.max(16, chrono-20), maxBio = chrono+20;
+  bio = Math.max(minBio, Math.min(maxBio, bio));
+  return {chrono:chrono, bio:Math.round(bio), hasData:true};
+}
+function renderVytalAge(){
+  var result = calcVytalAge();
+  var m = LS.get('vytalMetrics', {});
+  document.getElementById('va-chrono').textContent = result.chrono;
+  document.getElementById('va-bio').textContent = result.hasData ? result.bio : '--';
+  var msgEl = document.getElementById('va-delta-msg');
+  if(!result.hasData){
+    msgEl.innerHTML = '<span class="muted">הזן את המדדים למטה כדי לחשב את ה-Vytal Age שלך</span>';
+  } else {
+    var diff = result.chrono - result.bio;
+    if(diff > 0){ msgEl.innerHTML = '<span style="color:#3ddc97;">&#127881; הגוף שלך צעיר ב-'+diff+' שנים מהגיל הכרונולוגי!</span>'; }
+    else if(diff < 0){ msgEl.innerHTML = '<span style="color:#ff6b6b;">הגוף שלך מבוגר ב-'+(-diff)+' שנים מהגיל הכרונולוגי. אפשר לשנות את זה!</span>'; }
+    else { msgEl.innerHTML = '<span class="muted">הגיל הביולוגי שלך תואם את הגיל הכרונולוגי.</span>'; }
+  }
+  document.getElementById('va-vo2max').value = m.vo2max || '';
+  document.getElementById('va-rhr').value = m.rhr || '';
+  document.getElementById('va-balance').value = m.balance || '';
+  document.getElementById('va-hang').value = m.hang || '';
+  document.getElementById('va-last-updated').textContent = m.updated ? ('עודכן לאחרונה: '+new Date(m.updated).toLocaleDateString('he-IL')) : 'עדיין לא הוזנו מדדים.';
+  document.getElementById('va-tip-card').innerHTML = '<b>איך להוריד את ה-Vytal Age?</b><div class="muted" style="margin-top:6px;">שיפור VO2 Max באמצעות אימוני Zone 2 ואינטרוולים, הורדת דופק המנוחה עם אימון אירובי עקבי, ותרגול שיווי משקל וכוח אחיזה - כל אלו מנבאים אריכות ימים מוכחת ומשפרים את התוצאה כאן.</div>';
+}
+function saveVytalAgeMetrics(){
+  var m = {
+    vo2max: parseFloat(document.getElementById('va-vo2max').value)||0,
+    rhr: parseFloat(document.getElementById('va-rhr').value)||0,
+    balance: parseFloat(document.getElementById('va-balance').value)||0,
+    hang: parseFloat(document.getElementById('va-hang').value)||0,
+    updated: Date.now()
+  };
+  LS.set('vytalMetrics', m);
+  renderVytalAge();
+}
+window.calcVytalAge = calcVytalAge; window.renderVytalAge = renderVytalAge; window.saveVytalAgeMetrics = saveVytalAgeMetrics;
+
+/* ===================== WEEKLY PLANNER (mocked calendar sync) ===================== */
+var plannerWeekOffset = 0;
+var MOCK_EXTERNAL_EVENTS = ['ישיבת צוות בעבודה','שיחת לקוח','פגישת רופא','איסוף ילדים'];
+function plannerShiftWeek(dir){ plannerWeekOffset += dir; renderPlanner(); }
+function plannerWeekStart(){
+  var d = new Date();
+  d.setDate(d.getDate() - d.getDay() + (plannerWeekOffset*7));
+  d.setHours(0,0,0,0);
+  return d;
+}
+var plannerBlocks = [];
+var plannerLongPressHandle = null;
+var HOUR_H = 56; // px per hour slot
+var CAL_START_H = 6; // 06:00
+var CAL_END_H = 23;  // 23:00
+
+function renderPlanner(){
+  var start = plannerWeekStart();
+  var end = new Date(start); end.setDate(end.getDate()+6);
+  document.getElementById('planner-week-label').textContent =
+    start.toLocaleDateString('he-IL',{day:'numeric',month:'short'})+
+    ' – '+end.toLocaleDateString('he-IL',{day:'numeric',month:'short',year:'numeric'});
+
+  var today = new Date();
+  var days = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+
+  // Build blocks list first
+  var workoutLog = LS.get('workoutLog', {});
+  plannerBlocks = [];
+  var MEAL_SCHEDULE = [
+    {label:'ארוחת בוקר', hour:8, dur:30, color:'#3ddc97'},
+    {label:'ארוחת צהריים', hour:13, dur:45, color:'#3ddc97'},
+    {label:'ארוחת ערב', hour:19, dur:45, color:'#3ddc97'}
+  ];
+  var EXTERNAL = [
+    {label:'ישיבת צוות', hour:10, dur:60, dayMask:[1,3]},
+    {label:'פגישת לקוח', hour:15, dur:60, dayMask:[2]},
+    {label:'איסוף ילדים', hour:16, dur:30, dayMask:[0,3]}
+  ];
+  for(var di=0;di<7;di++){
+    var dd = new Date(start); dd.setDate(dd.getDate()+di);
+    var dk = todayKey(dd);
+    MEAL_SCHEDULE.forEach(function(m){
+      plannerBlocks.push({dayIdx:di, hour:m.hour, minute:0, dur:m.dur, label:m.label, type:'meal', color:m.color, dk:dk});
+    });
+    var wEntries = workoutLog[dk] || [];
+    wEntries.forEach(function(e){
+      plannerBlocks.push({dayIdx:di, hour:7, minute:0, dur:e.duration||45, label:e.type, type:'workout', color:'#4a90e2', dk:dk});
+    });
+    EXTERNAL.forEach(function(ex){
+      if(ex.dayMask.indexOf(di)>-1){
+        plannerBlocks.push({dayIdx:di, hour:ex.hour, minute:0, dur:ex.dur, label:ex.label, type:'external', color:'#7d8597', dk:dk});
+      }
+    });
+  }
+
+  var totalH = (CAL_END_H - CAL_START_H) * HOUR_H;
+
+  // Wrapper: time col (40px) + 7 day cols, shares same grid for header + body
+  var html = '<div style="display:flex;flex-direction:column;height:100%;">';
+
+  // ── Day header row (sticky) ──
+  html += '<div style="display:grid;grid-template-columns:40px repeat(7,1fr);flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.08);">';
+  html += '<div></div>'; // corner
+  for(var i=0;i<7;i++){
+    var d2 = new Date(start); d2.setDate(d2.getDate()+i);
+    var isToday = (d2.toDateString()===today.toDateString());
+    html += '<div style="text-align:center;padding:6px 2px;font-size:11px;'+(isToday?'color:var(--accent);font-weight:800;':'color:var(--muted);')+'">'+
+      days[i]+'<br><span style="font-size:10px;">'+d2.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'})+'</span></div>';
+  }
+  html += '</div>';
+
+  // ── Scrollable calendar body ──
+  html += '<div id="planner-scroll" style="flex:1;overflow-y:auto;">';
+  html += '<div id="planner-inner" style="display:grid;grid-template-columns:40px repeat(7,1fr);position:relative;min-height:'+totalH+'px;">';
+
+  // Hour lines + time labels
+  var nowH = today.getHours() + today.getMinutes()/60;
+  for(var h=CAL_START_H; h<CAL_END_H; h++){
+    var top = (h-CAL_START_H)*HOUR_H;
+    // full-width line
+    html += '<div style="position:absolute;top:'+top+'px;left:0;right:0;border-top:1px solid rgba(255,255,255,0.07);pointer-events:none;z-index:1;"></div>';
+    // time label
+    html += '<div style="position:absolute;top:'+(top+2)+'px;right:0;width:38px;font-size:10px;color:rgba(255,255,255,0.35);text-align:center;pointer-events:none;z-index:2;">'+String(h).padStart(2,'0')+'</div>';
+  }
+
+  // Column separators
+  for(var ci=0;ci<7;ci++){
+    // each col separator: starts after the 40px time column
+    html += '<div style="grid-column:'+(ci+2)+';grid-row:1;border-right:1px solid rgba(255,255,255,0.05);"></div>';
+  }
+
+  // Now-line (drawn after blocks set up, using absolute)
+  if(nowH>=CAL_START_H && nowH<CAL_END_H){
+    var nowTop2 = (nowH-CAL_START_H)*HOUR_H;
+    html += '<div style="position:absolute;top:'+nowTop2+'px;left:40px;right:0;height:2px;background:var(--accent);z-index:10;border-radius:1px;pointer-events:none;"></div>';
+  }
+
+  // Blocks — use percentage widths relative to the 7-col area, positioned absolutely
+  // We'll place them in a second pass after render via JS (so we get real widths)
+  // For now put placeholder divs with data attributes; positionPlannerBlocks() will size them
+  plannerBlocks.forEach(function(b,bi){
+    var topPx = (b.hour + (b.minute||0)/60 - CAL_START_H) * HOUR_H;
+    var heightPx = Math.max(24, (b.dur/60)*HOUR_H - 3);
+    var isExternal = b.type==='external';
+    html += '<div id="pb-'+bi+'" data-bi="'+bi+'" data-day="'+b.dayIdx+'" '+
+      'style="position:absolute;top:'+topPx+'px;height:'+heightPx+'px;'+
+      'background:'+b.color+(isExternal?'44':'22')+';border-right:3px solid '+b.color+';border-radius:6px;padding:2px 4px;font-size:10px;overflow:hidden;'+
+      'box-sizing:border-box;cursor:'+(isExternal?'default':'grab')+';user-select:none;-webkit-user-select:none;z-index:4;touch-action:none;" '+
+      (isExternal ? 'onclick="openPlannerDetail('+bi+')"' :
+        'ontouchstart="plannerBlockDown('+bi+',event)" onmousedown="plannerBlockDown('+bi+',event)"')+
+      '><b style="font-size:10px;line-height:1.3;color:'+b.color+';">'+b.label+'</b>'+
+      '<span style="display:block;font-size:9px;color:rgba(255,255,255,0.5);">'+String(b.hour).padStart(2,'0')+':'+(b.minute?String(b.minute).padStart(2,'0'):'00')+'</span>'+
+      '</div>';
+  });
+
+  html += '</div></div></div>';
+  document.getElementById('planner-cal-body').innerHTML = html;
+
+  // Long-press on empty area to add event
+  var inner2 = document.getElementById('planner-inner');
+  if(inner2) bindPlannerLongPress(inner2);
+
+  // Position blocks correctly after DOM is rendered (so we know real column widths)
+  setTimeout(positionPlannerBlocks, 0);
+
+  // Scroll to 7:00
+  setTimeout(function(){
+    var sc = document.getElementById('planner-scroll');
+    if(sc) sc.scrollTop = (7-CAL_START_H)*HOUR_H;
+  }, 30);
+}
+
+function positionPlannerBlocks(){
+  var inner = document.getElementById('planner-inner');
+  if(!inner) return;
+  var totalW = inner.offsetWidth;
+  var colW = (totalW - 40) / 7;
+  plannerBlocks.forEach(function(b, bi){
+    var el = document.getElementById('pb-'+bi);
+    if(!el) return;
+    el.style.left = (40 + b.dayIdx * colW + 1) + 'px';
+    el.style.width = (colW - 3) + 'px';
+  });
+}
+
+/* ---- drag state ---- */
+var pdDragging = false;
+var pdDragBi = -1;
+var pdDragClone = null;
+var pdDragStartX = 0, pdDragStartY = 0;
+var pdDragThreshold = 8; // px before drag starts
+var pdTouchMoved = false;
+var pdDetailBi = -1;
+
+function plannerBlockDown(bi, e){
+  if(plannerBlocks[bi] && plannerBlocks[bi].type==='external') return;
+  pdDragBi = bi;
+  pdDragging = false;
+  pdTouchMoved = false;
+  var pt = e.touches ? e.touches[0] : e;
+  pdDragStartX = pt.clientX;
+  pdDragStartY = pt.clientY;
+  e.preventDefault();
+}
+
+function plannerBlockMove(e){
+  if(pdDragBi < 0) return;
+  var pt = e.touches ? e.touches[0] : e;
+  var dx = pt.clientX - pdDragStartX, dy = pt.clientY - pdDragStartY;
+  if(!pdDragging && Math.sqrt(dx*dx+dy*dy) < pdDragThreshold) return;
+  pdTouchMoved = true;
+  if(!pdDragging){
+    pdDragging = true;
+    var src = document.getElementById('pb-'+pdDragBi);
+    if(!src) return;
+    pdDragClone = src.cloneNode(true);
+    pdDragClone.id = 'pd-drag-clone';
+    var r = src.getBoundingClientRect();
+    pdDragClone.style.cssText = src.style.cssText;
+    pdDragClone.style.position = 'fixed';
+    pdDragClone.style.left = r.left+'px';
+    pdDragClone.style.top = r.top+'px';
+    pdDragClone.style.width = r.width+'px';
+    pdDragClone.style.height = r.height+'px';
+    pdDragClone.style.opacity = '0.85';
+    pdDragClone.style.zIndex = '200';
+    pdDragClone.style.pointerEvents = 'none';
+    pdDragClone.style.boxShadow = '0 6px 24px rgba(0,0,0,0.6)';
+    pdDragClone.style.transform = 'scale(1.04)';
+    document.body.appendChild(pdDragClone);
+    src.style.opacity = '0.25';
+  }
+  if(pdDragClone){
+    var r2 = document.getElementById('pb-'+pdDragBi).getBoundingClientRect();
+    pdDragClone.style.left = (r2.left + dx)+'px';
+    pdDragClone.style.top = (r2.top + dy)+'px';
+  }
+  e.preventDefault();
+}
+
+var pdPendingDrop = null; // {bi, dayIdx, hour, minute}
+
+function plannerBlockUp(e){
+  if(pdDragBi < 0) return;
+  var bi = pdDragBi;
+  pdDragBi = -1;
+
+  if(pdDragClone){ pdDragClone.remove(); pdDragClone = null; }
+  var src = document.getElementById('pb-'+bi);
+  if(src) src.style.opacity = '';
+
+  if(!pdTouchMoved && !pdDragging){
+    openPlannerDetail(bi);
+    pdDragging = false;
+    return;
+  }
+  if(!pdDragging){ pdDragging = false; return; }
+  pdDragging = false;
+
+  var pt = e.changedTouches ? e.changedTouches[0] : e;
+  var scroll = document.getElementById('planner-scroll');
+  var inner = document.getElementById('planner-inner');
+  if(!inner || !scroll) return;
+  var calRect = scroll.getBoundingClientRect();
+  var scrollTop = scroll.scrollTop;
+  var totalW = inner.offsetWidth;
+  var colW = (totalW - 40) / 7;
+
+  var xInCal = pt.clientX - calRect.left;
+  var yInCal = pt.clientY - calRect.top + scrollTop;
+
+  var dayIdx = Math.floor((xInCal - 40) / colW);
+  dayIdx = Math.max(0, Math.min(6, dayIdx));
+  var hourF = CAL_START_H + yInCal / HOUR_H;
+  var hour = Math.max(CAL_START_H, Math.min(CAL_END_H-1, Math.floor(hourF)));
+  var minute = Math.round(((hourF - Math.floor(hourF)) * 60) / 15) * 15;
+  if(minute >= 60){ hour++; minute = 0; }
+
+  var block = plannerBlocks[bi];
+  if(!block) return;
+
+  // same position — no confirmation needed
+  if(dayIdx === block.dayIdx && hour === block.hour && minute === (block.minute||0)){
+    positionPlannerBlocks(); return;
+  }
+
+  // show confirmation
+  pdPendingDrop = {bi:bi, dayIdx:dayIdx, hour:hour, minute:minute};
+  var start = plannerWeekStart();
+  var days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  var toD = new Date(start); toD.setDate(toD.getDate()+dayIdx);
+  var dayName = days[dayIdx]+' '+toD.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
+  var timeStr = String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+  document.getElementById('pd-confirm-text').textContent = 'להעביר את "'+block.label+'" ל'+dayName+' בשעה '+timeStr+'?';
+  document.getElementById('planner-confirm-modal').classList.add('show');
+}
+
+function openPlannerDetail(bi){
+  var block = plannerBlocks[bi];
+  if(!block) return;
+  pdDetailBi = bi;
+  var start = plannerWeekStart();
+  var days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  var d = new Date(start); d.setDate(d.getDate()+block.dayIdx);
+  var typeLabel = block.type==='meal'?'ארוחה':block.type==='workout'?'אימון':'פגישה';
+  document.getElementById('pd-title').textContent = block.label;
+  document.getElementById('pd-meta').textContent = typeLabel+' · '+days[block.dayIdx]+' '+d.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'})+' · '+String(block.hour).padStart(2,'0')+':'+String(block.minute||0).padStart(2,'0')+' · '+block.dur+' דק׳';
+  document.getElementById('pd-label-input').value = block.label;
+  document.getElementById('pd-hour').value = block.hour;
+  document.getElementById('pd-minute').value = block.minute||0;
+  document.getElementById('pd-dur').value = block.dur;
+  var isExternal = block.type==='external';
+  document.getElementById('pd-edit-form').style.display = isExternal ? 'none' : 'block';
+  document.querySelector('#planner-detail-modal .btn').style.display = isExternal ? 'none' : 'block';
+  document.getElementById('planner-detail-modal').classList.add('show');
+}
+
+function savePlannerDetail(){
+  var block = plannerBlocks[pdDetailBi];
+  if(!block) return;
+  block.label = document.getElementById('pd-label-input').value || block.label;
+  block.hour = parseInt(document.getElementById('pd-hour').value,10)||block.hour;
+  block.minute = parseInt(document.getElementById('pd-minute').value,10)||0;
+  block.dur = parseInt(document.getElementById('pd-dur').value,10)||block.dur;
+  document.getElementById('planner-detail-modal').classList.remove('show');
+  renderPlanner();
+}
+
+/* ── Long-press on empty calendar area to create new event ── */
+var pdNewDayIdx = 0, pdNewHour = 8, pdNewMinute = 0;
+var pdLongPressTimer = null;
+var pdLongPressStartX = 0, pdLongPressStartY = 0;
+var LONG_PRESS_MS = 500;
+
+function calcSlotFromEvent(e, inner, scroll){
+  var pt = e.touches ? e.touches[0] : e;
+  var calRect = scroll.getBoundingClientRect();
+  var totalW = inner.offsetWidth;
+  var colW = (totalW - 40) / 7;
+  var xInCal = pt.clientX - calRect.left;
+  var yInCal = pt.clientY - calRect.top + scroll.scrollTop;
+  var dayIdx = Math.max(0, Math.min(6, Math.floor((xInCal - 40) / colW)));
+  var hourF = CAL_START_H + yInCal / HOUR_H;
+  var hour = Math.max(CAL_START_H, Math.min(CAL_END_H - 1, Math.floor(hourF)));
+  var minute = Math.round(((hourF - Math.floor(hourF)) * 60) / 15) * 15;
+  if(minute >= 60){ hour++; minute = 0; }
+  return {dayIdx:dayIdx, hour:hour, minute:minute};
+}
+
+function bindPlannerLongPress(inner){
+  var scroll = document.getElementById('planner-scroll');
+  if(!scroll) return;
+
+  function onDown(e){
+    // only fire on inner background (not on blocks)
+    if(e.target !== inner && e.target.closest && e.target.closest('[id^="pb-"]')) return;
+    var pt = e.touches ? e.touches[0] : e;
+    pdLongPressStartX = pt.clientX;
+    pdLongPressStartY = pt.clientY;
+    clearTimeout(pdLongPressTimer);
+    pdLongPressTimer = setTimeout(function(){
+      if(pdDragBi >= 0) return; // block drag in progress
+      var slot = calcSlotFromEvent(e, inner, scroll);
+      openNewPlannerModal(slot.dayIdx, slot.hour, slot.minute);
+    }, LONG_PRESS_MS);
+  }
+  function onMove(e){
+    if(!pdLongPressTimer) return;
+    var pt = e.touches ? e.touches[0] : e;
+    var dx = pt.clientX - pdLongPressStartX, dy = pt.clientY - pdLongPressStartY;
+    if(Math.sqrt(dx*dx+dy*dy) > 10){ clearTimeout(pdLongPressTimer); pdLongPressTimer = null; }
+  }
+  function onUp(){ clearTimeout(pdLongPressTimer); pdLongPressTimer = null; }
+
+  inner.addEventListener('touchstart', onDown, {passive:true});
+  inner.addEventListener('touchmove', onMove, {passive:true});
+  inner.addEventListener('touchend', onUp);
+  inner.addEventListener('mousedown', onDown);
+  inner.addEventListener('mousemove', onMove);
+  inner.addEventListener('mouseup', onUp);
+}
+
+function openNewPlannerModal(dayIdx, hour, minute){
+  pdNewDayIdx = dayIdx; pdNewHour = hour; pdNewMinute = minute;
+  var start = plannerWeekStart();
+  var days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  var d = new Date(start); d.setDate(d.getDate()+dayIdx);
+  var dateStr = days[dayIdx]+' '+d.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
+  var timeStr = String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+  document.getElementById('pn-meta').textContent = dateStr+' · '+timeStr;
+  document.getElementById('pn-label').value = '';
+  document.getElementById('pn-type').value = 'external';
+  document.getElementById('pn-hour').value = hour;
+  document.getElementById('pn-minute').value = minute;
+  document.getElementById('pn-dur').value = 60;
+  document.getElementById('planner-new-modal').classList.add('show');
+  setTimeout(function(){ var el=document.getElementById('pn-label'); if(el) el.focus(); },100);
+}
+
+function saveNewPlannerEvent(){
+  var label = document.getElementById('pn-label').value.trim();
+  if(!label){ alert('יש להזין שם לאירוע'); return; }
+  var type = document.getElementById('pn-type').value;
+  var hour = parseInt(document.getElementById('pn-hour').value,10);
+  var minute = parseInt(document.getElementById('pn-minute').value,10)||0;
+  var dur = parseInt(document.getElementById('pn-dur').value,10)||60;
+  var colors = {workout:'#4a90e2', meal:'#3ddc97', external:'#7d8597'};
+  plannerBlocks.push({dayIdx:pdNewDayIdx, hour:hour, minute:minute, dur:dur, label:label, type:type, color:colors[type]||'#7d8597'});
+  document.getElementById('planner-new-modal').classList.remove('show');
+  renderPlanner();
+}
+window.openNewPlannerModal = openNewPlannerModal;
+window.saveNewPlannerEvent = saveNewPlannerEvent;
+
+/* wire global touch/mouse move+up on document so drag works outside block */
+document.addEventListener('touchmove', function(e){ if(pdDragBi>=0||pdDragging) plannerBlockMove(e); }, {passive:false});
+document.addEventListener('touchend', function(e){ if(pdDragBi>=0||pdDragging) plannerBlockUp(e); }, {passive:false});
+document.addEventListener('mousemove', function(e){ if(pdDragBi>=0||pdDragging) plannerBlockMove(e); });
+document.addEventListener('mouseup', function(e){ if(pdDragBi>=0||pdDragging) plannerBlockUp(e); });
+
+function confirmPlannerDrop(ok){
+  document.getElementById('planner-confirm-modal').classList.remove('show');
+  if(!ok || !pdPendingDrop) { pdPendingDrop=null; positionPlannerBlocks(); return; }
+  var b = plannerBlocks[pdPendingDrop.bi];
+  if(b){ b.dayIdx=pdPendingDrop.dayIdx; b.hour=pdPendingDrop.hour; b.minute=pdPendingDrop.minute; }
+  pdPendingDrop = null;
+  renderPlanner();
+}
+
+window.plannerShiftWeek = plannerShiftWeek; window.renderPlanner = renderPlanner;
+window.positionPlannerBlocks = positionPlannerBlocks;
+window.plannerBlockDown = plannerBlockDown; window.confirmPlannerDrop = confirmPlannerDrop;
+window.openPlannerDetail = openPlannerDetail; window.savePlannerDetail = savePlannerDetail;
+
+/* ===================== WORKOUT ONBOARDING WIZARD ===================== */
+var wobStep = 0;
+var wobAnswers = {};
+
+var WOB_STEPS = [
+  {
+    id: 'experience',
+    title: 'רמת הניסיון שלך',
+    q: 'כמה זמן אתה מתאמן?',
+    type: 'choice',
+    choices: [
+      {v:'beginner', ic:'🌱', label:'מתחיל', desc:'פחות משנה, או חוזר אחרי הפסקה'},
+      {v:'intermediate', ic:'💪', label:'בינוני', desc:'שנה עד 3 שנים של אימונים'},
+      {v:'advanced', ic:'🏆', label:'מנוסה', desc:'מעל 3 שנים, מכיר את הטכניקות'}
+    ]
+  },
+  {
+    id: 'goal',
+    title: 'המטרה שלך',
+    q: 'מה הכי חשוב לך עכשיו?',
+    type: 'choice',
+    choices: [
+      {v:'weight_loss', ic:'🔥', label:'ירידה במשקל', desc:'שריפת קלוריות ופיזור שומן'},
+      {v:'muscle', ic:'🏋', label:'בניית שריר', desc:'הגדלת מסת שריר וכוח'},
+      {v:'fitness', ic:'🏃', label:'כושר כללי', desc:'אנרגיה, גמישות ובריאות'},
+      {v:'strength', ic:'⚡', label:'כוח מקסימלי', desc:'הרמת משקל גבוה ככל האפשר'}
+    ]
+  },
+  {
+    id: 'equipment',
+    title: 'ציוד זמין',
+    q: 'איזה ציוד יש לך?',
+    type: 'choice',
+    choices: [
+      {v:'none', ic:'🏠', label:'ללא ציוד', desc:'רק משקל גוף, בבית'},
+      {v:'dumbbells', ic:'🏋', label:'משקולות יד', desc:'דמבלים ו/או גומיות'},
+      {v:'gym', ic:'🏟', label:'חדר כושר', desc:'גישה לכל הציוד'}
+    ]
+  },
+  {
+    id: 'time',
+    title: 'זמן האימון',
+    q: 'כמה זמן יש לך לאימון?',
+    type: 'choice',
+    choices: [
+      {v:20, ic:'⏱', label:'עד 20 דק׳', desc:'אימון קצר ואינטנסיבי'},
+      {v:45, ic:'⏰', label:'כ-45 דק׳', desc:'אימון מאוזן'},
+      {v:60, ic:'🕐', label:'שעה+', desc:'אימון מקיף עם חימום'}
+    ]
+  },
+  {
+    id: 'injuries',
+    title: 'מגבלות ופציעות',
+    q: 'יש משהו שחשוב שנדע? (אפשר לבחור כמה)',
+    type: 'multi',
+    choices: [
+      {v:'back', ic:'🦴', label:'כאבי גב'},
+      {v:'knee', ic:'🦵', label:'כאבי ברכיים'},
+      {v:'shoulder', ic:'💪', label:'כאב בכתף'},
+      {v:'wrist', ic:'🤚', label:'כאב בשורש כף יד'},
+      {v:'none', ic:'✅', label:'אין מגבלות'}
+    ]
+  }
+];
+
+function startWorkoutOnboarding(){
+  var saved = LS.get('workoutProfile', null);
+  if(saved && saved.experience){
+    // Already profiled — confirm or re-do
+    openReturnWorkoutModal(saved);
+    return;
+  }
+  wobStep = 0;
+  wobAnswers = {};
+  goTo('screen-workout-onboard');
+  renderWobStep();
+}
+
+function renderWobStep(){
+  var step = WOB_STEPS[wobStep];
+  var pct = Math.round(((wobStep+1)/WOB_STEPS.length)*100);
+  document.getElementById('wob-progress').style.width = pct+'%';
+  document.getElementById('wob-title').textContent = step.title;
+
+  var profile = LS.get('profile', {});
+  var greeting = profile.name ? '👋 היי '+profile.name.split(' ')[0]+'! ' : '';
+
+  var html = '<p style="margin-bottom:16px;font-size:15px;">'+greeting+step.q+'</p>';
+
+  if(step.type === 'choice'){
+    step.choices.forEach(function(c){
+      var sel = wobAnswers[step.id] === c.v;
+      html += '<div onclick="wobSelect(\''+step.id+'\',\''+c.v+'\')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;margin-bottom:10px;border:2px solid '+(sel?'var(--accent)':'var(--card2)')+';background:'+(sel?'rgba(61,220,151,0.1)':'var(--card)')+';cursor:pointer;">'+
+        '<span style="font-size:28px;">'+c.ic+'</span>'+
+        '<div><div style="font-weight:700;">'+c.label+'</div><div class="muted" style="font-size:12px;">'+c.desc+'</div></div>'+
+        (sel?'<span style="margin-right:auto;color:var(--accent);font-size:20px;">✓</span>':'')+
+        '</div>';
+    });
+  } else if(step.type === 'multi'){
+    var curArr = wobAnswers[step.id] || [];
+    step.choices.forEach(function(c){
+      var sel = curArr.indexOf(c.v) >= 0;
+      html += '<div onclick="wobToggle(\''+step.id+'\',\''+c.v+'\')" style="display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:12px;margin-bottom:8px;border:2px solid '+(sel?'var(--accent)':'var(--card2)')+';background:'+(sel?'rgba(61,220,151,0.1)':'var(--card)')+';cursor:pointer;">'+
+        '<span style="font-size:24px;">'+c.ic+'</span>'+
+        '<div style="font-weight:700;">'+c.label+'</div>'+
+        (sel?'<span style="margin-right:auto;color:var(--accent);">✓</span>':'')+
+        '</div>';
+    });
+  }
+
+  document.getElementById('wob-content').innerHTML = html;
+  document.getElementById('wob-back-btn').style.display = wobStep === 0 ? 'none' : '';
+  document.getElementById('wob-next-btn').textContent = wobStep === WOB_STEPS.length-1 ? '🏋 בוא נתחיל!' : 'המשך ←';
+}
+
+function wobSelect(id, val){
+  wobAnswers[id] = val;
+  renderWobStep();
+}
+
+function wobToggle(id, val){
+  var arr = wobAnswers[id] || [];
+  if(val === 'none'){ wobAnswers[id] = arr.indexOf('none')>=0 ? [] : ['none']; }
+  else {
+    var idx = arr.indexOf(val);
+    arr = arr.filter(function(v){ return v!=='none'; });
+    if(idx>=0) arr.splice(arr.indexOf(val),1); else arr.push(val);
+    wobAnswers[id] = arr;
+  }
+  renderWobStep();
+}
+
+function wobBack(){
+  if(wobStep > 0){ wobStep--; renderWobStep(); }
+  else { goTo('screen-workouts'); }
+}
+
+function wobNext(){
+  var step = WOB_STEPS[wobStep];
+  var val = wobAnswers[step.id];
+  if(!val || (Array.isArray(val) && val.length === 0)){
+    // auto-select "none" for injuries if skipped
+    if(step.id === 'injuries'){ wobAnswers[step.id] = ['none']; }
+    else { alert('אנא בחר אפשרות'); return; }
+  }
+  if(wobStep < WOB_STEPS.length - 1){
+    wobStep++;
+    renderWobStep();
+  } else {
+    finishWorkoutOnboarding();
+  }
+}
+
+function finishWorkoutOnboarding(){
+  var profile = LS.get('profile', {});
+  wobAnswers.name = profile.name || '';
+  wobAnswers.age = profile.age || 25;
+  wobAnswers.sex = profile.sex || 'male';
+  wobAnswers.weight = profile.weight || 70;
+  LS.set('workoutProfile', wobAnswers);
+  launchWorkoutFromProfile(wobAnswers);
+}
+
+/* ── Return user: quick confirm ── */
+function openReturnWorkoutModal(saved){
+  var exp = {beginner:'מתחיל', intermediate:'בינוני', advanced:'מנוסה'}[saved.experience] || saved.experience;
+  var goal = {weight_loss:'ירידה במשקל', muscle:'בניית שריר', fitness:'כושר כללי', strength:'כוח מקסימלי'}[saved.goal] || saved.goal;
+  document.getElementById('wo-return-summary').textContent = exp+' · '+goal+' · '+saved.time+' דק׳';
+  document.getElementById('wo-return-modal').classList.add('show');
+}
+
+function continueWithSavedProfile(){
+  document.getElementById('wo-return-modal').classList.remove('show');
+  var saved = LS.get('workoutProfile', {});
+  // Refresh age/weight from current profile
+  var profile = LS.get('profile', {});
+  saved.age = profile.age || saved.age || 25;
+  saved.weight = profile.weight || saved.weight || 70;
+  launchWorkoutFromProfile(saved);
+}
+
+function resetWorkoutProfile(){
+  document.getElementById('wo-return-modal').classList.remove('show');
+  LS.set('workoutProfile', null);
+  wobStep = 0; wobAnswers = {};
+  goTo('screen-workout-onboard');
+  renderWobStep();
+}
+
+/* ── Exercise library ── */
+var EXERCISES = {
+  /* Bodyweight – safe for all levels, no equipment */
+  pushup:        {name:'שכיבות סמיכה',        ic:'💪', min:'beginner', equip:['none','dumbbells','gym'], muscles:'חזה, כתפיים, טריצפס', injuries_avoid:['shoulder','wrist']},
+  squat_bw:      {name:'סקוואט משקל גוף',      ic:'🦵', min:'beginner', equip:['none','dumbbells','gym'], muscles:'ירכיים, ישבן', injuries_avoid:['knee']},
+  lunge:         {name:'פסיעה',                 ic:'🚶', min:'beginner', equip:['none','dumbbells','gym'], muscles:'ירכיים, ישבן', injuries_avoid:['knee']},
+  glute_bridge:  {name:'גשר ישבן',             ic:'🍑', min:'beginner', equip:['none','dumbbells','gym'], muscles:'ישבן, גב תחתון', injuries_avoid:[]},
+  plank:         {name:'פלאנק',                ic:'⚡', min:'beginner', equip:['none','dumbbells','gym'], muscles:'ליבה, כתפיים', injuries_avoid:['shoulder','wrist','back']},
+  mountain:      {name:'Mountain Climbers',      ic:'🧗', min:'beginner', equip:['none','dumbbells','gym'], muscles:'ליבה, קרדיו', injuries_avoid:['wrist','back']},
+  wall_sit:      {name:'ישיבת קיר',            ic:'🪑', min:'beginner', equip:['none','dumbbells','gym'], muscles:'ירכיים', injuries_avoid:['knee']},
+  hip_thrust_bw: {name:'היפ תראסט',            ic:'🏋', min:'beginner', equip:['none','dumbbells','gym'], muscles:'ישבן', injuries_avoid:[]},
+  superman:      {name:'סופרמן (גב)',           ic:'🦸', min:'beginner', equip:['none','dumbbells','gym'], muscles:'גב תחתון', injuries_avoid:['back']},
+  calf_raise:    {name:'עלייה על קצות אצבעות', ic:'🦶', min:'beginner', equip:['none','dumbbells','gym'], muscles:'שוקיים', injuries_avoid:[]},
+  /* Dumbbell */
+  db_press:      {name:'לחיצת חזה דמבלים',    ic:'🏋', min:'beginner', equip:['dumbbells','gym'], muscles:'חזה, טריצפס', injuries_avoid:['shoulder']},
+  db_row:        {name:'חתירה דמבל',            ic:'💪', min:'beginner', equip:['dumbbells','gym'], muscles:'גב, ביצפס', injuries_avoid:['back','wrist']},
+  db_squat:      {name:'סקוואט דמבלים',        ic:'🦵', min:'beginner', equip:['dumbbells','gym'], muscles:'ירכיים, ישבן', injuries_avoid:['knee','back']},
+  db_shoulder:   {name:'לחיצת כתפיים דמבלים', ic:'💪', min:'beginner', equip:['dumbbells','gym'], muscles:'כתפיים, טריצפס', injuries_avoid:['shoulder','wrist']},
+  db_curl:       {name:'כפיפת מרפק דמבלים',   ic:'💪', min:'beginner', equip:['dumbbells','gym'], muscles:'ביצפס', injuries_avoid:['wrist']},
+  db_lateral:    {name:'הרחקה צדדית',          ic:'🏋', min:'beginner', equip:['dumbbells','gym'], muscles:'כתפיים', injuries_avoid:['shoulder']},
+  db_rdl:        {name:'RDL (רגל ישרה) דמבלים',ic:'🦵', min:'intermediate', equip:['dumbbells','gym'], muscles:'ירכיים אחוריות, גב', injuries_avoid:['back','knee']},
+  /* Gym – intermediate */
+  barbell_squat: {name:'סקוואט מוט',           ic:'🏋', min:'intermediate', equip:['gym'], muscles:'ירכיים, ישבן, גב', injuries_avoid:['knee','back','shoulder']},
+  bench_press:   {name:'לחיצת חזה מוט',        ic:'🏋', min:'intermediate', equip:['gym'], muscles:'חזה, טריצפס', injuries_avoid:['shoulder','wrist']},
+  ohp:           {name:'לחיצת כתפיים מוט',     ic:'🏋', min:'intermediate', equip:['gym'], muscles:'כתפיים, טריצפס', injuries_avoid:['shoulder','back']},
+  pullup:        {name:'מתח',                   ic:'💪', min:'intermediate', equip:['gym'], muscles:'גב, ביצפס', injuries_avoid:['shoulder','wrist']},
+  cable_row:     {name:'חתירה בכבל',            ic:'💪', min:'intermediate', equip:['gym'], muscles:'גב, ביצפס', injuries_avoid:['back']},
+  lat_pulldown:  {name:'משיכה לחזה',           ic:'💪', min:'intermediate', equip:['gym'], muscles:'גב, ביצפס', injuries_avoid:['shoulder']},
+  leg_press:     {name:'לחיצת רגליים במכונה',  ic:'🦵', min:'beginner', equip:['gym'], muscles:'ירכיים, ישבן', injuries_avoid:['knee','back']},
+  chest_fly:     {name:'פרפר חזה (פלי)',        ic:'🏋', min:'beginner', equip:['gym'], muscles:'חזה', injuries_avoid:['shoulder']},
+  /* Advanced only */
+  deadlift:      {name:'דדליפט',               ic:'🏆', min:'advanced', equip:['gym'], muscles:'גב שלם, ירכיים, ישבן', injuries_avoid:['back','knee','wrist']},
+  power_clean:   {name:'כוח נקי (Power Clean)',ic:'🏆', min:'advanced', equip:['gym'], muscles:'גוף שלם', injuries_avoid:['back','shoulder','wrist','knee']}
+};
+
+var LEVEL_ORDER = ['beginner','intermediate','advanced'];
+
+function buildWorkoutPlan(wp){
+  var injuries = wp.injuries || ['none'];
+  var levelIdx = LEVEL_ORDER.indexOf(wp.experience);
+
+  // Filter exercises
+  var pool = Object.keys(EXERCISES).filter(function(k){
+    var ex = EXERCISES[k];
+    // Must match equipment
+    if(ex.equip.indexOf(wp.equipment) < 0) return false;
+    // Must not exceed level
+    if(LEVEL_ORDER.indexOf(ex.min) > levelIdx) return false;
+    // Must avoid injury zones
+    if(injuries.indexOf('none') < 0){
+      for(var i=0;i<injuries.length;i++){
+        if(ex.injuries_avoid.indexOf(injuries[i]) >= 0) return false;
+      }
+    }
+    return true;
+  });
+
+  // Pick exercises based on goal
+  var goalGroups = {
+    weight_loss:  ['squat_bw','lunge','glute_bridge','mountain','pushup','plank','db_squat','db_row','calf_raise'],
+    muscle:       ['db_press','db_row','db_squat','db_shoulder','db_curl','barbell_squat','bench_press','ohp','lat_pulldown','pullup','leg_press'],
+    fitness:      ['squat_bw','pushup','lunge','plank','db_press','db_row','db_squat','cable_row','lat_pulldown'],
+    strength:     ['barbell_squat','bench_press','ohp','deadlift','pullup','cable_row','db_rdl']
+  };
+
+  var preferred = (goalGroups[wp.goal] || goalGroups.fitness).filter(function(k){
+    return pool.indexOf(k) >= 0;
+  });
+
+  // Fill to quota from remaining pool
+  var rest = pool.filter(function(k){ return preferred.indexOf(k) < 0; });
+  var quota = wp.time <= 20 ? 3 : wp.time <= 45 ? 5 : 7;
+  var picks = preferred.slice(0, quota);
+  if(picks.length < quota) picks = picks.concat(rest.slice(0, quota - picks.length));
+
+  var setsPerEx = wp.goal === 'strength' ? 4 : (wp.experience === 'beginner' ? 2 : 3);
+  var repsPerSet = wp.goal === 'strength' ? 5 : (wp.goal === 'muscle' ? 10 : 12);
+  var restSec = wp.goal === 'strength' ? 180 : (wp.goal === 'muscle' ? 90 : 60);
+
+  return picks.map(function(k){
+    var ex = EXERCISES[k];
+    var sets = [];
+    for(var i=0;i<setsPerEx;i++) sets.push({target_w:0, target_r:repsPerSet, w:0, r:0, done:false});
+    return {key:k, name:ex.name, ic:ex.ic, muscles:ex.muscles, sets:sets, restSec:restSec};
+  });
+}
+
+function launchWorkoutFromProfile(wp){
+  var plan = buildWorkoutPlan(wp);
+  activeWorkout = { startedAt: Date.now(), exercises: plan, profile: wp };
+  LS.set('activeWorkoutDraft', activeWorkout);
+  goTo('screen-activeworkout');
+  renderActiveWorkout();
+  if(activeWorkoutTimerHandle) clearInterval(activeWorkoutTimerHandle);
+  activeWorkoutTimerHandle = setInterval(updateActiveWorkoutTimer, 1000);
+}
+
+window.startWorkoutOnboarding = startWorkoutOnboarding;
+window.wobBack = wobBack; window.wobNext = wobNext;
+window.wobSelect = wobSelect; window.wobToggle = wobToggle;
+window.continueWithSavedProfile = continueWithSavedProfile;
+window.resetWorkoutProfile = resetWorkoutProfile;
+
+/* ===================== ACTIVE WORKOUT TRACKER ===================== */
+var activeWorkout = null;
+var activeWorkoutTimerHandle = null;
+var restTimerHandle = null;
+var restSecondsLeft = 90;
+var EXERCISE_PRESETS = ['סקוואט','דדליפט','לחיצת חזה','משיכה לחזה','לחיצת כתפיים','כפיפת מרפק'];
+function epley1RM(weight, reps){ return weight * (1 + reps/30); }
+function startActiveWorkout(){
+  activeWorkout = { startedAt: Date.now(), exercises: EXERCISE_PRESETS.slice(0,3).map(function(name){
+    return { name:name, sets:[{target_w:0,target_r:8,w:0,r:0,done:false},{target_w:0,target_r:8,w:0,r:0,done:false},{target_w:0,target_r:8,w:0,r:0,done:false}] };
+  })};
+  LS.set('activeWorkoutDraft', activeWorkout);
+  goTo('screen-activeworkout');
+  renderActiveWorkout();
+  if(activeWorkoutTimerHandle) clearInterval(activeWorkoutTimerHandle);
+  activeWorkoutTimerHandle = setInterval(updateActiveWorkoutTimer, 1000);
+}
+function updateActiveWorkoutTimer(){
+  if(!activeWorkout) return;
+  var secs = Math.floor((Date.now()-activeWorkout.startedAt)/1000);
+  var mm = String(Math.floor(secs/60)).padStart(2,'0');
+  var ss = String(secs%60).padStart(2,'0');
+  var el = document.getElementById('aw-timer');
+  if(el) el.textContent = mm+':'+ss;
+}
+function renderActiveWorkout(){
+  if(!activeWorkout) return;
+  var html = '';
+  activeWorkout.exercises.forEach(function(ex, ei){
+    var ic = ex.ic || '💪';
+    var muscles = ex.muscles ? '<span class="muted" style="font-size:11px;"> · '+ex.muscles+'</span>' : '';
+    html += '<div class="card">'+
+      '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px;">'+
+        '<div><span style="font-size:20px;margin-left:6px;">'+ic+'</span><b>'+ex.name+'</b>'+muscles+'</div>'+
+        '<button class="btn secondary" style="padding:4px 10px;font-size:12px;flex-shrink:0;" onclick="swapExercise('+ei+')">החלף</button>'+
+      '</div>';
+    ex.sets.forEach(function(s, si){
+      html += '<div class="row" style="align-items:center;gap:6px;background:'+(s.done?'rgba(61,220,151,0.12)':'transparent')+';border-radius:8px;padding:4px;">'+
+        '<span style="flex:0 0 30px;font-size:13px;">סט '+(si+1)+'</span>'+
+        '<input type="number" placeholder="ק״ג" value="'+(s.w||'')+'" oninput="updateSetField('+ei+','+si+',\'w\',this.value)" style="flex:1;">'+
+        '<input type="number" placeholder="חזרות" value="'+(s.r||'')+'" oninput="updateSetField('+ei+','+si+',\'r\',this.value)" style="flex:1;">'+
+        '<button class="icon-btn" onclick="toggleSetDone('+ei+','+si+')">'+(s.done?'&#9989;':'&#9744;')+'</button>'+
+        '</div>';
+    });
+    var est1rm = ex.sets.reduce(function(max,s){ return s.w&&s.r ? Math.max(max, epley1RM(s.w,s.r)) : max; }, 0);
+    if(est1rm) html += '<div class="muted" style="font-size:12px;margin-top:4px;">1RM משוער: '+Math.round(est1rm)+' ק״ג</div>';
+    html += '</div>';
+  });
+  document.getElementById('aw-exercise-list').innerHTML = html;
+}
+function updateSetField(ei, si, field, val){
+  activeWorkout.exercises[ei].sets[si][field] = parseFloat(val)||0;
+  LS.set('activeWorkoutDraft', activeWorkout);
+}
+function toggleSetDone(ei, si){
+  var s = activeWorkout.exercises[ei].sets[si];
+  s.done = !s.done;
+  LS.set('activeWorkoutDraft', activeWorkout);
+  renderActiveWorkout();
+  if(s.done) openRestTimer();
+}
+function swapExercise(ei){
+  var wp = activeWorkout.profile || LS.get('workoutProfile', {experience:'beginner',equipment:'none',injuries:['none']});
+  var injuries = wp.injuries || ['none'];
+  var levelIdx = LEVEL_ORDER.indexOf(wp.experience || 'beginner');
+  var currentKey = activeWorkout.exercises[ei].key;
+  var usedKeys = activeWorkout.exercises.map(function(e){ return e.key; });
+  var pool = Object.keys(EXERCISES).filter(function(k){
+    if(k === currentKey || usedKeys.indexOf(k) >= 0) return false;
+    var ex = EXERCISES[k];
+    if(ex.equip.indexOf(wp.equipment || 'none') < 0) return false;
+    if(LEVEL_ORDER.indexOf(ex.min) > levelIdx) return false;
+    if(injuries.indexOf('none') < 0){
+      for(var i=0;i<injuries.length;i++){ if(ex.injuries_avoid.indexOf(injuries[i])>=0) return false; }
+    }
+    return true;
+  });
+  if(!pool.length) return;
+  var k = pool[Math.floor(Math.random()*pool.length)];
+  var ex = EXERCISES[k];
+  var oldSets = activeWorkout.exercises[ei].sets;
+  activeWorkout.exercises[ei] = {key:k, name:ex.name, ic:ex.ic, muscles:ex.muscles, sets:oldSets, restSec:activeWorkout.exercises[ei].restSec};
+  LS.set('activeWorkoutDraft', activeWorkout);
+  renderActiveWorkout();
+}
+function addCustomExercise(){
+  var name = prompt('שם התרגיל:');
+  if(!name) return;
+  activeWorkout.exercises.push({name:name, sets:[{target_w:0,target_r:8,w:0,r:0,done:false},{target_w:0,target_r:8,w:0,r:0,done:false}]});
+  LS.set('activeWorkoutDraft', activeWorkout);
+  renderActiveWorkout();
+}
+function openRestTimer(){
+  restSecondsLeft = 90;
+  document.getElementById('aw-rest-overlay').style.display = 'block';
+  document.getElementById('aw-rest-timer').textContent = restSecondsLeft;
+  if(restTimerHandle) clearInterval(restTimerHandle);
+  restTimerHandle = setInterval(function(){
+    restSecondsLeft--;
+    document.getElementById('aw-rest-timer').textContent = Math.max(0,restSecondsLeft);
+    if(restSecondsLeft<=0){ clearInterval(restTimerHandle); document.getElementById('aw-rest-overlay').style.display='none'; }
+  }, 1000);
+}
+function adjustRestTimer(delta){ restSecondsLeft = Math.max(0, restSecondsLeft+delta); document.getElementById('aw-rest-timer').textContent = restSecondsLeft; }
+function skipRestTimer(){ if(restTimerHandle) clearInterval(restTimerHandle); document.getElementById('aw-rest-overlay').style.display='none'; }
+function openFinishWorkoutModal(){ document.getElementById('finish-workout-modal').classList.add('show'); }
+function endActiveWorkoutPrompt(){
+  if(activeWorkout && confirm('לצאת בלי לשמור את האימון?')){
+    activeWorkout = null; LS.set('activeWorkoutDraft', null);
+    if(activeWorkoutTimerHandle) clearInterval(activeWorkoutTimerHandle);
+    goTo('screen-workouts'); if(window.renderWorkouts) window.renderWorkouts();
+  } else if(!activeWorkout){ goTo('screen-workouts'); }
+}
+function finishActiveWorkout(){
+  var rpe = parseInt(document.getElementById('aw-rpe').value,10);
+  var durationMin = Math.round((Date.now()-activeWorkout.startedAt)/60000);
+  var key = todayKey();
+  var log = LS.get('workoutLog', {});
+  log[key] = log[key] || [];
+  var totalCal = Math.max(50, durationMin*7);
+  log[key].push({type:'אימון כוח (מעקב סטים)', duration:durationMin, calories:totalCal, source:'tracker', ts:Date.now(), rpe:rpe});
+  LS.set('workoutLog', log);
+  activeWorkout = null;
+  LS.set('activeWorkoutDraft', null);
+  if(activeWorkoutTimerHandle) clearInterval(activeWorkoutTimerHandle);
+  if(restTimerHandle) clearInterval(restTimerHandle);
+  document.getElementById('finish-workout-modal').classList.remove('show');
+  goTo('screen-workouts');
+  if(window.renderWorkouts) window.renderWorkouts();
+}
+window.startActiveWorkout = startActiveWorkout; window.updateSetField = updateSetField;
+window.toggleSetDone = toggleSetDone; window.swapExercise = swapExercise; window.addCustomExercise = addCustomExercise;
+window.adjustRestTimer = adjustRestTimer; window.skipRestTimer = skipRestTimer; window.openFinishWorkoutModal = openFinishWorkoutModal;
+window.endActiveWorkoutPrompt = endActiveWorkoutPrompt; window.finishActiveWorkout = finishActiveWorkout;
+
+/* ===================== SLEEP & RECOVERY ===================== */
+function renderSleepScreen(){
+  var deep = parseFloat(document.getElementById('sl-deep').value)||0;
+  var rem = parseFloat(document.getElementById('sl-rem').value)||0;
+  var light = parseFloat(document.getElementById('sl-light').value)||0;
+  var awake = parseFloat(document.getElementById('sl-awake').value)||0;
+  var total = deep+rem+light;
+  var inBed = total+awake;
+  var targetHours = 8;
+  var durationPct = Math.min(100, (total/targetHours)*100);
+  var deepRemPct = total ? ((deep+rem)/total)*100 : 0;
+  var qualityScore = Math.max(0, 100 - Math.abs(deepRemPct-45)*2);
+  var efficiency = inBed ? (total/inBed)*100 : 0;
+  var sleepScore = Math.round(0.4*durationPct + 0.4*qualityScore + 0.2*efficiency);
+
+  var profile = LS.get('profile', {});
+  var hrv = LS.get('vytalMetrics', {}).hrv || (50+Math.round(Math.random()*20));
+  var rhr = LS.get('vytalMetrics', {}).rhr || (58+Math.round(Math.random()*8));
+  var tempDelta = (Math.random()*0.6-0.3).toFixed(1);
+  var rhrBaseline = 62;
+  var hrvBaseline = 58;
+  var hrvDeviation = (hrv-hrvBaseline)/hrvBaseline;
+  var rhrDeviation = rhr-rhrBaseline;
+  var recoveryScore = Math.round(Math.max(20, Math.min(98, 70 + hrvDeviation*100 - rhrDeviation*1.5 + (sleepScore-70)*0.2)));
+
+  var circle = document.getElementById('recovery-circle');
+  var pct = recoveryScore/100;
+  var circumference = 2*Math.PI*64;
+  circle.style.strokeDasharray = circumference;
+  circle.style.strokeDashoffset = circumference*(1-pct);
+  circle.style.stroke = recoveryScore>=70?'#3ddc97':(recoveryScore>=50?'#f5c451':'#ff6b6b');
+  document.getElementById('recovery-num').textContent = recoveryScore;
+
+  document.getElementById('recovery-metrics-grid').innerHTML =
+    '<div class="card"><div class="muted" style="font-size:12px;">HRV (שונות דופק)</div><div style="font-size:20px;font-weight:800;">'+hrv+' ms</div></div>'+
+    '<div class="card"><div class="muted" style="font-size:12px;">דופק מנוחה (RHR)</div><div style="font-size:20px;font-weight:800;">'+rhr+' BPM</div></div>'+
+    '<div class="card"><div class="muted" style="font-size:12px;">יעילות שינה</div><div style="font-size:20px;font-weight:800;">'+Math.round(efficiency)+'%</div></div>'+
+    '<div class="card"><div class="muted" style="font-size:12px;">סטיית טמפ׳ עור</div><div style="font-size:20px;font-weight:800;">'+(tempDelta>0?'+':'')+tempDelta+'&deg;C</div></div>';
+
+  var illnessBanner = document.getElementById('sleep-illness-banner');
+  if(tempDelta>1.2 && rhrDeviation>15 && hrvDeviation < -1){
+    illnessBanner.style.display='block';
+    illnessBanner.innerHTML = '&#129489;&#8205;&#9877;&#65039; Vytal OS זיהתה שינוי פיזיולוגי חריג במדדי הגוף שלך הלילה. ה-AI השבית את משימות האימון להיום ושינה את יעד התזונה למנוחה והתאוששות.';
+  } else {
+    illnessBanner.style.display='none';
+  }
+
+  var insight = recoveryScore>=70 ?
+    'התאוששת היטב! '+(deepRemPct<35?'שים לב ששלבי השינה העמוקה וה-REM היו נמוכים מהאופטימלי, כדאי לבדוק את שעת השכיבה.':'הגוף מוכן ליום מאתגר.') :
+    (recoveryScore>=50 ? 'התאוששות בינונית. אימון קל עד מתון מומלץ היום.' : 'התאוששות נמוכה - שווה לשקול יום מנוחה או אימון קל מאוד.');
+  document.getElementById('sleep-ai-insight').innerHTML = '<b>תובנת ה-AI Coach</b><div class="muted" style="margin-top:6px;">'+insight+'</div>';
+}
+function openFeelingPrompt(){
+  var v = prompt('איך אתה מרגיש היום? (1=מותש, 5=מצוין)');
+  if(v) alert('תודה! נשמור את התחושה שלך (' + v + '/5) ונשווה אותה למדדי החיישנים.');
+}
+window.renderSleepScreen = renderSleepScreen; window.openFeelingPrompt = openFeelingPrompt;
+
+window.__vytal_part7_loaded = true;
+
+/* global error visibility for debugging */
+window.addEventListener('error', function(e){
+  console.error('Vytal OS error:', e.message, e.filename, e.lineno);
+});
+})();
+</script>
+</body>
+</html>
