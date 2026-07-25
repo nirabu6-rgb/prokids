@@ -397,8 +397,7 @@ function Header({ title, onNavigate, onOpenLead }) {
 function BottomNav({ active, onChange }) {
   const items = [
     { id: "dashboard", label: "דשבורד", Icon: Home },
-    { id: "video", label: "צילומים", Icon: Video },
-    { id: "editing", label: "עריכה", Icon: Scissors },
+    { id: "studio", label: "אולפן", Icon: Video },
     { id: "campaigns", label: "קמפיינים", Icon: Megaphone },
     { id: "bot", label: "בוט", Icon: MessageCircle },
   ];
@@ -514,7 +513,7 @@ function Dashboard({ videoCount, activeCampaigns, leadsCount, closedCount, campa
 
 /* ------------------------ Module: Director (capture) ----------------------- */
 
-function Director({ onSaveClip, onCancel }) {
+function Director({ onSaveClip, onCancel, initialScript }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -527,8 +526,8 @@ function Director({ onSaveClip, onCancel }) {
   const [brightness, setBrightness] = useState(120);
   const [audioLevel, setAudioLevel] = useState(40);
   const [stable, setStable] = useState(true);
-  const [teleOn, setTeleOn] = useState(false);
-  const [teleText, setTeleText] = useState("היום אני רוצה לספר לכם למה הבחירה הזו תשנה את העסק שלכם...");
+  const [teleOn, setTeleOn] = useState(!!initialScript);
+  const [teleText, setTeleText] = useState(initialScript || "היום אני רוצה לספר לכם למה הבחירה הזו תשנה את העסק שלכם...");
   const [recording, setRecording] = useState(false);
   const [recordTime, setRecordTime] = useState(0);
   const [recordedURL, setRecordedURL] = useState(null);
@@ -902,26 +901,138 @@ function LibraryBrowser({ items, onSelect, defaultView = "carousel" }) {
   );
 }
 
-function VideoTab({ library, onSaveClip, onEditClip }) {
-  const [capturing, setCapturing] = useState(false);
-  if (capturing) return <Director onSaveClip={(url) => { onSaveClip(url); setCapturing(false); }} onCancel={() => setCapturing(false)} />;
+function buildVideoScript(topic) {
+  const t = topic.trim();
+  return `פתיחה (5 השניות הראשונות):
+תפסו תשומת לב במשפט אחד על "${t}" — שאלה, טענה נועזת או תוצאה מוחשית.
+
+גוף:
+הסבירו בקצרה למה זה חשוב, ותנו דוגמה או מספר אחד שמוכיח את זה.
+
+סיום (קריאה לפעולה):
+הזמינו לפעולה ברורה אחת — לשלוח הודעה, להזמין תור, או לבקר בעמוד.`;
+}
+
+function ScriptPlanner({ onConfirm, onCancel }) {
+  const [messages, setMessages] = useState([
+    { who: "bot", text: "היי! על מה תרצה שהסרטון הבא יספר? תאר במילים שלך, ונבנה יחד תסריט קצר לצילום." },
+  ]);
+  const [input, setInput] = useState("");
+  const [listening, setListening] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [script, setScript] = useState("");
+  const recognitionRef = useRef(null);
+
+  const toggleMic = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    if (listening) { recognitionRef.current?.stop(); setListening(false); return; }
+    const r = new SR();
+    r.lang = "he-IL";
+    r.onresult = (e) => setInput((p) => (p ? p + " " : "") + e.results[0][0].transcript);
+    r.onend = () => setListening(false);
+    recognitionRef.current = r;
+    r.start();
+    setListening(true);
+  };
+
+  const send = () => {
+    const text = input.trim();
+    if (!text) return;
+    setMessages((m) => [...m, { who: "lead", text }]);
+    setInput("");
+    setThinking(true);
+    setTimeout(() => {
+      setThinking(false);
+      setScript(buildVideoScript(text));
+      setMessages((m) => [...m, { who: "bot", text: "מעולה! בניתי לך תסריט קצר למטה — אפשר לערוך אותו, ולאשר כשמוכנים לצלם." }]);
+    }, 1300);
+  };
 
   return (
     <div className="screen">
-      <div className="eyebrow">צילומים</div>
-      <h1 className="h1">ספריית הסרטונים שלך</h1>
-      <p className="sub">כל טייק שצילמת נשמר כאן.</p>
+      <BackLink label="חזרה לספרייה" onClick={onCancel} />
+      <div className="eyebrow">תכנון עם עוזר התוכן</div>
+      <h1 className="h1">ספר לי על מה הסרטון</h1>
+      <p className="sub">עונים בקצרה, ומקבלים תסריט מובנה לצילום.</p>
 
-      <button className="btn-primary" style={{ marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={() => setCapturing(true)}>
-        <Plus size={13} /> צלם סרטון חדש
-      </button>
+      <div className="card">
+        <div className="chat-scroll">
+          {messages.map((m, i) => <div key={i} className={`bubble ${m.who}`}>{m.text}</div>)}
+          {thinking && <div className="typing"><span /><span /><span /></div>}
+        </div>
+      </div>
 
-      <LibraryBrowser items={library} onSelect={onEditClip} defaultView="carousel" />
+      {!script && (
+        <div className="card">
+          <textarea value={input} onChange={(e) => setInput(e.target.value)}
+            placeholder="לדוגמה: מבצע קיץ על טיפולי פנים, מיועד ללקוחות חדשות" rows={2}
+            style={{ width: "100%", background: "transparent", border: "none", color: "var(--text)", fontSize: 13, resize: "none", outline: "none" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button className={`icon-btn ${listening ? "on" : ""}`} onClick={toggleMic}>{listening ? <MicOff size={14} /> : <Mic size={14} />}</button>
+            <button className="btn-primary" style={{ width: "auto", padding: "9px 16px" }} disabled={!input.trim()} onClick={send}>שלח</button>
+          </div>
+        </div>
+      )}
+
+      {script && (
+        <>
+          <div className="card">
+            <p className="sub" style={{ marginBottom: 6 }}>התסריט שלך — אפשר לערוך</p>
+            <textarea value={script} onChange={(e) => setScript(e.target.value)} rows={7}
+              style={{ width: "100%", background: "var(--surface-2)", border: "1px solid var(--line)", borderRadius: 8, padding: 10, color: "var(--text)", fontSize: 13, lineHeight: 1.6, fontFamily: "inherit" }} />
+          </div>
+          <button className="btn-primary" onClick={() => onConfirm(script)}>
+            <Video size={13} style={{ marginLeft: 5, verticalAlign: "-2px" }} /> אשר והתחל לצלם
+          </button>
+        </>
+      )}
     </div>
   );
 }
 
-/* ------------------------ Editing tab -------------------------- */
+function StudioTab({ library, onAddClip }) {
+  const [mode, setMode] = useState("library");
+  const [script, setScript] = useState("");
+  const [activeClipId, setActiveClipId] = useState(null);
+
+  if (mode === "plan") {
+    return <ScriptPlanner onConfirm={(s) => { setScript(s); setMode("record"); }} onCancel={() => setMode("library")} />;
+  }
+  if (mode === "record") {
+    return (
+      <Director
+        initialScript={script}
+        onSaveClip={(url) => {
+          const id = onAddClip(url);
+          setActiveClipId(id);
+          setMode("edit");
+        }}
+        onCancel={() => setMode("library")}
+      />
+    );
+  }
+  if (mode === "edit" && activeClipId) {
+    const clip = library.find((c) => c.id === activeClipId);
+    if (clip) return <EditorFlow clip={clip} onDone={() => { setActiveClipId(null); setMode("library"); }} />;
+  }
+
+  return (
+    <div className="screen">
+      <div className="eyebrow">אולפן</div>
+      <h1 className="h1">ספריית הסרטונים שלך</h1>
+      <p className="sub">תכנון, צילום ועריכה — הכל במקום אחד.</p>
+
+      <button className="btn-primary" style={{ marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={() => setMode("plan")}>
+        <Plus size={13} /> צור סרטון חדש
+      </button>
+
+      <LibraryBrowser items={library} onSelect={(id) => { setActiveClipId(id); setMode("edit"); }} defaultView="carousel" />
+    </div>
+  );
+}
+
+/* ------------------------ Editing (shared with Studio) -------------------------- */
 
 function EditorFlow({ clip, onDone }) {
   const [prompt, setPrompt] = useState("");
@@ -1043,21 +1154,6 @@ function EditorFlow({ clip, onDone }) {
         )}
         {ready && <button className="btn-primary" disabled={!selected} onClick={onDone}>שמור גרסה נבחרת</button>}
       </div>
-    </div>
-  );
-}
-
-function EditingTab({ library, editingClipId, onSelectClip, onDone }) {
-  if (editingClipId) {
-    const clip = library.find((c) => c.id === editingClipId);
-    if (clip) return <EditorFlow clip={clip} onDone={onDone} />;
-  }
-  return (
-    <div className="screen">
-      <div className="eyebrow">עריכה</div>
-      <h1 className="h1">בחר סרטון לעריכה</h1>
-      <p className="sub">כל סרטון בספריה אפשר להעביר לאולפן העריכה.</p>
-      <LibraryBrowser items={library} onSelect={onSelectClip} defaultView="grid" />
     </div>
   );
 }
@@ -1850,7 +1946,7 @@ function Onboarding({ onComplete }) {
 /* ------------------------------- Floating quick-nav ------------------------------- */
 
 const FAB_ITEMS = [
-  { id: "video", label: "סרטונים אחרונים", Icon: Video },
+  { id: "studio", label: "סרטונים אחרונים", Icon: Video },
   { id: "publications", label: "פרסומים", Icon: PlaySquare },
   { id: "reports", label: "דוחות", Icon: ChartIcon },
   { id: "calendar", label: "יומן", Icon: Calendar },
@@ -1945,7 +2041,6 @@ function App() {
     { id: "demo3", url: null, label: "ריל לפני/אחרי — לקוח מרוצה", status: "מוכן לפרסום" },
     { id: "demo4", url: null, label: "טייק גולמי מהצילום האחרון", status: "טיוטה" },
   ]);
-  const [editingClipId, setEditingClipId] = useState(null);
   const [campaigns, setCampaigns] = useState([
     { id: "c1", name: "קמפיין השקה — קיץ 2026", goal: "לידים", budget: 2000, avgCpl: 31, status: "פעיל", startDate: "15/06/2026" },
     { id: "c2", name: "מבצע סוף עונה", goal: "מכירות", budget: 1200, avgCpl: 48, status: "פעיל", startDate: "01/07/2026" },
@@ -2001,10 +2096,10 @@ function App() {
   }, []);
 
   const addClip = (url) => {
-    const clip = { id: "clip-" + Date.now(), url, label: "סרטון חדש", status: "טיוטה" };
+    const id = "clip-" + Date.now();
+    const clip = { id, url, label: "סרטון חדש", status: "טיוטה" };
     setLibrary((lib) => [clip, ...lib]);
-    setEditingClipId(clip.id);
-    setTab("editing");
+    return id;
   };
 
   const addCampaign = (summary) => {
@@ -2023,7 +2118,7 @@ function App() {
     setInvoices((inv) => [{ id: "inv-" + Date.now(), date: fmtDate(new Date()), desc, amount }, ...inv]);
   };
 
-  const titles = { dashboard: "לוח בקרה", video: "צילומים", editing: "עריכה", campaigns: "קמפיינים", publications: "פרסומים", bot: "בוט מכירות", subscription: "מנוי", settings: "הגדרות", reports: "דוחות", calendar: "יומן" };
+  const titles = { dashboard: "לוח בקרה", studio: "אולפן", campaigns: "קמפיינים", publications: "פרסומים", bot: "בוט מכירות", subscription: "מנוי", settings: "הגדרות", reports: "דוחות", calendar: "יומן" };
 
   return (
     <div className="apex-root">
@@ -2051,15 +2146,7 @@ function App() {
               onOpenLead={openLead}
             />
           )}
-          {tab === "video" && <VideoTab library={library} onSaveClip={addClip} onEditClip={(id) => { setEditingClipId(id); setTab("editing"); }} />}
-          {tab === "editing" && (
-            <EditingTab
-              library={library}
-              editingClipId={editingClipId}
-              onSelectClip={setEditingClipId}
-              onDone={() => { setEditingClipId(null); setTab("video"); }}
-            />
-          )}
+          {tab === "studio" && <StudioTab library={library} onAddClip={addClip} />}
           {tab === "campaigns" && <CampaignsTab campaigns={campaigns} onAddCampaign={addCampaign} />}
           {tab === "publications" && <PublicationsTab posts={posts} />}
           {tab === "bot" && <BotTab leads={leads} activeLeadId={activeLeadId} onOpenLead={setActiveLeadId} onCloseLead={closeLead} onBack={() => setActiveLeadId(null)} />}
