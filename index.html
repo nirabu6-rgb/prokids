@@ -544,11 +544,16 @@ function Director({ onSaveClip, onCancel }) {
       const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
       setStream(s);
       setStreaming(true);
-      if (videoRef.current) videoRef.current.srcObject = s;
     } catch (e) {
       setCameraError(true);
     }
   };
+
+  useEffect(() => {
+    if (streaming && stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [streaming, stream]);
 
   const handleGalleryFile = (e) => {
     const file = e.target.files && e.target.files[0];
