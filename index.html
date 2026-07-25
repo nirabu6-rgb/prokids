@@ -628,14 +628,16 @@ function Director({ onSaveClip, onCancel }) {
     }
     chunksRef.current = [];
     recorder.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
+    recorder.onerror = () => setCameraError(true);
     recorder.onstop = () => {
+      if (chunksRef.current.length === 0) { setCameraError(true); return; }
       const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" });
       setRecordedURL(URL.createObjectURL(blob));
       setChecking(true);
       setQualityOk(null);
       setTimeout(() => { setChecking(false); setQualityOk(true); }, 1600);
     };
-    recorder.start();
+    recorder.start(1000);
     mediaRecorderRef.current = recorder;
     setRecording(true);
     setRecordTime(0);
