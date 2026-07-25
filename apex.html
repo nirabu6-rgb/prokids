@@ -604,13 +604,32 @@ function Director({ onSaveClip, onCancel }) {
     return () => clearInterval(interval);
   }, [streaming]);
 
+  const pickRecorderMimeType = () => {
+    const candidates = [
+      "video/webm;codecs=vp9,opus",
+      "video/webm;codecs=vp8,opus",
+      "video/webm",
+      "video/mp4;codecs=h264,aac",
+      "video/mp4",
+    ];
+    if (typeof MediaRecorder === "undefined" || !MediaRecorder.isTypeSupported) return "";
+    return candidates.find((t) => MediaRecorder.isTypeSupported(t)) || "";
+  };
+
   const startRecording = () => {
     if (!stream) return;
-    const recorder = new MediaRecorder(stream);
+    let recorder;
+    try {
+      const mimeType = pickRecorderMimeType();
+      recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    } catch (e) {
+      setCameraError(true);
+      return;
+    }
     chunksRef.current = [];
     recorder.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
     recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" });
       setRecordedURL(URL.createObjectURL(blob));
       setChecking(true);
       setQualityOk(null);
@@ -651,10 +670,10 @@ function Director({ onSaveClip, onCancel }) {
         )}
         {cameraError && (
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, textAlign: "center", color: "var(--muted)", fontSize: 13.5 }}>
-            לא ניתן לגשת למצלמה. אשר הרשאת מצלמה ונסה שוב, או חזור לספריה.
+            לא ניתן לגשת למצלמה או להקליט בדפדפן הזה. אשר הרשאת מצלמה ונסה שוב, או חזור לספריה.
           </div>
         )}
-        {streaming && !recordedURL && (
+        {streaming && !recordedURL && !cameraError && (
           <>
             <video ref={videoRef} autoPlay playsInline muted />
             <div className="grid-overlay">
