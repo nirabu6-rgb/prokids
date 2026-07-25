@@ -282,10 +282,23 @@ const ArrowRight = (p) => <Icon {...p}><line x1="5" y1="12" x2="19" y2="12" /><p
 
 /* ---------------------------- helpers ---------------------------- */
 
-function MediaFrame({ src, style }) {
+const VARIATION_LOOKS = [
+  { seekTo: 0.05, objectPosition: "50% 15%", filter: "saturate(1.3) contrast(1.08)" },
+  { seekTo: 0.42, objectPosition: "50% 50%", filter: "grayscale(0.12) brightness(1.05)" },
+  { seekTo: 0.78, objectPosition: "50% 85%", filter: "sepia(0.16) contrast(1.1)" },
+];
+
+const ratioToCss = (ratio) => (ratio || "9:16").replace(":", " / ");
+
+function MediaFrame({ src, style, seekTo }) {
+  const handleLoaded = (e) => {
+    if (seekTo == null) return;
+    const d = e.target.duration;
+    if (d && isFinite(d)) e.target.currentTime = Math.min(seekTo * d, Math.max(0, d - 0.05));
+  };
   const media = !src || src === "demo"
     ? <div className="video-placeholder" style={style}><Video size={17} /></div>
-    : <video src={src} muted loop autoPlay playsInline style={style} />;
+    : <video src={src} muted loop autoPlay playsInline style={style} onLoadedMetadata={handleLoaded} />;
   return (
     <div className="media-frame-wrap">
       {media}
@@ -1131,17 +1144,21 @@ function EditorFlow({ clip, onDone }) {
       {ready && (
         <>
           <p className="sub" style={{ marginBottom: 8 }}>{aiError ? "לא הצלחנו להתחבר ל-AI כרגע — הצגנו גרסאות לדוגמה:" : "ה-AI ניתח את ההוראה שלך ובנה 3 גרסאות:"}</p>
+          <p className="sub" style={{ marginBottom: 8, fontSize: 12 }}>כל גרסה גוזרת קטע אחר מהצילום המקורי, ביחס וסגנון שונה — לא עריכת AI מלאה, אלא מסגור חכם ומהיר.</p>
           <div className="variations">
-            {variations.map((v) => (
-              <div key={v.id} className={`variation-card ${selected === v.id ? "selected" : ""}`} onClick={() => setSelected(v.id)}>
-                <MediaFrame src={clip.url} />
-                <div className="variation-meta">
-                  <div className="mono">{v.ratio} · {v.duration}</div>
-                  <div style={{ margin: "2px 0" }}>{v.style}</div>
-                  <div style={{ color: "var(--gold-bright)", fontFamily: "Fraunces, serif" }}>"{v.caption}"</div>
+            {variations.map((v, i) => {
+              const look = VARIATION_LOOKS[i % VARIATION_LOOKS.length];
+              return (
+                <div key={v.id} className={`variation-card ${selected === v.id ? "selected" : ""}`} onClick={() => setSelected(v.id)}>
+                  <MediaFrame src={clip.url} seekTo={look.seekTo} style={{ aspectRatio: ratioToCss(v.ratio), objectPosition: look.objectPosition, filter: look.filter }} />
+                  <div className="variation-meta">
+                    <div className="mono">{v.ratio} · {v.duration}</div>
+                    <div style={{ margin: "2px 0" }}>{v.style}</div>
+                    <div style={{ color: "var(--gold-bright)", fontFamily: "Fraunces, serif" }}>"{v.caption}"</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </>
       )}
