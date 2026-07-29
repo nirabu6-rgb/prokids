@@ -68,11 +68,57 @@
     box-shadow:0 25px 60px -20px rgba(20,70,120,.35), 0 4px 18px rgba(20,70,120,.12);
     overflow:hidden;
     border:1px solid rgba(59,130,196,.15);
-    animation:rise .9s cubic-bezier(.2,.8,.2,1) both;
+    opacity:0;
+  }
+  .card.reveal{
+    animation:rise .9s cubic-bezier(.2,.8,.2,1) forwards;
   }
   @keyframes rise{
     from{opacity:0; transform:translateY(24px) scale(.98);}
     to{opacity:1; transform:translateY(0) scale(1);}
+  }
+
+  /* intro sequence */
+  .intro-overlay{
+    position:fixed;
+    inset:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(1200px 600px at 50% -10%, #ffffff 0%, var(--pale) 55%, var(--sky) 100%);
+    transition:opacity .6s ease, visibility .6s ease;
+  }
+  .intro-overlay.hide{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+  .intro-text{
+    font-family:'Frank Ruhl Libre',serif;
+    font-weight:900;
+    color:var(--deep2);
+    font-size:clamp(64px,20vw,150px);
+    letter-spacing:3px;
+    opacity:0;
+    transform:scale(.55);
+  }
+  .intro-text.number{
+    color:var(--blue);
+  }
+  .intro-text.show{
+    animation:introPop .45s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  .intro-text.out{
+    animation:introOut .25s ease forwards;
+  }
+  @keyframes introPop{
+    0%{opacity:0; transform:scale(.5);}
+    60%{opacity:1; transform:scale(1.1);}
+    100%{opacity:1; transform:scale(1);}
+  }
+  @keyframes introOut{
+    to{opacity:0; transform:scale(1.35);}
   }
 
   /* tallit stripe header */
@@ -268,6 +314,10 @@
 </head>
 <body>
 
+  <div class="intro-overlay" id="introOverlay">
+    <div class="intro-text" id="introText"></div>
+  </div>
+
   <div class="bg-star s1"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
   <div class="bg-star s2"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
   <div class="bg-star s3"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
@@ -346,6 +396,40 @@
   }
   tick();
   setInterval(tick, 1000);
+
+  (function(){
+    var overlay = document.getElementById('introOverlay');
+    var textEl = document.getElementById('introText');
+    var card = document.querySelector('.card');
+    var steps = [
+      {text:'3', cls:'number', dur:700},
+      {text:'2', cls:'number', dur:700},
+      {text:'1', cls:'number', dur:700},
+      {text:'SAVE', cls:'', dur:1500},
+      {text:'THE', cls:'', dur:1500},
+      {text:'DATE', cls:'', dur:1500}
+    ];
+    var i = 0;
+    function nextStep(){
+      if (i >= steps.length){
+        overlay.classList.add('hide');
+        card.classList.add('reveal');
+        setTimeout(function(){ overlay.remove(); }, 700);
+        return;
+      }
+      var step = steps[i];
+      textEl.className = 'intro-text show' + (step.cls ? ' ' + step.cls : '');
+      textEl.textContent = step.text;
+      setTimeout(function(){
+        textEl.classList.add('out');
+        setTimeout(function(){
+          i++;
+          nextStep();
+        }, 250);
+      }, step.dur);
+    }
+    nextStep();
+  })();
 </script>
 </body>
 </html>
