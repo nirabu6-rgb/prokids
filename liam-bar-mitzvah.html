@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>שמרו תאריך | הבר מצווה של ליאם אביב</title>
+<meta name="description" content="שמרו תאריך - הבר מצווה של ליאם אביב, 11.3.2027">
+<meta property="og:title" content="שמרו תאריך | הבר מצווה של ליאם אביב">
+<meta property="og:description" content="עלייתו לתורה של ליאם אביב, 11 במרץ 2027">
+<meta property="og:type" content="website">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#ffffff;
+    --pale:#eef7fd;
+    --sky:#bfe0f5;
+    --blue:#3b82c4;
+    --deep:#1a4f86;
+    --deep2:#0e3a66;
+    --gold:#c9a445;
+    --ink:#173653;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    min-height:100vh;
+    font-family:'Heebo',sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #ffffff 0%, var(--pale) 55%, var(--sky) 100%);
+    display:flex;
+    justify-content:center;
+    padding:28px 14px;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* floating stars of david in background */
+  .bg-star{
+    position:fixed;
+    opacity:.12;
+    color:var(--blue);
+    pointer-events:none;
+    animation:float 9s ease-in-out infinite;
+    z-index:0;
+  }
+  .bg-star svg{width:100%;height:100%;display:block;}
+  .bg-star.s1{top:6%; left:6%; width:70px; height:70px; animation-delay:0s;}
+  .bg-star.s2{top:70%; left:9%; width:46px; height:46px; animation-delay:1.5s;}
+  .bg-star.s3{top:14%; right:7%; width:54px; height:54px; animation-delay:.8s;}
+  .bg-star.s4{top:78%; right:10%; width:80px; height:80px; animation-delay:2.2s;}
+  .bg-star.s5{top:42%; left:2%; width:34px; height:34px; animation-delay:.4s;}
+  .bg-star.s6{top:38%; right:3%; width:38px; height:38px; animation-delay:1.1s;}
+  @keyframes float{
+    0%,100%{transform:translateY(0) rotate(0deg);}
+    50%{transform:translateY(-18px) rotate(8deg);}
+  }
+
+  .card{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:560px;
+    background:var(--white);
+    border-radius:26px;
+    box-shadow:0 25px 60px -20px rgba(20,70,120,.35), 0 4px 18px rgba(20,70,120,.12);
+    overflow:hidden;
+    border:1px solid rgba(59,130,196,.15);
+    opacity:0;
+  }
+  .card.reveal{
+    animation:rise .9s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  @keyframes rise{
+    from{opacity:0; transform:translateY(24px) scale(.98);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+
+  /* intro sequence */
+  .intro-overlay{
+    position:fixed;
+    inset:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(1200px 600px at 50% -10%, #ffffff 0%, var(--pale) 55%, var(--sky) 100%);
+    transition:opacity .6s ease, visibility .6s ease;
+  }
+  .intro-overlay.hide{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+  .intro-text{
+    font-family:'Frank Ruhl Libre',serif;
+    font-weight:900;
+    color:var(--deep2);
+    font-size:clamp(64px,20vw,150px);
+    letter-spacing:3px;
+    opacity:0;
+    transform:scale(.55);
+  }
+  .intro-text.number{
+    color:var(--blue);
+  }
+  .intro-text.show{
+    animation:introPop .45s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  .intro-text.out{
+    animation:introOut .25s ease forwards;
+  }
+  @keyframes introPop{
+    0%{opacity:0; transform:scale(.5);}
+    60%{opacity:1; transform:scale(1.1);}
+    100%{opacity:1; transform:scale(1);}
+  }
+  @keyframes introOut{
+    to{opacity:0; transform:scale(1.35);}
+  }
+
+  /* tallit stripe header */
+  .tallit{
+    height:14px;
+    background:repeating-linear-gradient(90deg,
+      var(--deep) 0px, var(--deep) 8px,
+      var(--white) 8px, var(--white) 16px,
+      var(--blue) 16px, var(--blue) 24px,
+      var(--white) 24px, var(--white) 32px);
+  }
+
+  .content{
+    padding:44px 34px 38px;
+    text-align:center;
+    position:relative;
+  }
+
+  .crown-wrap{
+    width:88px; height:88px;
+    margin:0 auto 18px;
+    color:var(--gold);
+    filter:drop-shadow(0 4px 10px rgba(201,164,69,.35));
+  }
+  .crown-wrap svg{width:100%;height:100%;display:block;}
+
+  .photo-frame{
+    position:relative;
+    width:150px; height:150px;
+    margin:0 auto 20px;
+  }
+  .photo-frame .ring{
+    position:absolute;
+    inset:-8px;
+    border-radius:50%;
+    background:conic-gradient(from 0deg, var(--gold), var(--sky), var(--blue), var(--gold));
+    padding:4px;
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  .photo-frame img{
+    width:100%; height:100%;
+    object-fit:cover;
+    border-radius:50%;
+    display:block;
+    border:4px solid var(--white);
+    box-shadow:0 10px 26px -8px rgba(20,70,120,.4);
+  }
+  .photo-frame .badge{
+    position:absolute;
+    bottom:-6px; left:-6px;
+    width:40px; height:40px;
+    background:var(--white);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 4px 10px rgba(20,70,120,.3);
+    color:var(--gold);
+  }
+  .photo-frame .badge svg{width:22px;height:22px;}
+
+  .eyebrow{
+    font-family:'Heebo',sans-serif;
+    font-size:14px;
+    letter-spacing:2px;
+    color:var(--blue);
+    font-weight:700;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+
+  .sub{
+    font-size:16px;
+    color:var(--ink);
+    opacity:.75;
+    margin-bottom:26px;
+  }
+
+  .divider{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    margin:22px 0;
+  }
+  .divider .line{
+    height:1px;
+    width:56px;
+    background:linear-gradient(90deg, transparent, var(--blue), transparent);
+  }
+  .divider .star-small{width:16px;height:16px;color:var(--gold);}
+  .divider .star-small svg{width:100%;height:100%;}
+
+  .name{
+    font-family:'Frank Ruhl Libre',serif;
+    font-weight:700;
+    font-size:clamp(34px,9vw,54px);
+    color:var(--deep);
+    margin:4px 0 4px;
+    letter-spacing:.5px;
+  }
+
+  .occasion{
+    font-size:17px;
+    font-weight:500;
+    color:var(--blue);
+    margin-bottom:28px;
+  }
+
+  .date-box{
+    background:linear-gradient(135deg, var(--pale), var(--sky));
+    border:1px solid rgba(59,130,196,.25);
+    border-radius:18px;
+    padding:22px 20px;
+    margin-bottom:24px;
+  }
+  .date-main{
+    font-family:'Frank Ruhl Libre',serif;
+    font-weight:900;
+    font-size:clamp(26px,6vw,34px);
+    color:var(--deep2);
+    letter-spacing:1px;
+  }
+  .date-heb{
+    font-size:15px;
+    color:var(--ink);
+    opacity:.7;
+    margin-top:4px;
+  }
+
+  .countdown{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:26px;
+    flex-wrap:wrap;
+  }
+  .cd-item{
+    background:var(--deep);
+    color:var(--white);
+    border-radius:14px;
+    padding:12px 8px;
+    min-width:64px;
+    box-shadow:0 8px 18px -8px rgba(26,79,134,.5);
+  }
+  .cd-num{
+    font-family:'Frank Ruhl Libre',serif;
+    font-weight:900;
+    font-size:24px;
+    line-height:1;
+  }
+  .cd-label{
+    font-size:11px;
+    opacity:.85;
+    margin-top:4px;
+  }
+
+  .verse{
+    font-family:'Frank Ruhl Libre',serif;
+    font-style:italic;
+    font-size:15.5px;
+    line-height:1.9;
+    color:var(--ink);
+    opacity:.85;
+    max-width:420px;
+    margin:0 auto 26px;
+    padding:0 6px;
+  }
+  .verse .ref{
+    display:block;
+    font-style:normal;
+    font-size:12.5px;
+    color:var(--blue);
+    margin-top:6px;
+    letter-spacing:.5px;
+  }
+
+  .footnote{
+    font-size:13.5px;
+    color:var(--ink);
+    opacity:.6;
+  }
+
+  .tallit.bottom{margin-top:2px;}
+
+  @media (max-width:380px){
+    .content{padding:34px 20px 30px;}
+    .cd-item{min-width:56px;padding:10px 6px;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="intro-overlay" id="introOverlay">
+    <div class="intro-text" id="introText"></div>
+  </div>
+
+  <div class="bg-star s1"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
+  <div class="bg-star s2"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
+  <div class="bg-star s3"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
+  <div class="bg-star s4"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
+  <div class="bg-star s5"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
+  <div class="bg-star s6"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
+
+  <div class="card">
+    <div class="tallit"></div>
+
+    <div class="content">
+      <div class="photo-frame">
+        <div class="ring"></div>
+        <img src="liam-photo.jpg" alt="ליאם אביב">
+        <div class="badge">
+          <!-- Torah crown / Keter Torah -->
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 78 L20 55 L14 40 L26 48 L34 28 L42 46 L50 22 L58 46 L66 28 L74 48 L86 40 L80 55 L80 78 Z"
+                  fill="currentColor" stroke="var(--deep2)" stroke-width="1.5" stroke-linejoin="round"/>
+            <rect x="16" y="78" width="68" height="9" rx="3" fill="currentColor" stroke="var(--deep2)" stroke-width="1.5"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="eyebrow">Save&nbsp;the&nbsp;date</div>
+      <div class="sub">אנחנו נרגשים לחגוג יחד את העלייה לתורה</div>
+
+      <div class="divider">
+        <span class="line"></span>
+        <span class="star-small"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></span>
+        <span class="line"></span>
+      </div>
+
+      <div class="occasion">הבר מצווה של</div>
+      <div class="name">לִיאָם אָבִיב</div>
+      <div class="occasion">בעלייתו הראשונה לתורה</div>
+
+      <div class="date-box">
+        <div class="date-main">יום חמישי | 11.03.2027</div>
+        <div class="date-heb" id="hebDate">ב׳ באדר ב׳ תשפ״ז</div>
+      </div>
+
+      <div class="countdown" id="countdown">
+        <div class="cd-item"><div class="cd-num" id="cd-days">-</div><div class="cd-label">ימים</div></div>
+        <div class="cd-item"><div class="cd-num" id="cd-hours">-</div><div class="cd-label">שעות</div></div>
+        <div class="cd-item"><div class="cd-num" id="cd-mins">-</div><div class="cd-label">דקות</div></div>
+        <div class="cd-item"><div class="cd-num" id="cd-secs">-</div><div class="cd-label">שניות</div></div>
+      </div>
+
+      <p class="verse">
+        ״אַשְׁרֵי הָאִישׁ... כִּי אִם בְּתוֹרַת ה׳ חֶפְצוֹ,
+        וּבְתוֹרָתוֹ יֶהְגֶּה יוֹמָם וָלָיְלָה״
+        <span class="ref">תהילים א, א-ב</span>
+      </p>
+
+      <div class="footnote">פרטים נוספים על מקום וזמן האירוע יישלחו בהמשך 💙</div>
+    </div>
+
+    <div class="tallit bottom"></div>
+  </div>
+
+<script>
+  var target = new Date("2027-03-11T00:00:00");
+  function tick(){
+    var now = new Date();
+    var diff = target - now;
+    if (diff < 0) diff = 0;
+    var d = Math.floor(diff / (1000*60*60*24));
+    var h = Math.floor((diff / (1000*60*60)) % 24);
+    var m = Math.floor((diff / (1000*60)) % 60);
+    var s = Math.floor((diff / 1000) % 60);
+    document.getElementById('cd-days').textContent = d;
+    document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-mins').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-secs').textContent = String(s).padStart(2,'0');
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  (function(){
+    var overlay = document.getElementById('introOverlay');
+    var textEl = document.getElementById('introText');
+    var card = document.querySelector('.card');
+    var steps = [
+      {text:'3', cls:'number', dur:700},
+      {text:'2', cls:'number', dur:700},
+      {text:'1', cls:'number', dur:700},
+      {text:'SAVE', cls:'', dur:1500},
+      {text:'THE', cls:'', dur:1500},
+      {text:'DATE', cls:'', dur:1500}
+    ];
+    var i = 0;
+    function nextStep(){
+      if (i >= steps.length){
+        overlay.classList.add('hide');
+        card.classList.add('reveal');
+        setTimeout(function(){ overlay.remove(); }, 700);
+        return;
+      }
+      var step = steps[i];
+      textEl.className = 'intro-text show' + (step.cls ? ' ' + step.cls : '');
+      textEl.textContent = step.text;
+      setTimeout(function(){
+        textEl.classList.add('out');
+        setTimeout(function(){
+          i++;
+          nextStep();
+        }, 250);
+      }, step.dur);
+    }
+    nextStep();
+  })();
+</script>
+</body>
+</html>
