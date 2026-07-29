@@ -140,11 +140,20 @@
     font-family:'Frank Ruhl Libre',serif;
     font-style:italic;
     font-weight:700;
-    font-size:clamp(19px,4.5vw,24px);
+    font-size:clamp(16px,4vw,19px);
     color:var(--gold);
-    line-height:1.6;
-    max-width:320px;
+    line-height:1.7;
+    max-width:360px;
     animation:float 3.5s ease-in-out infinite;
+  }
+  .gate-verse .ref{
+    display:block;
+    font-style:normal;
+    font-weight:500;
+    font-size:13px;
+    color:var(--blue);
+    margin-top:8px;
+    letter-spacing:.5px;
   }
   .gate-title{
     font-family:'Frank Ruhl Libre',serif;
@@ -319,10 +328,10 @@
   .verse{
     font-family:'Frank Ruhl Libre',serif;
     font-style:italic;
-    font-size:15.5px;
+    font-size:20px;
     line-height:1.9;
     color:var(--ink);
-    opacity:.85;
+    opacity:.9;
     max-width:420px;
     margin:0 auto 26px;
     padding:0 6px;
@@ -330,7 +339,7 @@
   .verse .ref{
     display:block;
     font-style:normal;
-    font-size:12.5px;
+    font-size:14px;
     color:var(--blue);
     margin-top:6px;
     letter-spacing:.5px;
@@ -350,7 +359,7 @@
 <body>
 
   <div class="gate" id="gate">
-    <div class="gate-verse">״חֲזַק חֲזַק וְנִתְחַזֵּק״</div>
+    <div class="gate-verse">״יְבָרֶכְךָ יְהוָה וְיִשְׁמְרֶךָ, יָאֵר יְהוָה פָּנָיו אֵלֶיךָ וִיחֻבֶּךָ, יִשָּׂא יְהוָה פָּנָיו אֵלֶיךָ וְיָשֵׂם לְךָ שָׁלוֹם״<span class="ref">(במדבר ו', כ״ד-כ״ו)</span></div>
     <div class="gate-title">לִיאָם אָבִיב</div>
     <button class="gate-btn" id="gateBtn" type="button">לחצו לפתיחה 💌</button>
   </div>
@@ -458,7 +467,7 @@
     window.onYouTubeIframeAPIReady = function(){
       ytPlayer = new YT.Player('yt-player', {
         videoId: 'MfDUAOUSxMI',
-        playerVars: {autoplay:0, controls:0, playsinline:1, origin: window.location.origin},
+        playerVars: {autoplay:0, controls:0, playsinline:1, start:32, origin: window.location.origin},
         events: {
           onReady: function(){
             playerReady = true;
