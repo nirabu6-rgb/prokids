@@ -99,6 +99,43 @@
   }
   .crown-wrap svg{width:100%;height:100%;display:block;}
 
+  .photo-frame{
+    position:relative;
+    width:150px; height:150px;
+    margin:0 auto 20px;
+  }
+  .photo-frame .ring{
+    position:absolute;
+    inset:-8px;
+    border-radius:50%;
+    background:conic-gradient(from 0deg, var(--gold), var(--sky), var(--blue), var(--gold));
+    padding:4px;
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  .photo-frame img{
+    width:100%; height:100%;
+    object-fit:cover;
+    border-radius:50%;
+    display:block;
+    border:4px solid var(--white);
+    box-shadow:0 10px 26px -8px rgba(20,70,120,.4);
+  }
+  .photo-frame .badge{
+    position:absolute;
+    bottom:-6px; left:-6px;
+    width:40px; height:40px;
+    background:var(--white);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 4px 10px rgba(20,70,120,.3);
+    color:var(--gold);
+  }
+  .photo-frame .badge svg{width:22px;height:22px;}
+
   .eyebrow{
     font-family:'Heebo',sans-serif;
     font-size:14px;
@@ -106,15 +143,6 @@
     color:var(--blue);
     font-weight:700;
     text-transform:uppercase;
-    margin-bottom:6px;
-  }
-
-  h1.headline{
-    font-family:'Frank Ruhl Libre',serif;
-    font-weight:900;
-    font-size:clamp(30px,7vw,42px);
-    color:var(--deep2);
-    line-height:1.25;
     margin-bottom:6px;
   }
 
@@ -251,20 +279,20 @@
     <div class="tallit"></div>
 
     <div class="content">
-      <div class="crown-wrap">
-        <!-- Torah crown / Keter Torah -->
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 78 L20 55 L14 40 L26 48 L34 28 L42 46 L50 22 L58 46 L66 28 L74 48 L86 40 L80 55 L80 78 Z"
-                fill="currentColor" stroke="var(--deep2)" stroke-width="1.5" stroke-linejoin="round"/>
-          <rect x="16" y="78" width="68" height="9" rx="3" fill="currentColor" stroke="var(--deep2)" stroke-width="1.5"/>
-          <circle cx="50" cy="22" r="4" fill="currentColor"/>
-          <circle cx="34" cy="28" r="3" fill="currentColor"/>
-          <circle cx="66" cy="28" r="3" fill="currentColor"/>
-        </svg>
+      <div class="photo-frame">
+        <div class="ring"></div>
+        <img src="liam-photo.jpg" alt="ליאם אביב">
+        <div class="badge">
+          <!-- Torah crown / Keter Torah -->
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 78 L20 55 L14 40 L26 48 L34 28 L42 46 L50 22 L58 46 L66 28 L74 48 L86 40 L80 55 L80 78 Z"
+                  fill="currentColor" stroke="var(--deep2)" stroke-width="1.5" stroke-linejoin="round"/>
+            <rect x="16" y="78" width="68" height="9" rx="3" fill="currentColor" stroke="var(--deep2)" stroke-width="1.5"/>
+          </svg>
+        </div>
       </div>
 
       <div class="eyebrow">Save&nbsp;the&nbsp;date</div>
-      <h1 class="headline">שִׁמְרוּ תַּאֲרִיךְ</h1>
       <div class="sub">אנחנו נרגשים לחגוג יחד את העלייה לתורה</div>
 
       <div class="divider">
