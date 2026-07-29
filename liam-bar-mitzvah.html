@@ -364,7 +364,9 @@
     <button class="gate-btn" id="gateBtn" type="button">לחצו לפתיחה 💌</button>
   </div>
 
-  <div id="yt-player" style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;"></div>
+  <div style="position:fixed;top:-9999px;left:-9999px;width:2px;height:2px;overflow:hidden;">
+    <div id="yt-player"></div>
+  </div>
 
   <button class="sound-toggle" id="soundToggle" type="button" aria-label="השתקה או הפעלה של המוזיקה">
     <svg id="soundIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16.5 12c0-1.77-.77-3.29-2-4.34v8.68c1.23-1.05 2-2.57 2-4.34z"/><path d="M14.5 4.97v2.06c2.89 1.2 4.93 4.05 4.93 7.37s-2.04 6.17-4.93 7.37v2.06c4.01-1.24 6.93-4.99 6.93-9.43s-2.92-8.19-6.93-9.43z"/></svg>
@@ -466,12 +468,17 @@
     var ytPlayer, playerReady = false, playRequested = false, playing = false;
     window.onYouTubeIframeAPIReady = function(){
       ytPlayer = new YT.Player('yt-player', {
+        width: '2',
+        height: '2',
         videoId: 'MfDUAOUSxMI',
         playerVars: {autoplay:0, controls:0, playsinline:1, start:64, origin: window.location.origin},
         events: {
           onReady: function(){
             playerReady = true;
             if (playRequested) { ytPlayer.playVideo(); }
+          },
+          onError: function(e){
+            console.error('YouTube player error', e.data);
           }
         }
       });
