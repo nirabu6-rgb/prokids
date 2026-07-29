@@ -63,11 +63,6 @@
     z-index:1;
     width:100%;
     max-width:560px;
-    background:var(--white);
-    border-radius:26px;
-    box-shadow:0 25px 60px -20px rgba(20,70,120,.35), 0 4px 18px rgba(20,70,120,.12);
-    overflow:hidden;
-    border:1px solid rgba(59,130,196,.15);
     opacity:0;
   }
   .card.reveal{
@@ -196,16 +191,6 @@
   }
   .sound-toggle svg{width:22px;height:22px;display:block;}
 
-  /* tallit stripe header */
-  .tallit{
-    height:14px;
-    background:repeating-linear-gradient(90deg,
-      var(--deep) 0px, var(--deep) 8px,
-      var(--white) 8px, var(--white) 16px,
-      var(--blue) 16px, var(--blue) 24px,
-      var(--white) 24px, var(--white) 32px);
-  }
-
   .content{
     padding:44px 34px 38px;
     text-align:center;
@@ -315,41 +300,23 @@
   .date-main{
     font-family:'Frank Ruhl Libre',serif;
     font-weight:900;
-    font-size:clamp(26px,6vw,34px);
     color:var(--deep2);
+  }
+  .date-main .weekday{
+    display:block;
+    font-size:clamp(18px,4.5vw,22px);
+    letter-spacing:1px;
+    margin-bottom:4px;
+  }
+  .date-main .date-num{
+    display:block;
+    font-size:clamp(36px,11vw,54px);
     letter-spacing:1px;
   }
   .date-heb{
     font-size:15px;
     color:var(--ink);
     opacity:.7;
-    margin-top:4px;
-  }
-
-  .countdown{
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    margin-bottom:26px;
-    flex-wrap:wrap;
-  }
-  .cd-item{
-    background:var(--deep);
-    color:var(--white);
-    border-radius:14px;
-    padding:12px 8px;
-    min-width:64px;
-    box-shadow:0 8px 18px -8px rgba(26,79,134,.5);
-  }
-  .cd-num{
-    font-family:'Frank Ruhl Libre',serif;
-    font-weight:900;
-    font-size:24px;
-    line-height:1;
-  }
-  .cd-label{
-    font-size:11px;
-    opacity:.85;
     margin-top:4px;
   }
 
@@ -379,11 +346,8 @@
     opacity:.6;
   }
 
-  .tallit.bottom{margin-top:2px;}
-
   @media (max-width:380px){
     .content{padding:34px 20px 30px;}
-    .cd-item{min-width:56px;padding:10px 6px;}
   }
 </style>
 </head>
@@ -413,8 +377,6 @@
   <div class="bg-star s6"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
 
   <div class="card">
-    <div class="tallit"></div>
-
     <div class="content">
       <div class="photo-frame">
         <div class="ring"></div>
@@ -443,15 +405,11 @@
       <div class="occasion">בעלייתו הראשונה לתורה</div>
 
       <div class="date-box">
-        <div class="date-main">יום חמישי | 11.03.2027</div>
+        <div class="date-main">
+          <span class="weekday">יום חמישי</span>
+          <span class="date-num">11.03.2027</span>
+        </div>
         <div class="date-heb" id="hebDate">ב׳ באדר ב׳ תשפ״ז</div>
-      </div>
-
-      <div class="countdown" id="countdown">
-        <div class="cd-item"><div class="cd-num" id="cd-days">-</div><div class="cd-label">ימים</div></div>
-        <div class="cd-item"><div class="cd-num" id="cd-hours">-</div><div class="cd-label">שעות</div></div>
-        <div class="cd-item"><div class="cd-num" id="cd-mins">-</div><div class="cd-label">דקות</div></div>
-        <div class="cd-item"><div class="cd-num" id="cd-secs">-</div><div class="cd-label">שניות</div></div>
       </div>
 
       <p class="verse">
@@ -462,28 +420,9 @@
 
       <div class="footnote">פרטים נוספים על מקום וזמן האירוע יישלחו בהמשך 💙</div>
     </div>
-
-    <div class="tallit bottom"></div>
   </div>
 
 <script>
-  var target = new Date("2027-03-11T00:00:00");
-  function tick(){
-    var now = new Date();
-    var diff = target - now;
-    if (diff < 0) diff = 0;
-    var d = Math.floor(diff / (1000*60*60*24));
-    var h = Math.floor((diff / (1000*60*60)) % 24);
-    var m = Math.floor((diff / (1000*60)) % 60);
-    var s = Math.floor((diff / 1000) % 60);
-    document.getElementById('cd-days').textContent = d;
-    document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
-    document.getElementById('cd-mins').textContent = String(m).padStart(2,'0');
-    document.getElementById('cd-secs').textContent = String(s).padStart(2,'0');
-  }
-  tick();
-  setInterval(tick, 1000);
-
   (function(){
     var overlay = document.getElementById('introOverlay');
     var textEl = document.getElementById('introText');
@@ -519,11 +458,11 @@
       }, step.dur);
     }
 
-    /* background song: ישמח חתני - שרית חדד (played via YouTube's embedded, licensed player) */
+    /* background song (played via YouTube's embedded, licensed player) */
     var ytPlayer, playerReady = false, playRequested = false, playing = false;
     window.onYouTubeIframeAPIReady = function(){
       ytPlayer = new YT.Player('yt-player', {
-        videoId: 'ePara4T1BwY',
+        videoId: 'MfDUAOUSxMI',
         playerVars: {autoplay:0, controls:0, playsinline:1, origin: window.location.origin},
         events: {
           onReady: function(){
