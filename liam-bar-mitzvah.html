@@ -121,6 +121,81 @@
     to{opacity:0; transform:scale(1.35);}
   }
 
+  /* tap-to-open gate */
+  .gate{
+    position:fixed;
+    inset:0;
+    z-index:60;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:22px;
+    background:radial-gradient(1200px 600px at 50% -10%, #ffffff 0%, var(--pale) 55%, var(--sky) 100%);
+    transition:opacity .6s ease, visibility .6s ease;
+    text-align:center;
+    padding:20px;
+  }
+  .gate.hide{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+  .gate-star{
+    width:64px; height:64px;
+    color:var(--gold);
+    filter:drop-shadow(0 4px 10px rgba(201,164,69,.35));
+    animation:float 3.5s ease-in-out infinite;
+  }
+  .gate-star svg{width:100%;height:100%;display:block;}
+  .gate-title{
+    font-family:'Frank Ruhl Libre',serif;
+    font-weight:700;
+    font-size:clamp(20px,5vw,26px);
+    color:var(--deep2);
+    line-height:1.5;
+  }
+  .gate-btn{
+    font-family:'Heebo',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    color:#fff;
+    background:linear-gradient(135deg, var(--blue), var(--deep));
+    border:none;
+    border-radius:999px;
+    padding:15px 34px;
+    cursor:pointer;
+    box-shadow:0 12px 26px -10px rgba(26,79,134,.55);
+    transition:transform .15s ease;
+  }
+  .gate-btn:active{transform:scale(.96);}
+
+  /* sound toggle */
+  .sound-toggle{
+    position:fixed;
+    bottom:18px;
+    left:18px;
+    z-index:40;
+    width:46px; height:46px;
+    border-radius:50%;
+    background:var(--white);
+    border:1px solid rgba(59,130,196,.3);
+    box-shadow:0 8px 20px -8px rgba(20,70,120,.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    opacity:0;
+    transform:scale(.8);
+    transition:opacity .4s ease, transform .4s ease;
+    color:var(--deep);
+  }
+  .sound-toggle.show{
+    opacity:1;
+    transform:scale(1);
+  }
+  .sound-toggle svg{width:22px;height:22px;display:block;}
+
   /* tallit stripe header */
   .tallit{
     height:14px;
@@ -314,6 +389,18 @@
 </head>
 <body>
 
+  <div class="gate" id="gate">
+    <div class="gate-star"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
+    <div class="gate-title">הזמנה לבר המצווה של<br>ליאם אביב</div>
+    <button class="gate-btn" id="gateBtn" type="button">לחצו לפתיחת ההזמנה 💌</button>
+  </div>
+
+  <div id="yt-player" style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;"></div>
+
+  <button class="sound-toggle" id="soundToggle" type="button" aria-label="השתקה או הפעלה של המוזיקה">
+    <svg id="soundIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16.5 12c0-1.77-.77-3.29-2-4.34v8.68c1.23-1.05 2-2.57 2-4.34z"/><path d="M14.5 4.97v2.06c2.89 1.2 4.93 4.05 4.93 7.37s-2.04 6.17-4.93 7.37v2.06c4.01-1.24 6.93-4.99 6.93-9.43s-2.92-8.19-6.93-9.43z"/></svg>
+  </button>
+
   <div class="intro-overlay" id="introOverlay">
     <div class="intro-text" id="introText"></div>
   </div>
@@ -401,6 +488,9 @@
     var overlay = document.getElementById('introOverlay');
     var textEl = document.getElementById('introText');
     var card = document.querySelector('.card');
+    var gate = document.getElementById('gate');
+    var gateBtn = document.getElementById('gateBtn');
+    var soundToggle = document.getElementById('soundToggle');
     var steps = [
       {text:'3', cls:'number', dur:700},
       {text:'2', cls:'number', dur:700},
@@ -428,7 +518,49 @@
         }, 250);
       }, step.dur);
     }
-    nextStep();
+
+    /* background song: ישמח חתני - שרית חדד (played via YouTube's embedded, licensed player) */
+    var ytPlayer, playerReady = false, playRequested = false, playing = false;
+    window.onYouTubeIframeAPIReady = function(){
+      ytPlayer = new YT.Player('yt-player', {
+        videoId: 'ePara4T1BwY',
+        playerVars: {autoplay:0, controls:0, playsinline:1, origin: window.location.origin},
+        events: {
+          onReady: function(){
+            playerReady = true;
+            if (playRequested) { ytPlayer.playVideo(); }
+          }
+        }
+      });
+    };
+    var ytTag = document.createElement('script');
+    ytTag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(ytTag);
+
+    function setSoundIcon(isPlaying){
+      var icon = document.getElementById('soundIcon');
+      icon.innerHTML = isPlaying
+        ? '<path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16.5 12c0-1.77-.77-3.29-2-4.34v8.68c1.23-1.05 2-2.57 2-4.34z"/><path d="M14.5 4.97v2.06c2.89 1.2 4.93 4.05 4.93 7.37s-2.04 6.17-4.93 7.37v2.06c4.01-1.24 6.93-4.99 6.93-9.43s-2.92-8.19-6.93-9.43z"/>'
+        : '<path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16.5 12l4 4m0-4l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>';
+    }
+
+    gateBtn.addEventListener('click', function(){
+      gate.classList.add('hide');
+      setTimeout(function(){ gate.remove(); }, 650);
+      playRequested = true;
+      if (playerReady) { ytPlayer.playVideo(); }
+      playing = true;
+      setSoundIcon(true);
+      soundToggle.classList.add('show');
+      nextStep();
+    });
+
+    soundToggle.addEventListener('click', function(){
+      if (!ytPlayer) return;
+      playing = !playing;
+      if (playing) { ytPlayer.playVideo(); } else { ytPlayer.pauseVideo(); }
+      setSoundIcon(playing);
+    });
   })();
 </script>
 </body>
