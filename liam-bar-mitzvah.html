@@ -136,13 +136,16 @@
     visibility:hidden;
     pointer-events:none;
   }
-  .gate-star{
-    width:64px; height:64px;
+  .gate-verse{
+    font-family:'Frank Ruhl Libre',serif;
+    font-style:italic;
+    font-weight:700;
+    font-size:clamp(19px,4.5vw,24px);
     color:var(--gold);
-    filter:drop-shadow(0 4px 10px rgba(201,164,69,.35));
+    line-height:1.6;
+    max-width:320px;
     animation:float 3.5s ease-in-out infinite;
   }
-  .gate-star svg{width:100%;height:100%;display:block;}
   .gate-title{
     font-family:'Frank Ruhl Libre',serif;
     font-weight:700;
@@ -347,7 +350,7 @@
 <body>
 
   <div class="gate" id="gate">
-    <div class="gate-star"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 3 L61 32 L92 32 L67 50 L77 79 L50 61 L23 79 L33 50 L8 32 L39 32 Z"/></svg></div>
+    <div class="gate-verse">״חֲזַק חֲזַק וְנִתְחַזֵּק״</div>
     <div class="gate-title">לִיאָם אָבִיב</div>
     <button class="gate-btn" id="gateBtn" type="button">לחצו לפתיחה 💌</button>
   </div>
