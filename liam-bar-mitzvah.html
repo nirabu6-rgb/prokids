@@ -494,8 +494,8 @@
        than plain <video>/<audio>/embedded-iframe playback) */
     var audioEl = document.getElementById('bgAudio');
     var SONG_START = 31;
-    var audioCtx, gainNode, graphReady = false;
-    var audioReady = false, playing = false, songStarted = false;
+    var audioCtx, graphReady = false;
+    var audioReady = false, playing = false;
 
     function markAudioReady(){ audioReady = true; }
     audioEl.addEventListener('canplaythrough', markAudioReady, {once:true});
@@ -506,10 +506,7 @@
     function setupAudioGraph(){
       if (graphReady) return;
       var source = audioCtx.createMediaElementSource(audioEl);
-      gainNode = audioCtx.createGain();
-      gainNode.gain.value = 0; /* silent until startSong() opens it */
-      source.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
+      source.connect(audioCtx.destination);
       graphReady = true;
     }
 
@@ -518,16 +515,14 @@
       audioCtx = new AudioCtx();
       setupAudioGraph();
       if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-      audioEl.muted = true;
-      audioEl.play().then(function(){
-        if (!songStarted){
-          audioEl.pause();
-          audioEl.currentTime = 0;
-        }
-        audioEl.muted = false;
-      }).catch(function(){
-        audioEl.muted = false;
-      });
+      /* Unlock the whole audio context on iOS with a silent buffer.
+         The real <audio> element is never played until startSong() at
+         SAVE, so there is nothing from the song that can leak early. */
+      var buffer = audioCtx.createBuffer(1, 1, 22050);
+      var silent = audioCtx.createBufferSource();
+      silent.buffer = buffer;
+      silent.connect(audioCtx.destination);
+      silent.start(0);
     }
 
     function setSoundIcon(isPlaying){
@@ -538,10 +533,7 @@
     }
 
     function startSong(){
-      songStarted = true;
-      audioEl.muted = false;
       try { audioEl.currentTime = SONG_START; } catch(e){}
-      if (gainNode) { gainNode.gain.value = 1; }
       audioEl.play().catch(function(err){ console.error('audio play failed', err); });
       playing = true;
       setSoundIcon(true);
