@@ -463,6 +463,7 @@
       {text:'DATE', cls:'', dur:1500}
     ];
     var i = 0;
+    var saveWait = 0;
     function nextStep(){
       if (i >= steps.length){
         overlay.classList.add('hide');
@@ -471,6 +472,11 @@
         return;
       }
       var step = steps[i];
+      if (step.text === 'SAVE' && !playerReady && saveWait < 4000){
+        saveWait += 100;
+        setTimeout(nextStep, 100);
+        return;
+      }
       if (step.text === 'SAVE') { startSong(); }
       textEl.className = 'intro-text show' + (step.cls ? ' ' + step.cls : '');
       textEl.textContent = step.text;
