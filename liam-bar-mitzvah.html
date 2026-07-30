@@ -495,7 +495,7 @@
     var audioEl = document.getElementById('bgAudio');
     var SONG_START = 31;
     var audioCtx, gainNode, graphReady = false;
-    var audioReady = false, playing = false;
+    var audioReady = false, playing = false, songStarted = false;
 
     function markAudioReady(){ audioReady = true; }
     audioEl.addEventListener('canplaythrough', markAudioReady, {once:true});
@@ -518,10 +518,16 @@
       audioCtx = new AudioCtx();
       setupAudioGraph();
       if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      audioEl.muted = true;
       audioEl.play().then(function(){
-        audioEl.pause();
-        audioEl.currentTime = 0;
-      }).catch(function(){});
+        if (!songStarted){
+          audioEl.pause();
+          audioEl.currentTime = 0;
+        }
+        audioEl.muted = false;
+      }).catch(function(){
+        audioEl.muted = false;
+      });
     }
 
     function setSoundIcon(isPlaying){
@@ -532,6 +538,8 @@
     }
 
     function startSong(){
+      songStarted = true;
+      audioEl.muted = false;
       try { audioEl.currentTime = SONG_START; } catch(e){}
       if (gainNode) { gainNode.gain.value = 1; }
       audioEl.play().catch(function(err){ console.error('audio play failed', err); });
