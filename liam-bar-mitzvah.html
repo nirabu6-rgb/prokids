@@ -494,7 +494,7 @@
        than plain <video>/<audio>/embedded-iframe playback) */
     var audioEl = document.getElementById('bgAudio');
     var SONG_START = 31;
-    var audioCtx, graphReady = false;
+    var audioCtx, gainNode, graphReady = false;
     var audioReady = false, playing = false;
 
     function markAudioReady(){ audioReady = true; }
@@ -505,9 +505,9 @@
 
     function setupAudioGraph(){
       if (graphReady) return;
-      var AudioCtx = window.AudioContext || window.webkitAudioContext;
       var source = audioCtx.createMediaElementSource(audioEl);
-      var gainNode = audioCtx.createGain();
+      gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0; /* silent until startSong() opens it */
       source.connect(gainNode);
       gainNode.connect(audioCtx.destination);
       graphReady = true;
@@ -518,14 +518,10 @@
       audioCtx = new AudioCtx();
       setupAudioGraph();
       if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-      audioEl.muted = true;
       audioEl.play().then(function(){
         audioEl.pause();
         audioEl.currentTime = 0;
-        audioEl.muted = false;
-      }).catch(function(){
-        audioEl.muted = false;
-      });
+      }).catch(function(){});
     }
 
     function setSoundIcon(isPlaying){
@@ -537,6 +533,7 @@
 
     function startSong(){
       try { audioEl.currentTime = SONG_START; } catch(e){}
+      if (gainNode) { gainNode.gain.value = 1; }
       audioEl.play().catch(function(err){ console.error('audio play failed', err); });
       playing = true;
       setSoundIcon(true);
