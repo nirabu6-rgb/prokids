@@ -382,9 +382,7 @@
     <div class="gate-hint">🔊 רמקולים חובה!</div>
   </div>
 
-  <div style="position:fixed;top:-9999px;left:-9999px;width:2px;height:2px;overflow:hidden;">
-    <div id="yt-player"></div>
-  </div>
+  <audio id="bgAudio" src="liam-song.mp3" preload="auto" playsinline></audio>
 
   <button class="sound-toggle" id="soundToggle" type="button" aria-label="השתקה או הפעלה של המוזיקה">
     <svg id="soundIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16.5 12c0-1.77-.77-3.29-2-4.34v8.68c1.23-1.05 2-2.57 2-4.34z"/><path d="M14.5 4.97v2.06c2.89 1.2 4.93 4.05 4.93 7.37s-2.04 6.17-4.93 7.37v2.06c4.01-1.24 6.93-4.99 6.93-9.43s-2.92-8.19-6.93-9.43z"/></svg>
@@ -472,7 +470,7 @@
         return;
       }
       var step = steps[i];
-      if (step.text === 'SAVE' && !playerReady && saveWait < 4000){
+      if (step.text === 'SAVE' && !audioReady && saveWait < 4000){
         saveWait += 100;
         setTimeout(nextStep, 100);
         return;
@@ -489,28 +487,41 @@
       }, step.dur);
     }
 
-    /* background song (played via YouTube's embedded, licensed player) */
-    var ytPlayer, playerReady = false, wantPlay = false, playing = false;
-    window.onYouTubeIframeAPIReady = function(){
-      ytPlayer = new YT.Player('yt-player', {
-        width: '2',
-        height: '2',
-        videoId: 'MfDUAOUSxMI',
-        playerVars: {autoplay:0, controls:0, playsinline:1, start:33, origin: window.location.origin},
-        events: {
-          onReady: function(){
-            playerReady = true;
-            if (wantPlay) { ytPlayer.playVideo(); }
-          },
-          onError: function(e){
-            console.error('YouTube player error', e.data);
-          }
-        }
-      });
-    };
-    var ytTag = document.createElement('script');
-    ytTag.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(ytTag);
+    /* background song: self-hosted <audio> routed through Web Audio API so
+       it keeps playing even when the phone's silent/mute switch is on
+       (iOS treats Web Audio API playback as a different audio category
+       than plain <video>/<audio>/embedded-iframe playback) */
+    var audioEl = document.getElementById('bgAudio');
+    var SONG_START = 33;
+    var audioCtx, graphReady = false;
+    var audioReady = false, playing = false;
+
+    function markAudioReady(){ audioReady = true; }
+    audioEl.addEventListener('canplaythrough', markAudioReady, {once:true});
+    audioEl.addEventListener('loadedmetadata', function(){
+      if (audioEl.readyState >= 3) { markAudioReady(); }
+    });
+
+    function setupAudioGraph(){
+      if (graphReady) return;
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      var source = audioCtx.createMediaElementSource(audioEl);
+      var gainNode = audioCtx.createGain();
+      source.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      graphReady = true;
+    }
+
+    function unlockAudio(){
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioCtx();
+      setupAudioGraph();
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      audioEl.play().then(function(){
+        audioEl.pause();
+        audioEl.currentTime = 0;
+      }).catch(function(){});
+    }
 
     function setSoundIcon(isPlaying){
       var icon = document.getElementById('soundIcon');
@@ -520,8 +531,8 @@
     }
 
     function startSong(){
-      wantPlay = true;
-      if (playerReady) { ytPlayer.playVideo(); }
+      try { audioEl.currentTime = SONG_START; } catch(e){}
+      audioEl.play().catch(function(err){ console.error('audio play failed', err); });
       playing = true;
       setSoundIcon(true);
       soundToggle.classList.add('show');
@@ -530,13 +541,13 @@
     gateBtn.addEventListener('click', function(){
       gate.classList.add('hide');
       setTimeout(function(){ gate.remove(); }, 650);
+      unlockAudio();
       nextStep();
     });
 
     soundToggle.addEventListener('click', function(){
-      if (!ytPlayer) return;
       playing = !playing;
-      if (playing) { ytPlayer.playVideo(); } else { ytPlayer.pauseVideo(); }
+      if (playing) { audioEl.play(); } else { audioEl.pause(); }
       setSoundIcon(playing);
     });
   })();
