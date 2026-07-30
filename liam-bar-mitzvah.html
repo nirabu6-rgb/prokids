@@ -462,7 +462,6 @@
       {text:'DATE', cls:'', dur:1500}
     ];
     var i = 0;
-    var saveWait = 0;
     function nextStep(){
       if (i >= steps.length){
         overlay.classList.add('hide');
@@ -471,11 +470,6 @@
         return;
       }
       var step = steps[i];
-      if (step.text === 'SAVE' && !audioReady && saveWait < 4000){
-        saveWait += 100;
-        setTimeout(nextStep, 100);
-        return;
-      }
       if (step.text === 'SAVE') { startSong(); }
       textEl.className = 'intro-text show' + (step.cls ? ' ' + step.cls : '');
       textEl.textContent = step.text;
@@ -495,13 +489,7 @@
     var audioEl = document.getElementById('bgAudio');
     var SONG_START = 31;
     var audioCtx, graphReady = false;
-    var audioReady = false, playing = false;
-
-    function markAudioReady(){ audioReady = true; }
-    audioEl.addEventListener('canplaythrough', markAudioReady, {once:true});
-    audioEl.addEventListener('loadedmetadata', function(){
-      if (audioEl.readyState >= 3) { markAudioReady(); }
-    });
+    var playing = false;
 
     function setupAudioGraph(){
       if (graphReady) return;
