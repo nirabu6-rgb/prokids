@@ -518,10 +518,14 @@
       audioCtx = new AudioCtx();
       setupAudioGraph();
       if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      audioEl.muted = true;
       audioEl.play().then(function(){
         audioEl.pause();
         audioEl.currentTime = 0;
-      }).catch(function(){});
+        audioEl.muted = false;
+      }).catch(function(){
+        audioEl.muted = false;
+      });
     }
 
     function setSoundIcon(isPlaying){
