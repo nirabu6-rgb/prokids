@@ -384,7 +384,6 @@
   </div>
 
   <audio id="bgAudio" src="liam-song.mp3" preload="auto" playsinline></audio>
-  <audio id="unlockPing" src="data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YUAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" preload="auto"></audio>
 
   <button class="sound-toggle" id="soundToggle" type="button" aria-label="השתקה או הפעלה של המוזיקה">
     <svg id="soundIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16.5 12c0-1.77-.77-3.29-2-4.34v8.68c1.23-1.05 2-2.57 2-4.34z"/><path d="M14.5 4.97v2.06c2.89 1.2 4.93 4.05 4.93 7.37s-2.04 6.17-4.93 7.37v2.06c4.01-1.24 6.93-4.99 6.93-9.43s-2.92-8.19-6.93-9.43z"/></svg>
@@ -486,39 +485,38 @@
     /* background song: self-hosted <audio> routed through Web Audio API so
        it keeps playing even when the phone's silent/mute switch is on
        (iOS treats Web Audio API playback as a different audio category
-       than plain <video>/<audio>/embedded-iframe playback) */
+       than plain <video>/<audio>/embedded-iframe playback).
+
+       iOS also only allows audioEl.play() to succeed when it's called
+       directly from a real user gesture - a play() fired later from a
+       timer (like "right when SAVE appears") gets silently blocked on
+       some devices. So instead we start real playback immediately on
+       the gate tap (a genuine gesture) muted via the gain node, timed
+       so that by the time SAVE appears the track has silently played
+       through to exactly SONG_START - then we just open the volume. */
     var audioEl = document.getElementById('bgAudio');
-    var unlockEl = document.getElementById('unlockPing');
     var SONG_START = 31;
-    var audioCtx, graphReady = false;
+    var COUNTDOWN_SECONDS = 2.85; /* 3 steps * (700ms + 250ms gap) */
+    var audioCtx, gainNode, graphReady = false;
     var playing = false;
 
     function setupAudioGraph(){
       if (graphReady) return;
       var source = audioCtx.createMediaElementSource(audioEl);
-      source.connect(audioCtx.destination);
+      gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0;
+      source.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
       graphReady = true;
     }
 
-    function unlockAudio(){
+    function beginSilentPlayback(){
       var AudioCtx = window.AudioContext || window.webkitAudioContext;
       audioCtx = new AudioCtx();
       setupAudioGraph();
       if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-      /* Unlock the whole audio context on iOS with a silent buffer. */
-      var buffer = audioCtx.createBuffer(1, 1, 22050);
-      var silent = audioCtx.createBufferSource();
-      silent.buffer = buffer;
-      silent.connect(audioCtx.destination);
-      silent.start(0);
-      /* Also play-then-pause a genuinely-silent audio file (not the real
-         song) so the browser marks media playback as unlocked for this
-         page - the real <audio> element is never touched before SAVE,
-         so there is nothing from the song that can leak early. */
-      unlockEl.play().then(function(){
-        unlockEl.pause();
-        unlockEl.currentTime = 0;
-      }).catch(function(){});
+      try { audioEl.currentTime = Math.max(0, SONG_START - COUNTDOWN_SECONDS); } catch(e){}
+      audioEl.play().catch(function(err){ console.error('audio play failed', err); });
     }
 
     function setSoundIcon(isPlaying){
@@ -529,8 +527,7 @@
     }
 
     function startSong(){
-      try { audioEl.currentTime = SONG_START; } catch(e){}
-      audioEl.play().catch(function(err){ console.error('audio play failed', err); });
+      if (gainNode) { gainNode.gain.value = 1; }
       playing = true;
       setSoundIcon(true);
       soundToggle.classList.add('show');
@@ -539,7 +536,7 @@
     gateBtn.addEventListener('click', function(){
       gate.classList.add('hide');
       setTimeout(function(){ gate.remove(); }, 650);
-      unlockAudio();
+      beginSilentPlayback();
       nextStep();
     });
 
