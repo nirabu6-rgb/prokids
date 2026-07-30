@@ -471,6 +471,7 @@
         return;
       }
       var step = steps[i];
+      if (step.text === 'SAVE') { startSong(); }
       textEl.className = 'intro-text show' + (step.cls ? ' ' + step.cls : '');
       textEl.textContent = step.text;
       setTimeout(function(){
@@ -483,7 +484,7 @@
     }
 
     /* background song (played via YouTube's embedded, licensed player) */
-    var ytPlayer, playerReady = false, playRequested = false, playing = false;
+    var ytPlayer, playerReady = false, wantPlay = false, playing = false;
     window.onYouTubeIframeAPIReady = function(){
       ytPlayer = new YT.Player('yt-player', {
         width: '2',
@@ -493,7 +494,7 @@
         events: {
           onReady: function(){
             playerReady = true;
-            if (playRequested) { ytPlayer.playVideo(); }
+            if (wantPlay) { ytPlayer.playVideo(); }
           },
           onError: function(e){
             console.error('YouTube player error', e.data);
@@ -512,14 +513,17 @@
         : '<path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16.5 12l4 4m0-4l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>';
     }
 
-    gateBtn.addEventListener('click', function(){
-      gate.classList.add('hide');
-      setTimeout(function(){ gate.remove(); }, 650);
-      playRequested = true;
+    function startSong(){
+      wantPlay = true;
       if (playerReady) { ytPlayer.playVideo(); }
       playing = true;
       setSoundIcon(true);
       soundToggle.classList.add('show');
+    }
+
+    gateBtn.addEventListener('click', function(){
+      gate.classList.add('hide');
+      setTimeout(function(){ gate.remove(); }, 650);
       nextStep();
     });
 
