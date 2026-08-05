@@ -174,7 +174,17 @@ h1,h2,h3,.section-title,.dash-greet{letter-spacing:-.01em}
         <div class="field"><label>סיסמה</label><input id="authPasswordInput" type="password" placeholder="לפחות 6 תווים"></div>
         <button class="btn" id="btnLogin">כניסה מאובטחת</button>
         <button class="btn ghost" id="btnGoRegister" style="margin-top:8px">אין לך חשבון? הירשם</button>
+        <button class="btn ghost" id="btnUseEmailLink" style="margin-top:8px">כניסה עם קישור באימייל (בלי סיסמה)</button>
         <div class="err" id="authErr">אימייל או סיסמה שגויים. נסה/י שוב.</div>
+      </div>
+
+      <div id="stepEmailLink" style="display:none">
+        <p class="sub" style="margin-bottom:14px">נשלח לך קישור כניסה חד-פעמי לאימייל — בלי צורך בסיסמה</p>
+        <div class="field"><label>אימייל</label><input id="linkEmailInput" type="email" placeholder="you@example.com"></div>
+        <button class="btn" id="btnSendEmailLink">שלח לי קישור כניסה</button>
+        <button class="btn ghost" id="btnBackToAuthFromLink" style="margin-top:8px">חזרה</button>
+        <p class="sub" id="emailLinkSentMsg" style="display:none;margin-top:14px">שלחנו קישור כניסה לכתובת <b id="emailLinkSentAddr"></b>. פתח/י את המייל ולחץ/י על הקישור כדי להיכנס.</p>
+        <div class="err" id="emailLinkErr">שגיאה בשליחת הקישור. נסה/י שוב.</div>
       </div>
 
       <div id="stepRegister" style="display:none">
@@ -878,12 +888,29 @@ function alertsSectionHtml(alerts){
    fc_coaches profile now -- it is no longer the auth identity (see resolvePendingInvitesForMe,
    which still matches invites by that stored phone). */
 function showAuthStep(id){
-  ['stepAuth','stepRegister','stepVerifyEmail','stepProfile'].forEach(function(s){
+  ['stepAuth','stepEmailLink','stepRegister','stepVerifyEmail','stepProfile'].forEach(function(s){
     document.getElementById(s).style.display = (s===id) ? 'block' : 'none';
   });
 }
 document.getElementById('btnGoRegister').onclick = function(){ showAuthStep('stepRegister'); };
 document.getElementById('btnGoLogin').onclick = function(){ showAuthStep('stepAuth'); };
+document.getElementById('btnUseEmailLink').onclick = function(){ showAuthStep('stepEmailLink'); };
+document.getElementById('btnBackToAuthFromLink').onclick = function(){ showAuthStep('stepAuth'); };
+var EMAIL_LINK_SETTINGS = { url: window.location.href.split('#')[0].split('?')[0], handleCodeInApp: true };
+document.getElementById('btnSendEmailLink').onclick = function(){
+  var email = document.getElementById('linkEmailInput').value.trim();
+  if(!email) return;
+  document.getElementById('emailLinkErr').style.display = 'none';
+  auth.sendSignInLinkToEmail(email, EMAIL_LINK_SETTINGS).then(function(){
+    localStorage.setItem('fc_emaillink_email', email);
+    document.getElementById('emailLinkSentAddr').textContent = email;
+    document.getElementById('emailLinkSentMsg').style.display = 'block';
+    document.getElementById('btnSendEmailLink').style.display = 'none';
+  }).catch(function(err){
+    console.error(err);
+    document.getElementById('emailLinkErr').style.display = 'block';
+  });
+};
 document.getElementById('btnLogin').onclick = function(){
   var email = document.getElementById('authEmailInput').value.trim();
   var pw = document.getElementById('authPasswordInput').value;
@@ -976,6 +1003,24 @@ auth.onAuthStateChanged(function(user){
   }
   afterEmailVerified();
 });
+// Completing a one-time email-link sign-in: the user arrives back here via the link in
+// their inbox. Firebase treats a successful email-link sign-in as already email-verified,
+// so it flows straight into afterEmailVerified() via the onAuthStateChanged listener above.
+if(auth.isSignInWithEmailLink(window.location.href)){
+  var emailLinkAddr = localStorage.getItem('fc_emaillink_email');
+  if(!emailLinkAddr){
+    emailLinkAddr = window.prompt('אנא הזן/י את כתובת האימייל שאליה נשלח הקישור, כדי להשלים את הכניסה');
+  }
+  if(emailLinkAddr){
+    auth.signInWithEmailLink(emailLinkAddr, window.location.href).then(function(){
+      localStorage.removeItem('fc_emaillink_email');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }).catch(function(err){
+      console.error(err);
+      alert('הקישור לא תקין או שפג תוקפו. אנא נסה/י להתחבר שוב.');
+    });
+  }
+}
 
 /* ---------------- TEMP: login disabled, auto-enter with local profile ----------------
    Email/password login is fully built above; this bypass is back on for now so the app
