@@ -1294,15 +1294,15 @@ auth.onAuthStateChanged(function(user){
 });
 
 /* ---------------- TEMP: login disabled, auto-enter with local profile ----------------
-   Email/password login is fully built below but stays disabled until the Email/Password
-   sign-in provider is turned on for this project in the Firebase console (Authentication >
-   Sign-in method) -- flipping LOGIN_DISABLED before that locks every user out, since
-   auth.currentUser would just stay null. Flip it to false once that's confirmed. */
-var LOGIN_DISABLED = false;
+   Email/password login is fully built above; this bypass is back on for now so the app
+   opens straight in as a manager without needing the Email/Password provider enabled in
+   the Firebase console first. Flip LOGIN_DISABLED back to false once that's done and you
+   want the real login/registration screen again. */
+var LOGIN_DISABLED = true;
 if(LOGIN_DISABLED){
   ME.uid = localStorage.getItem('fc_uid') || ('local_' + Math.random().toString(36).slice(2,10));
-  ME.name = localStorage.getItem('fc_name') || 'מאמן';
-  ME.role = localStorage.getItem('fc_role') || 'coach';
+  ME.name = localStorage.getItem('fc_name') || 'מנהל';
+  ME.role = localStorage.getItem('fc_role') || 'manager';
   ME.clubId = localStorage.getItem('fc_clubid') || '';
   localStorage.setItem('fc_uid', ME.uid);
   localStorage.setItem('fc_name', ME.name);
