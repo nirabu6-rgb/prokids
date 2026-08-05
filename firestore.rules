@@ -1,8 +1,137 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+
+    function isSignedIn() {
+      return request.auth != null;
     }
+    function isSuperAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/fc_superadmins/$(request.auth.uid));
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    // A club's tenant id is the club admin's Firebase Auth uid (fc_clubs/{adminUid}), matching
+    // the app's existing clubScopeId()/ME.clubId convention -- see soccer.html.
+    function clubDoc(clubId) {
+      return get(/databases/$(database)/documents/fc_clubs/$(clubId));
+    }
+    function isClubAdmin(clubId) {
+      return isOwner(clubId);
+    }
+    function isClubCoach(clubId) {
+      return isSignedIn()
+        && clubDoc(clubId).data.coaches != null
+        && request.auth.uid in clubDoc(clubId).data.coaches;
+    }
+    function isClubMember(clubId) {
+      return isClubAdmin(clubId) || isClubCoach(clubId);
+    }
+    function clubStatus(clubId) {
+      return clubDoc(clubId).data.get('status', 'active');
+    }
+    function isActiveClub(clubId) {
+      return clubStatus(clubId) != 'pending' && clubStatus(clubId) != 'rejected';
+    }
+    // True if the acting user (as a would-be club admin, per the uid==clubId convention) runs a
+    // club that this coachUid belongs to -- lets a club admin read a member coach's individually-
+    // owned docs (e.g. the "team plans" rollup view) without those docs carrying a clubId field yet.
+    function isAdminOfCoach(coachUid) {
+      return isSignedIn()
+        && clubDoc(request.auth.uid).data.coaches != null
+        && coachUid in clubDoc(request.auth.uid).data.coaches;
+    }
+    function ownedByRequester(coachUid) {
+      return isSignedIn() && coachUid == request.auth.uid;
+    }
+
+    // fc_superadmins/{uid}: existence of the doc = is super admin. The very first one has to be
+    // created by hand in the Firestore console (no self-service signup, no bootstrap function);
+    // after that, only an existing super admin can grant/revoke another.
+    match /fc_superadmins/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
+
+    // fc_coaches/{uid}: profile doc (name/phone/role/clubId). Readable by any signed-in user --
+    // invite-by-phone and roster-name lookups need to find other members' profiles -- but only
+    // the owner can write their own.
+    match /fc_coaches/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(uid);
+    }
+
+    // fc_clubs/{clubId}: clubId == the club admin's uid. Readable by any signed-in user (join-by-
+    // code and pending-invite resolution both scan the whole collection). New clubs must be
+    // created with status 'pending'; only a Super Admin may change status afterwards (approve/
+    // reject) -- the admin can still edit their own club's other fields (name/color/coaches/etc.)
+    // as long as they leave status untouched.
+    match /fc_clubs/{clubId} {
+      allow read: if isSignedIn();
+      allow create: if isClubAdmin(clubId) && request.resource.data.status == 'pending';
+      allow update: if isSuperAdmin()
+        || (isClubAdmin(clubId) && request.resource.data.status == resource.data.status);
+      allow delete: if isClubAdmin(clubId);
+    }
+
+    // Roster + pitches: shared by every active member of the club, keyed by clubScopeId (the
+    // club admin's uid, whether it's the admin themself or a joined coach acting inside it).
+    match /fc_clubteams/{clubId} {
+      allow read, write: if isClubMember(clubId) && isActiveClub(clubId);
+    }
+    match /fc_pitches/{docId} {
+      allow read, update, delete: if isSignedIn()
+        && isClubMember(resource.data.coachUid) && isActiveClub(resource.data.coachUid);
+      allow create: if isSignedIn()
+        && isClubMember(request.resource.data.coachUid) && isActiveClub(request.resource.data.coachUid);
+    }
+    // fc_groupplans/{clubId_category}: no clubId field on the doc itself -- the tenant id is the
+    // first '_'-delimited segment of the doc id (see groupPlanDocId() in soccer.html).
+    match /fc_groupplans/{planId} {
+      allow read, write: if isClubMember(planId.split('_')[0]) && isActiveClub(planId.split('_')[0]);
+    }
+
+    // Still per-individual-coach collections today (not yet club-shared -- tracked as a follow-up
+    // migration): only the creating coach can read/write their own docs, plus their club admin can
+    // read them (needed for the "team plans" rollup view already in the app).
+    match /fc_trainingplans/{docId} {
+      allow read: if ownedByRequester(resource.data.coachUid) || isAdminOfCoach(resource.data.coachUid);
+      allow update, delete: if ownedByRequester(resource.data.coachUid);
+      allow create: if ownedByRequester(request.resource.data.coachUid);
+    }
+    match /fc_drills/{docId} {
+      allow read, update, delete: if ownedByRequester(resource.data.coachUid);
+      allow create: if ownedByRequester(request.resource.data.coachUid);
+    }
+    match /fc_coachtrainings/{docId} {
+      allow read, update, delete: if ownedByRequester(resource.data.coachUid);
+      allow create: if ownedByRequester(request.resource.data.coachUid);
+    }
+    match /fc_playerclips/{docId} {
+      allow read, update, delete: if ownedByRequester(resource.data.coachUid);
+      allow create: if ownedByRequester(request.resource.data.coachUid);
+    }
+    match /fc_playermetrics/{docId} {
+      allow read, update, delete: if ownedByRequester(resource.data.coachUid);
+      allow create: if ownedByRequester(request.resource.data.coachUid);
+    }
+    match /fc_matches/{docId} {
+      allow read, update, delete: if ownedByRequester(resource.data.coachUid);
+      allow create: if ownedByRequester(request.resource.data.coachUid);
+    }
+    match /fc_matchevents/{docId} {
+      allow read, update, delete: if ownedByRequester(resource.data.coachUid);
+      allow create: if ownedByRequester(request.resource.data.coachUid);
+    }
+    match /fc_aiplans/{docId} {
+      allow read, update, delete: if ownedByRequester(resource.data.coachUid);
+      allow create: if ownedByRequester(request.resource.data.coachUid);
+    }
+    match /fc_reports/{docId} {
+      allow read, update, delete: if ownedByRequester(resource.data.coachUid);
+      allow create: if ownedByRequester(request.resource.data.coachUid);
+    }
+
+    // Everything else is denied by default (no catch-all rule).
   }
 }
