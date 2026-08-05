@@ -1291,7 +1291,7 @@ auth.onAuthStateChanged(function(user){
    sign-in provider is turned on for this project in the Firebase console (Authentication >
    Sign-in method) -- flipping LOGIN_DISABLED before that locks every user out, since
    auth.currentUser would just stay null. Flip it to false once that's confirmed. */
-var LOGIN_DISABLED = true;
+var LOGIN_DISABLED = false;
 if(LOGIN_DISABLED){
   ME.uid = localStorage.getItem('fc_uid') || ('local_' + Math.random().toString(36).slice(2,10));
   ME.name = localStorage.getItem('fc_name') || 'מאמן';
