@@ -320,8 +320,9 @@ var TAB = 0;
 var NAV_TABS = [
   {id:0, ic:'📋', t:'תוכניות אימון'},
   {id:1, ic:'👥', t:'קבוצות'},
-  {id:2, ic:'⚙️', t:'הגדרות'},
-  {id:3, ic:'🎥', t:'ניתוח משחקים'}
+  {id:2, ic:'📅', t:'לוח אימונים'},
+  {id:3, ic:'⚙️', t:'הגדרות'},
+  {id:4, ic:'🎥', t:'ניתוח משחקים'}
 ];
 var TRAINING_PLANS = [];
 var TRAINING_PLANS_LOADED = false;
@@ -395,7 +396,7 @@ function loadMatches(){
   db.collection(P+'matches').where('coachUid','==',ME.uid).get().then(function(snap){
     MATCHES = snap.docs.map(function(d){ return d.data(); });
     MATCHES_LOADED = true;
-    if(TAB===3) renderTab(3);
+    if(TAB===4 || TAB===2) renderTab(TAB);
     if(currentMatchId) renderMatchDetail();
   });
 }
@@ -404,7 +405,7 @@ function loadMatchEvents(){
   db.collection(P+'matchevents').where('coachUid','==',ME.uid).get().then(function(snap){
     MATCH_EVENTS = snap.docs.map(function(d){ return d.data(); });
     MATCH_EVENTS_LOADED = true;
-    if(TAB===3) renderTab(3);
+    if(TAB===4) renderTab(4);
     if(currentMatchId) renderMatchDetail();
   });
 }
@@ -579,8 +580,8 @@ function deleteMatch(m){
   toDelete.forEach(function(e){ db.collection(P+'matchevents').doc(e.id).delete(); });
   MATCH_EVENTS = MATCH_EVENTS.filter(function(e){ return e.matchId!==m.id; });
   closeMatchDetail();
-  document.querySelectorAll('.nav-btn').forEach(function(b,i){ b.classList.toggle('sel', i===3); });
-  renderTab(3);
+  document.querySelectorAll('.nav-btn').forEach(function(b,i){ b.classList.toggle('sel', i===4); });
+  renderTab(4);
 }
 
 function todayIso(){
@@ -601,8 +602,41 @@ function daysBetween(dateStr){
   today.setHours(0,0,0,0);
   return Math.round((d.getTime()-today.getTime())/86400000);
 }
+function findPlayerCategory(name){
+  for(var i=0;i<AGE_GROUPS.length;i++){
+    var t = CLUB_TEAMS[AGE_GROUPS[i]];
+    if(t && t.players && t.players.some(function(pl){ return pl.name===name; })) return AGE_GROUPS[i];
+  }
+  return '';
+}
 function computeAlerts(){
-  return [];
+  var alerts = [];
+  var byPlayer = {};
+  SESSIONS.forEach(function(s){
+    var att = s.attendance || {};
+    for(var name in att){
+      if(!byPlayer[name]) byPlayer[name] = [];
+      byPlayer[name].push({date:s.date, start:s.start, val:att[name]});
+    }
+  });
+  for(var name in byPlayer){
+    var records = byPlayer[name].slice().sort(function(a,b){
+      if(a.date!==b.date) return a.date<b.date?-1:1;
+      return a.start<b.start?-1:1;
+    });
+    var streak = 0;
+    for(var i=0;i<records.length;i++){
+      if(records[i].val==='absent') streak++; else streak = 0;
+    }
+    if(streak>=3){
+      var cat = findPlayerCategory(name);
+      if(categoryAllowed(cat)){
+        alerts.push({type:'absence', severity:'danger', category:cat, playerName:name,
+          text:'לשחקן '+name+' 3 היעדרויות רצופות'});
+      }
+    }
+  }
+  return alerts;
 }
 /* ---------------- Global search (hamburger drawer) ---------------- */
 function globalSearch(query){
@@ -946,15 +980,16 @@ function renderTab(i){
   var c = document.getElementById('content');
   // A manager whose club is pending Super Admin approval (or was rejected) gets a blocked
   // screen on every tab except Settings, where they can see status / resubmit.
-  if(ME.role==='manager' && MY_CLUB_LOADED && MY_CLUB && i!==2 && (MY_CLUB.status==='pending' || MY_CLUB.status==='rejected')){
+  if(ME.role==='manager' && MY_CLUB_LOADED && MY_CLUB && i!==3 && (MY_CLUB.status==='pending' || MY_CLUB.status==='rejected')){
     c.innerHTML = '<div class="section-title">⏳ ממתין לאישור</div>'+clubPendingScreenHtml(MY_CLUB.status);
     wireClubPendingScreen();
     return;
   }
   if(i===0) c.innerHTML = tplPlans();
   else if(i===1) c.innerHTML = tplTeams();
-  else if(i===2) c.innerHTML = tplSettings();
-  else if(i===3) c.innerHTML = tplMatches();
+  else if(i===2) c.innerHTML = tplCalendar();
+  else if(i===3) c.innerHTML = tplSettings();
+  else if(i===4) c.innerHTML = tplMatches();
   else if(i===SUPERADMIN_TAB_ID) c.innerHTML = tplSuperAdmin();
   wireTab(i);
 }
@@ -1395,7 +1430,8 @@ function renderTeamDetail(){
             (p.photo ? '<img src="'+p.photo+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '<span style="font-size:22px">👤</span>')+
             '<div><b>'+p.name+'</b><div class="muted">דירוג: '+'⭐'.repeat(p.rating||0)+'</div></div>'+
           '</div>'+
-          '<button class="logout-btn" data-delplayer="'+i+'" title="מחק">🗑</button>'+
+          '<div class="row" style="gap:8px;justify-content:flex-start">'+fitnessBadgeHtml(p)+
+          '<button class="logout-btn" data-delplayer="'+i+'" title="מחק">🗑</button></div>'+
         '</div></div>';
       }).join('')
     )+
@@ -1458,6 +1494,22 @@ function openAddStaffModal(){
     });
   };
 }
+/* ---------------- Player fitness / injury status ---------------- */
+var FITNESS_STATUSES = [
+  {id:'fit', l:'כשיר', ic:'✔', color:'var(--good)'},
+  {id:'limited', l:'מוגבל', ic:'⚠', color:'var(--warn)'},
+  {id:'injured', l:'פצוע', ic:'✕', color:'var(--bad)'}
+];
+function fitnessStatusInfo(id){
+  for(var i=0;i<FITNESS_STATUSES.length;i++) if(FITNESS_STATUSES[i].id===id) return FITNESS_STATUSES[i];
+  return FITNESS_STATUSES[0];
+}
+function fitnessBadgeHtml(p){
+  var st = fitnessStatusInfo(p.fitness_status||'fit');
+  var dateRange = (st.id!=='fit' && (p.injury_start||p.injury_end))
+    ? ' '+(p.injury_start||'?')+'-'+(p.injury_end||'?') : '';
+  return '<span class="badge" style="background:color-mix(in srgb,'+st.color+' 18%,var(--card2));color:'+st.color+';font-weight:700">'+st.ic+' '+st.l+dateRange+'</span>';
+}
 /* ---------------- Player badges / achievements ---------------- */
 var PHYSICAL_ATTRS = [
   {k:'rating_speed', l:'מהירות'},
@@ -1466,10 +1518,34 @@ var PHYSICAL_ATTRS = [
   {k:'rating_endurance', l:'סבולת'}
 ];
 var BADGES = [
+  {id:'attend10', ic:'🏅', t:'10 אימונים', d:'נוכחות ב-10 אימונים לפחות'},
+  {id:'attend25', ic:'🎖️', t:'25 אימונים', d:'נוכחות ב-25 אימונים לפחות'},
+  {id:'streak5', ic:'🔥', t:'רצף נוכחות', d:'5 אימונים רצופים ברצף ללא היעדרות'},
   {id:'fullskills', ic:'⭐', t:'שחקן מצטיין', d:'כל המדדים הפיזיים (1-5) בציון 4 ומעלה'}
 ];
+function countPlayerAttendance(playerName){
+  var records = [];
+  SESSIONS.forEach(function(s){
+    var val = (s.attendance||{})[playerName];
+    if(val!==undefined) records.push({date:s.date, start:s.start, val:val});
+  });
+  records.sort(function(a,b){
+    if(a.date!==b.date) return a.date<b.date?-1:1;
+    return a.start<b.start?-1:1;
+  });
+  var present=0, maxStreak=0, curStreak=0;
+  records.forEach(function(r){
+    if(r.val==='present'){ present++; curStreak++; if(curStreak>maxStreak) maxStreak=curStreak; }
+    else curStreak=0;
+  });
+  return {present:present, maxStreak:maxStreak, total:records.length};
+}
 function computePlayerBadges(player){
   var earned = {};
+  var stats = countPlayerAttendance(player.name);
+  if(stats.present>=10) earned.attend10 = true;
+  if(stats.present>=25) earned.attend25 = true;
+  if(stats.maxStreak>=5) earned.streak5 = true;
   var allHigh = PHYSICAL_ATTRS.every(function(a){ return (typeof player[a.k]==='number' ? player[a.k] : 0)>=4; });
   if(allHigh) earned.fullskills = true;
   return earned;
@@ -1516,6 +1592,18 @@ function openAddPlayerModal(editIdx){
       return '<div class="field"><label>'+a.l+'</label>'+ratingSelect('phys_'+a.k, (p&&typeof p[a.k]==='number')?p[a.k]:3)+'</div>';
     }).join('')+
     (isEdit ? '<div style="margin:4px 0 6px">'+playerBadgeRowHtml(p)+'</div>' : '')+
+    '<div class="section-title" style="font-size:14px;margin-top:6px">סטטוס רפואי</div>'+
+    '<div class="action-row" id="fitnessStatusRow">'+
+      FITNESS_STATUSES.map(function(st){
+        var cur = (p&&p.fitness_status) || 'fit';
+        return '<button type="button" class="fitBtn'+(cur===st.id?' sel':'')+'" data-val="'+st.id+'">'+st.ic+' '+st.l+'</button>';
+      }).join('')+
+    '</div>'+
+    '<div id="injuryDetailFields" style="display:'+((p&&p.fitness_status&&p.fitness_status!=='fit')?'block':'none')+'">'+
+      '<div class="field"><label>הערה (לדוגמה: שבר ביד)</label><input id="injuryNoteInput" placeholder="תיאור קצר" value="'+(p?(p.injury_note||''):'')+'"></div>'+
+      '<div class="field"><label>מתאריך</label><input type="date" id="injuryStartInput" value="'+(p?(p.injury_start||''):'')+'"></div>'+
+      '<div class="field"><label>עד תאריך (משוער, אופציונלי)</label><input type="date" id="injuryEndInput" value="'+(p?(p.injury_end||''):'')+'"></div>'+
+    '</div>'+
     '<div class="section-title" style="font-size:14px;margin-top:6px">פרטים אישיים</div>'+
     '<div class="field"><label>תאריך לידה</label><input type="date" id="playerBirthInput" value="'+(p?(p.birth_date||''):'')+'"></div>'+
     '<div class="field"><label>מידת ביגוד</label><input id="playerSizeInput" placeholder="לדוגמה: 12 / S / M" value="'+(p?(p.clothing_size||''):'')+'"></div>'+
@@ -1532,6 +1620,15 @@ function openAddPlayerModal(editIdx){
         '<button class="btn ghost" id="btnMonthlyReport" style="margin-top:8px">📄 דוח חודשי</button>'
       : '');
   openModal(html);
+  var selectedFitness = (p&&p.fitness_status) || 'fit';
+  document.querySelectorAll('#fitnessStatusRow .fitBtn').forEach(function(btn){
+    btn.onclick = function(){
+      document.querySelectorAll('#fitnessStatusRow .fitBtn').forEach(function(b){ b.classList.remove('sel'); });
+      btn.classList.add('sel');
+      selectedFitness = btn.dataset.val;
+      document.getElementById('injuryDetailFields').style.display = (selectedFitness==='fit') ? 'none' : 'block';
+    };
+  });
   document.getElementById('btnSavePlayer').onclick = function(){
     var firstName = document.getElementById('playerFirstNameInput').value.trim();
     var lastName = document.getElementById('playerLastNameInput').value.trim();
@@ -1546,7 +1643,11 @@ function openAddPlayerModal(editIdx){
       parent_name: document.getElementById('playerParentNameInput').value.trim(),
       parent_phone: document.getElementById('playerParentPhoneInput').value.trim(),
       parent_email: document.getElementById('playerParentEmailInput').value.trim(),
-      extra_categories: (higherCat && document.getElementById('playerHigherCatInput').checked) ? [higherCat] : []
+      extra_categories: (higherCat && document.getElementById('playerHigherCatInput').checked) ? [higherCat] : [],
+      fitness_status: selectedFitness,
+      injury_note: selectedFitness==='fit' ? '' : document.getElementById('injuryNoteInput').value.trim(),
+      injury_start: selectedFitness==='fit' ? '' : document.getElementById('injuryStartInput').value,
+      injury_end: selectedFitness==='fit' ? '' : document.getElementById('injuryEndInput').value
     };
     PHYSICAL_ATTRS.forEach(function(a){
       var v = parseInt(document.getElementById('phys_'+a.k).value,10);
@@ -1577,6 +1678,214 @@ function openAddPlayerModal(editIdx){
 function getTeamCoachName(cat){
   var t = CLUB_TEAMS[cat];
   return (t && t.staff && t.staff.length) ? t.staff[0].name : '';
+}
+
+/* ---------------- Tab 2: Training calendar ---------------- */
+var SESSIONS = [];
+var SESSIONS_LOADED = false;
+var CAL_TEAM_FILTER = '';
+var CAL_DAY_LABELS = ['יום א׳','יום ב׳','יום ג׳','יום ד׳','יום ה׳','יום ו׳','שבת'];
+var TEAM_COLORS = ['#e11d2e','#2563eb','#16a34a','#d97706','#9333ea','#0891b2','#db2777','#65a30d'];
+function teamColor(cat){
+  var idx = AGE_GROUPS.indexOf(cat);
+  return TEAM_COLORS[(idx<0?0:idx) % TEAM_COLORS.length];
+}
+function calWeekStart(d){
+  var dt = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  dt.setDate(dt.getDate() - dt.getDay());
+  return dt;
+}
+var CAL_WEEK_START = calWeekStart(new Date());
+function calAddDays(d, n){
+  var dt = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  dt.setDate(dt.getDate() + n);
+  return dt;
+}
+function calIso(d){
+  var mm = d.getMonth()+1, dd = d.getDate();
+  return d.getFullYear()+'-'+(mm<10?'0':'')+mm+'-'+(dd<10?'0':'')+dd;
+}
+function calFmtShort(d){ return d.getDate()+'/'+(d.getMonth()+1); }
+function loadSessions(){
+  if(!ME.uid) return;
+  db.collection(P+'sessions').where('coachUid','==',clubScopeId()).get().then(function(snap){
+    SESSIONS = snap.docs.map(function(d){ return d.data(); });
+    SESSIONS_LOADED = true;
+    if(TAB===2) renderTab(2);
+    refreshAlertsUI();
+  });
+}
+function saveSession(s){
+  db.collection(P+'sessions').doc(s.id).set(s);
+}
+function sessionsForDay(iso){
+  return SESSIONS.filter(function(s){
+    return s.date===iso && categoryAllowed(s.category) && (!CAL_TEAM_FILTER || s.category===CAL_TEAM_FILTER);
+  }).sort(function(a,b){ return a.start<b.start?-1:1; });
+}
+function matchesForDay(iso){
+  var list = (typeof MATCHES!=='undefined' && MATCHES_LOADED) ? MATCHES : [];
+  return list.filter(function(m){
+    return m.date===iso && categoryAllowed(m.category) && (!CAL_TEAM_FILTER || m.category===CAL_TEAM_FILTER);
+  });
+}
+function tplCalendar(){
+  if(!SESSIONS_LOADED){
+    loadSessions();
+    return '<div class="section-title">📅 לוח אימונים</div><div class="muted" style="text-align:center">טוען...</div>';
+  }
+  if(!MATCHES_LOADED) loadMatches();
+  var teamOptions = AGE_GROUPS.filter(function(c){ return categoryAllowed(c); });
+  var days = [];
+  for(var i=0;i<7;i++) days.push(calAddDays(CAL_WEEK_START, i));
+  var weekEnd = days[6];
+  var anyContent = false;
+  var daysHtml = days.map(function(d){
+    var iso = calIso(d);
+    var daySessions = sessionsForDay(iso);
+    var dayMatches = matchesForDay(iso);
+    if(daySessions.length===0 && dayMatches.length===0) return '';
+    anyContent = true;
+    return '<div class="section-title" style="font-size:14px;margin-top:14px">'+CAL_DAY_LABELS[d.getDay()]+' · '+calFmtShort(d)+'</div>'+
+      daySessions.map(function(s){
+        return '<div class="card" data-opensession="'+s.id+'" style="cursor:pointer;border-right:4px solid '+teamColor(s.category)+'">'+
+          '<div class="row"><b>'+s.category+'</b><span class="muted">'+s.start+' - '+s.end+'</span></div>'+
+          (s.location ? '<div class="muted" style="margin-top:2px">📍 '+s.location+'</div>' : '')+
+        '</div>';
+      }).join('')+
+      dayMatches.map(function(m){
+        var hasScore = m.score_us!==''&&m.score_us!=null && m.score_them!==''&&m.score_them!=null;
+        return '<div class="card" data-openmatchcal="'+m.id+'" style="cursor:pointer;border-right:4px solid var(--text)">'+
+          '<div class="row"><b>⚽ '+m.category+' נגד '+(m.opponent||'')+'</b>'+(hasScore?'<span class="muted">'+m.score_us+'-'+m.score_them+'</span>':'')+'</div>'+
+        '</div>';
+      }).join('');
+  }).join('');
+  return '<div class="section-title">📅 לוח אימונים</div>'+
+    '<div class="field"><label>סינון לפי קבוצה</label><select id="calTeamFilter">'+
+      '<option value="">כל הקבוצות</option>'+
+      teamOptions.map(function(cat){ return '<option value="'+cat+'"'+(CAL_TEAM_FILTER===cat?' selected':'')+'>'+cat+'</option>'; }).join('')+
+    '</select></div>'+
+    '<div class="row" style="margin-bottom:10px">'+
+      '<button class="btn ghost sm" id="btnCalPrev" style="width:auto">◀ שבוע קודם</button>'+
+      '<b style="text-align:center;flex:1">'+calFmtShort(CAL_WEEK_START)+' - '+calFmtShort(weekEnd)+'</b>'+
+      '<button class="btn ghost sm" id="btnCalNext" style="width:auto">שבוע הבא ▶</button>'+
+    '</div>'+
+    '<button class="btn" id="btnAddSession" style="margin-bottom:14px">+ אימון חדש</button>'+
+    daysHtml +
+    (anyContent ? '' : '<div class="card" style="text-align:center;color:var(--sub)">אין אימונים או משחקים השבוע</div>');
+}
+function wireCalendarTab(){
+  var sel = document.getElementById('calTeamFilter');
+  if(sel) sel.onchange = function(){ CAL_TEAM_FILTER = sel.value; renderTab(2); };
+  var prev = document.getElementById('btnCalPrev');
+  if(prev) prev.onclick = function(){ CAL_WEEK_START = calAddDays(CAL_WEEK_START, -7); renderTab(2); };
+  var next = document.getElementById('btnCalNext');
+  if(next) next.onclick = function(){ CAL_WEEK_START = calAddDays(CAL_WEEK_START, 7); renderTab(2); };
+  var addBtn = document.getElementById('btnAddSession');
+  if(addBtn) addBtn.onclick = function(){ openAddSessionModal(); };
+  document.querySelectorAll('[data-opensession]').forEach(function(el){
+    el.onclick = function(){ openSessionDetailModal(el.dataset.opensession); };
+  });
+  document.querySelectorAll('[data-openmatchcal]').forEach(function(el){
+    el.onclick = function(){ openMatchDetail(el.dataset.openmatchcal); };
+  });
+}
+function openAddSessionModal(){
+  var cats = AGE_GROUPS.filter(function(c){ return categoryAllowed(c); });
+  var defDate = calIso(CAL_WEEK_START.getTime()>=calWeekStart(new Date()).getTime() ? new Date() : CAL_WEEK_START);
+  var html = '<h3 style="margin-bottom:14px">אימון חדש</h3>'+
+    '<div class="field"><label>קבוצה</label><select id="sessCatInput">'+
+      cats.map(function(c){ return '<option value="'+c+'"'+(CAL_TEAM_FILTER===c?' selected':'')+'>'+c+'</option>'; }).join('')+
+    '</select></div>'+
+    '<div class="field"><label>תאריך</label><input type="date" id="sessDateInput" value="'+defDate+'"></div>'+
+    '<div class="field"><label>משעה</label><input type="time" id="sessStartInput" value="17:00"></div>'+
+    '<div class="field"><label>עד שעה</label><input type="time" id="sessEndInput" value="18:30"></div>'+
+    '<div class="field"><label>מיקום (אופציונלי)</label><input id="sessLocationInput" placeholder="לדוגמה: מגרש עירוני"></div>'+
+    '<button class="btn" id="btnSaveSession">הוסף</button>';
+  openModal(html);
+  document.getElementById('btnSaveSession').onclick = function(){
+    var cat = document.getElementById('sessCatInput').value;
+    var date = document.getElementById('sessDateInput').value;
+    var st = document.getElementById('sessStartInput').value;
+    var en = document.getElementById('sessEndInput').value;
+    if(!date || !st || !en || en<=st) return;
+    var s = {
+      id: genCode(8), coachUid: clubScopeId(), category: cat, date: date,
+      start: st, end: en, location: document.getElementById('sessLocationInput').value.trim(),
+      attendance: {}, guests: []
+    };
+    SESSIONS.push(s);
+    saveSession(s);
+    closeModal();
+    renderTab(2);
+  };
+}
+function openSessionDetailModal(id){
+  var s = SESSIONS.filter(function(x){ return x.id===id; })[0];
+  if(!s) return;
+  var html = '<h3 style="margin-bottom:6px">'+s.category+'</h3>'+
+    '<div class="muted" style="margin-bottom:14px">'+s.date+' · '+s.start+' - '+s.end+(s.location?' · 📍 '+s.location:'')+'</div>'+
+    '<button class="btn ghost sm" id="btnViewRosterSess" style="margin-bottom:10px">👥 צפה בסגל הקבוצה</button>'+
+    '<button class="btn sm" id="btnAttendanceSess" style="margin-bottom:10px">✅ רישום נוכחות</button>'+
+    '<button class="btn ghost" id="btnDelSession" style="color:#f87171;border-color:#f87171">🗑 מחק אימון</button>';
+  openModal(html);
+  document.getElementById('btnViewRosterSess').onclick = function(){
+    closeModal();
+    if(!CLUB_TEAMS_LOADED) loadClubTeams();
+    openTeamDetail(s.category);
+  };
+  document.getElementById('btnAttendanceSess').onclick = function(){ openAttendanceModal(s.id); };
+  document.getElementById('btnDelSession').onclick = function(){
+    if(!confirm('למחוק את האימון?')) return;
+    db.collection(P+'sessions').doc(s.id).delete();
+    SESSIONS = SESSIONS.filter(function(x){ return x.id!==s.id; });
+    closeModal();
+    renderTab(2);
+    refreshAlertsUI();
+  };
+}
+function openAttendanceModal(sessionId){
+  var s = SESSIONS.filter(function(x){ return x.id===sessionId; })[0];
+  if(!s) return;
+  var team = CLUB_TEAMS[s.category] || {players:[]};
+  var attendance = s.attendance || {};
+  var html = '<h3 style="margin-bottom:6px">רישום נוכחות</h3>'+
+    '<div class="muted" style="margin-bottom:14px">'+s.category+' · '+s.date+' · '+s.start+' - '+s.end+'</div>'+
+    (team.players.length===0 ? '<div class="muted">אין שחקנים בקבוצה זו</div>' :
+      team.players.map(function(pl,i){
+        var cur = attendance[pl.name] || 'present';
+        return '<div class="card" style="padding:10px">'+
+          '<div class="row" style="margin-bottom:8px"><b>'+pl.name+'</b></div>'+
+          '<div class="action-row" data-attrow="p'+i+'">'+
+            '<button type="button" class="attBtn'+(cur==='present'?' sel':'')+'" data-val="present">✔ נוכח</button>'+
+            '<button type="button" class="attBtn'+(cur==='absent'?' sel':'')+'" data-val="absent">✘ חיסור</button>'+
+            '<button type="button" class="attBtn'+(cur==='excused'?' sel':'')+'" data-val="excused">⚠ מוצדק</button>'+
+          '</div></div>';
+      }).join('')
+    )+
+    '<button class="btn" id="btnSaveAttendance" style="margin-top:10px">שמור נוכחות</button>';
+  openModal(html);
+  document.querySelectorAll('[data-attrow]').forEach(function(row){
+    row.querySelectorAll('.attBtn').forEach(function(btn){
+      btn.onclick = function(){
+        row.querySelectorAll('.attBtn').forEach(function(b){ b.classList.remove('sel'); });
+        btn.classList.add('sel');
+      };
+    });
+  });
+  document.getElementById('btnSaveAttendance').onclick = function(){
+    var newAttendance = {};
+    team.players.forEach(function(pl,i){
+      var row = document.querySelector('[data-attrow="p'+i+'"]');
+      var selBtn = row.querySelector('.attBtn.sel');
+      newAttendance[pl.name] = selBtn ? selBtn.dataset.val : 'present';
+    });
+    s.attendance = newAttendance;
+    saveSession(s);
+    closeModal();
+    renderTab(2);
+    refreshAlertsUI();
+  };
 }
 
 /* ---------------- Tab 3: Settings ---------------- */
@@ -1665,7 +1974,7 @@ function wireClubPendingScreen(){
     db.collection(P+'clubs').doc(ME.uid).delete().then(function(){
       MY_CLUB = null;
       MY_CLUB_LOADED = false;
-      renderTab(2);
+      renderTab(3);
     });
   };
 }
@@ -1731,7 +2040,7 @@ function updateClubColor(newColor){
   db.collection(P+'clubs').doc(ME.uid).set({color:newColor}, {merge:true}).then(function(){
     MY_CLUB.color = newColor;
     applyClubTheme(MY_CLUB);
-    renderTab(2);
+    renderTab(3);
   });
 }
 function joinClubByCode(code){
@@ -1756,8 +2065,9 @@ function joinClubByCode(code){
     }
     MY_CLUB_LOADED = false;
     CLUB_TEAMS_LOADED = false;
+    SESSIONS_LOADED = false;
     loadMyClub();
-    renderTab(2);
+    renderTab(3);
   });
 }
 // Reuses the exact same phone formatting convention as the phone-OTP login (line ~858):
@@ -1803,14 +2113,14 @@ function inviteCoachByPhone(rawPhone){
       alert('המאמן הוזמן והצטרף למועדון');
       MY_CLUB_LOADED = false;
       loadMyClub();
-      renderTab(2);
+      renderTab(3);
     } else {
       var invites = (MY_CLUB.pendingInvites || []).filter(function(inv){ return inv.phone!==phone; });
       invites.push({phone:phone, addedAt: Date.now()});
       clubRef.set({pendingInvites:invites}, {merge:true}).then(function(){
         MY_CLUB.pendingInvites = invites;
         alert('הוזמן בהצלחה — ההזמנה תתממש כאשר המאמן יתחבר לראשונה עם הטלפון הזה');
-        renderTab(2);
+        renderTab(3);
       });
     }
   });
@@ -1820,7 +2130,7 @@ function cancelPendingInvite(phone){
   var invites = (MY_CLUB.pendingInvites || []).filter(function(inv){ return inv.phone!==phone; });
   MY_CLUB.pendingInvites = invites;
   db.collection(P+'clubs').doc(ME.uid).set({pendingInvites:invites}, {merge:true}).then(function(){
-    renderTab(2);
+    renderTab(3);
   });
 }
 // Called once ME.uid/ME.phone are known on login (real phone-OTP flow), BEFORE enterApp().
@@ -1882,8 +2192,9 @@ function leaveClub(){
   MY_CLUB = null;
   MY_CLUB_LOADED = true;
   CLUB_TEAMS_LOADED = false;
+  SESSIONS_LOADED = false;
   applyClubTheme(null);
-  renderTab(2);
+  renderTab(3);
 }
 function removeCoachFromClub(uid){
   if(ME.role!=='manager' || !MY_CLUB) return;
@@ -1903,7 +2214,7 @@ function removeCoachFromClub(uid){
     ref.set({memberInfo:MY_CLUB.memberInfo}, {merge:true});
   }
   delete CLUB_COACH_NAMES[uid];
-  renderTab(2);
+  renderTab(3);
 }
 // Can the current user edit member uid's title/assignedCategories? (canManageStaff members may narrow
 // within their own effectiveCategories; the owner may always edit anyone to anything.)
@@ -1941,7 +2252,7 @@ function updateClubMemberInfo(uid, patch){
   mi[uid] = updated;
   MY_CLUB.memberInfo = mi;
   clubRef.set({memberInfo:mi}, {merge:true}).then(function(){
-    renderTab(2);
+    renderTab(3);
   });
 }
 function tplClubSection(){
@@ -2289,6 +2600,8 @@ function wireTab(i){
       el.onclick = function(){ openTeamDetail(el.dataset.openteam); };
     });
   } else if(i===2){
+    wireCalendarTab();
+  } else if(i===3){
     wireClubPendingScreen();
     var btnOpenReportArchive = document.getElementById('btnOpenReportArchive');
     if(btnOpenReportArchive) btnOpenReportArchive.onclick = function(){ openReportArchive(); };
@@ -2350,7 +2663,7 @@ function wireTab(i){
     });
     var btnOpenTeamPlans = document.getElementById('btnOpenTeamPlans');
     if(btnOpenTeamPlans) btnOpenTeamPlans.onclick = function(){ openTeamPlansView(); };
-  } else if(i===3){
+  } else if(i===4){
     var nbm = document.getElementById('btnAddMatch');
     if(nbm) nbm.onclick = function(){ openAddMatchModal(); };
     document.querySelectorAll('[data-openmatch]').forEach(function(el){
@@ -3192,6 +3505,8 @@ function playerReportSummaryText(player, category){
   var lines = [];
   lines.push('דוח שחקן — '+p.name);
   if(category) lines.push('קבוצה: '+category);
+  var stats = countPlayerAttendance(p.name);
+  lines.push('נוכחות: '+stats.present+' אימונים'+(stats.maxStreak?' · רצף מקסימלי '+stats.maxStreak:''));
   lines.push('מדדים פיזיים: '+PHYSICAL_ATTRS.map(function(a){ return a.l+' '+((typeof p[a.k]==='number')?p[a.k]:0)+'/5'; }).join(' · '));
   return lines.join('\n');
 }
@@ -3228,6 +3543,11 @@ function todayLabel(){
   var d = new Date();
   return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
 }
+function attendancePctForPlayer(player){
+  var stats = countPlayerAttendance(player.name);
+  var pct = stats.total>0 ? Math.round((stats.present/stats.total)*100) : 0;
+  return {pct:pct, present:stats.present, total:stats.total, maxStreak:stats.maxStreak};
+}
 function reportPageHtml(rec){
   var clubName = (typeof MY_CLUB!=='undefined' && MY_CLUB && MY_CLUB.name) ? MY_CLUB.name : 'מועדון כדורגל';
   var accent = (typeof MY_CLUB!=='undefined' && MY_CLUB && MY_CLUB.color) ? MY_CLUB.color : DEFAULT_ACCENT;
@@ -3241,6 +3561,10 @@ function reportPageHtml(rec){
         '<div class="report-sub">'+clubName+(rec.category?' · '+rec.category:'')+'</div>'+
         '<div class="report-sub">דוח חודשי — '+rec.month_label+'</div>'+
       '</div>'+
+    '</div>'+
+    '<div class="report-section">'+
+      '<div class="st">נוכחות החודש</div>'+
+      '<div class="report-row"><span>אחוז נוכחות</span><b>'+rec.attendance_pct+'%</b></div>'+
     '</div>'+
     (rec.physical_html ? '<div class="report-section"><div class="st">מדדים פיזיים</div>'+rec.physical_html+'</div>' : '')+
     (rec.badges_html ? '<div class="report-section"><div class="st">תגים והישגים</div>'+rec.badges_html+'</div>' : '')+
@@ -3265,6 +3589,7 @@ function openMonthlyReportFeedbackModal(player, category){
   };
 }
 function buildReportRecord(player, category, feedback){
+  var attStats = attendancePctForPlayer(player);
   return {
     id: genCode(10),
     coachUid: ME.uid,
@@ -3272,6 +3597,7 @@ function buildReportRecord(player, category, feedback){
     category: category||'',
     photo: player.photo||'',
     month_label: currentMonthLabel(),
+    attendance_pct: attStats.pct,
     coach_feedback: feedback||'',
     created_at_label: todayLabel(),
     physical_html: playerPhysicalBarsHtml(player),
@@ -3347,7 +3673,7 @@ function renderReportArchiveScreen(){
       : COACH_REPORTS.slice().reverse().map(function(r){
           return '<div class="card">'+
             '<div class="row"><b>'+r.playerName+'</b><button class="logout-btn" data-delreport="'+r.id+'" title="מחק">🗑</button></div>'+
-            '<div class="muted" style="margin-top:4px">'+r.month_label+' · '+(r.created_at_label||'')+'</div>'+
+            '<div class="muted" style="margin-top:4px">'+r.month_label+' · נוכחות '+r.attendance_pct+'% · '+(r.created_at_label||'')+'</div>'+
             '<button class="btn ghost sm" data-viewreport="'+r.id+'" style="margin-top:8px">פתח דוח</button>'+
           '</div>';
         }).join('')
@@ -3383,8 +3709,8 @@ function goHome(){
 document.getElementById('btnCloseTeamScreen').onclick = function(){ closeTeamDetail(); goHome(); };
 document.getElementById('btnCloseMatchScreen').onclick = function(){
   closeMatchDetail();
-  document.querySelectorAll('.nav-btn').forEach(function(b,i){ b.classList.toggle('sel', i===3); });
-  renderTab(3);
+  document.querySelectorAll('.nav-btn').forEach(function(b,i){ b.classList.toggle('sel', i===4); });
+  renderTab(4);
 };
 document.getElementById('btnCloseDrillLib').onclick = function(){ closeDrillLib(); };
 document.getElementById('btnCloseCoachTrainingLib').onclick = function(){ closeCoachTrainingLib(); };

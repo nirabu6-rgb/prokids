@@ -79,6 +79,14 @@ service cloud.firestore {
     match /fc_clubteams/{clubId} {
       allow read, write: if isClubMember(clubId) && isActiveClub(clubId);
     }
+    // fc_sessions/{docId}: dated training-calendar entries (coachUid == clubScopeId()), same
+    // shared-by-club-membership pattern as fc_clubteams above.
+    match /fc_sessions/{docId} {
+      allow read, update, delete: if isSignedIn()
+        && isClubMember(resource.data.coachUid) && isActiveClub(resource.data.coachUid);
+      allow create: if isSignedIn()
+        && isClubMember(request.resource.data.coachUid) && isActiveClub(request.resource.data.coachUid);
+    }
     // fc_groupplans/{clubId_category}: no clubId field on the doc itself -- the tenant id is the
     // first '_'-delimited segment of the doc id (see groupPlanDocId() in soccer.html).
     match /fc_groupplans/{planId} {
