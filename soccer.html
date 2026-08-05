@@ -167,26 +167,40 @@ body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;backgro
     <div class="box">
       <h1>⚽ FootballCoach</h1>
       <p class="sub">כניסה למאמנים ומנהלים מקצועיים</p>
-      <div id="stepPhone">
-        <div class="field"><label>מספר טלפון</label><input id="phoneInput" type="tel" placeholder="05XXXXXXXX"></div>
-        <button class="btn" id="btnSendCode">שלח קוד אימות</button>
-        <div class="err" id="phoneErr">אירעה שגיאה בשליחת הקוד. בדוק את המספר ונסה שוב.</div>
+
+      <div id="stepAuth">
+        <div class="field"><label>אימייל</label><input id="authEmailInput" type="email" placeholder="you@example.com"></div>
+        <div class="field"><label>סיסמה</label><input id="authPasswordInput" type="password" placeholder="לפחות 6 תווים"></div>
+        <button class="btn" id="btnLogin">התחבר</button>
+        <button class="btn ghost" id="btnGoRegister" style="margin-top:8px">אין לך חשבון? הירשם</button>
+        <div class="err" id="authErr">אימייל או סיסמה שגויים. נסה/י שוב.</div>
       </div>
-      <div id="stepCode" style="display:none">
-        <div class="field"><label>קוד אימות שנשלח אליך ב-SMS</label><input id="codeInput" type="tel" placeholder="123456" maxlength="6"></div>
-        <button class="btn" id="btnVerifyCode">אישור קוד</button>
-        <button class="btn ghost" id="btnBackPhone" style="margin-top:8px">חזרה</button>
-        <div class="err" id="codeErr">קוד שגוי, נסה שוב.</div>
+
+      <div id="stepRegister" style="display:none">
+        <div class="field"><label>אימייל</label><input id="regEmailInput" type="email" placeholder="you@example.com"></div>
+        <div class="field"><label>סיסמה</label><input id="regPasswordInput" type="password" placeholder="לפחות 6 תווים"></div>
+        <button class="btn" id="btnRegister">הרשמה</button>
+        <button class="btn ghost" id="btnGoLogin" style="margin-top:8px">כבר יש לך חשבון? התחבר</button>
+        <div class="err" id="regErr">שגיאה בהרשמה. נסה/י שוב.</div>
       </div>
+
+      <div id="stepVerifyEmail" style="display:none">
+        <p class="sub" style="margin-bottom:14px">שלחנו מייל אימות לכתובת <b id="verifyEmailAddr"></b>. יש ללחוץ על הקישור במייל, ואז ללחוץ "המשך" כאן.</p>
+        <button class="btn" id="btnCheckVerified">המשך</button>
+        <button class="btn ghost" id="btnResendVerify" style="margin-top:8px">שלח שוב מייל אימות</button>
+        <button class="btn ghost" id="btnLogoutFromVerify" style="margin-top:8px">התנתק</button>
+        <div class="err" id="verifyErr">האימייל עדיין לא אומת. בדוק/י את תיבת הדואר (וגם ספאם).</div>
+      </div>
+
       <div id="stepProfile" style="display:none">
         <div class="field"><label>שם מלא</label><input id="profNameInput" placeholder="שם מלא"></div>
+        <div class="field"><label>טלפון</label><input id="profPhoneInput" type="tel" placeholder="05XXXXXXXX"></div>
         <div class="field"><label>תפקיד</label><select id="profRoleInput">
           <option value="coach">מאמן</option>
           <option value="manager">מנהל מקצועי</option>
         </select></div>
         <button class="btn" id="btnSaveProfile">המשך לאפליקציה</button>
       </div>
-      <div id="recaptcha-container"></div>
     </div>
   </div>
 </div>
@@ -317,7 +331,6 @@ var NAV_TABS = [
 ];
 var TRAINING_PLANS = [];
 var TRAINING_PLANS_LOADED = false;
-var confirmationResult = null;
 var DRILL_LIB = [];
 var DRILL_LIB_LOADED = false;
 var DRILL_CATEGORIES = ['חימום','טכניקה','כוח','משחק','סיום'];
@@ -1169,98 +1182,115 @@ function alertsSectionHtml(alerts){
   }).join('');
 }
 
-/* ---------------- Auth: phone + OTP ---------------- */
-function setupRecaptcha(){
-  if(window.recaptchaVerifier) return;
-  window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {size:'invisible'});
+/* ---------------- Auth: email + password, with mandatory email verification ----------------
+   Registration also collects a phone number, but it's stored as a plain contact field on the
+   fc_coaches profile now -- it is no longer the auth identity (see resolvePendingInvitesForMe,
+   which still matches invites by that stored phone). */
+function showAuthStep(id){
+  ['stepAuth','stepRegister','stepVerifyEmail','stepProfile'].forEach(function(s){
+    document.getElementById(s).style.display = (s===id) ? 'block' : 'none';
+  });
 }
-document.getElementById('btnSendCode').onclick = function(){
-  var phone = document.getElementById('phoneInput').value.trim();
-  if(!phone){ return; }
-  var formatted = phone.charAt(0)==='+' ? phone : ('+972'+phone.replace(/^0/,''));
-  document.getElementById('phoneErr').style.display = 'none';
-  setupRecaptcha();
-  auth.signInWithPhoneNumber(formatted, window.recaptchaVerifier).then(function(result){
-    confirmationResult = result;
-    document.getElementById('stepPhone').style.display = 'none';
-    document.getElementById('stepCode').style.display = 'block';
+document.getElementById('btnGoRegister').onclick = function(){ showAuthStep('stepRegister'); };
+document.getElementById('btnGoLogin').onclick = function(){ showAuthStep('stepAuth'); };
+document.getElementById('btnLogin').onclick = function(){
+  var email = document.getElementById('authEmailInput').value.trim();
+  var pw = document.getElementById('authPasswordInput').value;
+  if(!email || !pw) return;
+  document.getElementById('authErr').style.display = 'none';
+  auth.signInWithEmailAndPassword(email, pw).catch(function(err){
+    console.error(err);
+    document.getElementById('authErr').style.display = 'block';
+  });
+  // success is picked up by onAuthStateChanged below
+};
+document.getElementById('btnRegister').onclick = function(){
+  var email = document.getElementById('regEmailInput').value.trim();
+  var pw = document.getElementById('regPasswordInput').value;
+  if(!email || pw.length<6) return;
+  document.getElementById('regErr').style.display = 'none';
+  auth.createUserWithEmailAndPassword(email, pw).then(function(cred){
+    return cred.user.sendEmailVerification();
   }).catch(function(err){
     console.error(err);
-    document.getElementById('phoneErr').style.display = 'block';
+    document.getElementById('regErr').style.display = 'block';
+  });
+  // success is picked up by onAuthStateChanged below
+};
+document.getElementById('btnResendVerify').onclick = function(){
+  if(auth.currentUser) auth.currentUser.sendEmailVerification();
+};
+document.getElementById('btnCheckVerified').onclick = function(){
+  if(!auth.currentUser) return;
+  document.getElementById('verifyErr').style.display = 'none';
+  auth.currentUser.reload().then(function(){
+    if(auth.currentUser.emailVerified) afterEmailVerified();
+    else document.getElementById('verifyErr').style.display = 'block';
   });
 };
-document.getElementById('btnBackPhone').onclick = function(){
-  document.getElementById('stepCode').style.display = 'none';
-  document.getElementById('stepPhone').style.display = 'block';
-};
-document.getElementById('btnVerifyCode').onclick = function(){
-  var code = document.getElementById('codeInput').value.trim();
-  if(!code || !confirmationResult) return;
-  document.getElementById('codeErr').style.display = 'none';
-  confirmationResult.confirm(code).then(function(result){
-    ME.uid = result.user.uid;
-    ME.phone = result.user.phoneNumber || '';
-    db.collection(P+'coaches').doc(ME.uid).get().then(function(doc){
-      if(doc.exists){
-        var data = doc.data();
-        ME.name = data.name;
-        ME.role = data.role;
-        ME.clubId = data.clubId || '';
-        resolvePendingInvitesForMe(function(){ enterApp(); });
-      } else {
-        document.getElementById('stepCode').style.display = 'none';
-        document.getElementById('stepProfile').style.display = 'block';
-      }
-    });
-  }).catch(function(err){
-    console.error(err);
-    document.getElementById('codeErr').style.display = 'block';
+document.getElementById('btnLogoutFromVerify').onclick = function(){ auth.signOut(); };
+function afterEmailVerified(){
+  var user = auth.currentUser;
+  ME.uid = user.uid;
+  db.collection(P+'coaches').doc(ME.uid).get().then(function(doc){
+    if(doc.exists){
+      var data = doc.data();
+      ME.name = data.name;
+      ME.role = data.role;
+      ME.clubId = data.clubId || '';
+      ME.phone = data.phone || '';
+      resolvePendingInvitesForMe(function(){ enterApp(); });
+    } else {
+      showAuthStep('stepProfile');
+    }
   });
-};
+}
 document.getElementById('btnSaveProfile').onclick = function(){
   var n = document.getElementById('profNameInput').value.trim();
   if(!n) return;
   ME.name = n;
+  ME.phone = document.getElementById('profPhoneInput').value.trim();
   ME.role = document.getElementById('profRoleInput').value;
-  db.collection(P+'coaches').doc(ME.uid).set({uid:ME.uid, phone:ME.phone, name:ME.name, role:ME.role, clubId:ME.clubId||''}).then(function(){
+  db.collection(P+'coaches').doc(ME.uid).set({
+    uid: ME.uid,
+    email: auth.currentUser ? auth.currentUser.email : '',
+    phone: ME.phone,
+    name: ME.name,
+    role: ME.role,
+    clubId: ME.clubId || ''
+  }).then(function(){
     resolvePendingInvitesForMe(function(){ enterApp(); });
   });
 };
 document.getElementById('btnLogout').onclick = function(){
   auth.signOut().then(function(){
-    ME = {uid:'', phone:'', name:'', role:'coach', clubId:''};
+    ME = {uid:'', phone:'', name:'', role:'coach', clubId:'', isSuperAdmin:false};
     MY_CLUB = null;
     MY_CLUB_LOADED = false;
     applyClubTheme(null);
     TRAINING_PLANS = []; TRAINING_PLANS_LOADED = false;
     document.getElementById('appScreen').style.display = 'none';
     document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('stepPhone').style.display = 'block';
-    document.getElementById('stepCode').style.display = 'none';
-    document.getElementById('stepProfile').style.display = 'none';
-    document.getElementById('phoneInput').value = '';
-    document.getElementById('codeInput').value = '';
+    showAuthStep('stepAuth');
+    document.getElementById('authEmailInput').value = '';
+    document.getElementById('authPasswordInput').value = '';
   });
 };
 auth.onAuthStateChanged(function(user){
-  if(user && !ME.uid){
-    ME.uid = user.uid;
-    ME.phone = user.phoneNumber || '';
-    db.collection(P+'coaches').doc(ME.uid).get().then(function(doc){
-      if(doc.exists){
-        var data = doc.data();
-        ME.name = data.name;
-        ME.role = data.role;
-        ME.clubId = data.clubId || '';
-        resolvePendingInvitesForMe(function(){ enterApp(); });
-      }
-    });
+  if(!user || ME.uid) return;
+  if(!user.emailVerified){
+    document.getElementById('verifyEmailAddr').textContent = user.email || '';
+    showAuthStep('stepVerifyEmail');
+    return;
   }
+  afterEmailVerified();
 });
 
 /* ---------------- TEMP: login disabled, auto-enter with local profile ----------------
-   Phone OTP login is built but disabled for now (Firebase Phone provider / billing
-   not yet enabled) -- re-enable by removing this block once it's ready. */
+   Email/password login is fully built below but stays disabled until the Email/Password
+   sign-in provider is turned on for this project in the Firebase console (Authentication >
+   Sign-in method) -- flipping LOGIN_DISABLED before that locks every user out, since
+   auth.currentUser would just stay null. Flip it to false once that's confirmed. */
 var LOGIN_DISABLED = true;
 if(LOGIN_DISABLED){
   ME.uid = localStorage.getItem('fc_uid') || ('local_' + Math.random().toString(36).slice(2,10));
