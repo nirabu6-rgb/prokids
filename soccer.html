@@ -116,14 +116,6 @@ h1,h2,h3,.section-title,.dash-greet{letter-spacing:-.01em}
 .frame-add-chip{flex:none;width:78px;height:52px;border-radius:8px;border:2px dashed #c8cdd5;background:none;font-size:24px;color:var(--sub);cursor:pointer}
 .drill-card{display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:10px;padding:8px;margin-bottom:8px}
 .drill-card svg{width:60px;height:40px;background:#3eac46;border-radius:6px;flex:none}
-.week-grid-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.week-dayhead{display:flex;min-width:610px}
-.week-daycol-head{flex:1;min-width:80px;text-align:center;font-size:12px;font-weight:700;padding-bottom:4px}
-.week-grid{display:flex;min-width:610px;position:relative}
-.week-hourcol{width:46px;flex:none;position:relative}
-.hour-line{position:absolute;left:0;right:0;border-top:1px solid #eceff3;font-size:10px;color:var(--sub);padding-right:2px;white-space:nowrap}
-.week-daycol{flex:1;min-width:80px;position:relative;border-right:1px solid #eceff3;touch-action:none}
-.session-block{position:absolute;left:2px;right:2px;border-radius:6px;color:#fff;font-size:10px;line-height:1.3;padding:2px 4px;overflow:hidden;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:70}
 .modal-bg.show{display:flex}
 .modal{background:var(--card);border:1px solid var(--line);border-bottom:none;border-radius:18px 18px 0 0;padding:18px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;box-shadow:0 -10px 40px rgba(0,0,0,.45)}
@@ -166,7 +158,6 @@ h1,h2,h3,.section-title,.dash-greet{letter-spacing:-.01em}
   .builder-screen{align-items:center}
   .builder-screen > .builder-header,.builder-screen > .builder-body{width:100%;max-width:760px}
   .builder-screen{display:flex;flex-direction:column;align-items:center}
-  .week-grid-wrap{max-width:100%}
 }
 </style>
 </head>
@@ -260,14 +251,6 @@ h1,h2,h3,.section-title,.dash-greet{letter-spacing:-.01em}
   <div class="builder-body" id="matchScreenBody"></div>
 </div>
 
-<div class="builder-screen" id="pitchScreen" style="display:none">
-  <div class="builder-header">
-    <button class="icon-btn" id="btnClosePitchScreen" title="סגור">→</button>
-    <b id="pitchScreenTitle" style="flex:1"></b>
-  </div>
-  <div class="builder-body" id="pitchScreenBody"></div>
-</div>
-
 <div class="builder-screen" id="drillLibScreen" style="display:none">
   <div class="builder-header">
     <button class="icon-btn" id="btnCloseDrillLib" title="סגור">→</button>
@@ -337,9 +320,8 @@ var TAB = 0;
 var NAV_TABS = [
   {id:0, ic:'📋', t:'תוכניות אימון'},
   {id:1, ic:'👥', t:'קבוצות'},
-  {id:2, ic:'🏟', t:'מגרשים'},
-  {id:3, ic:'⚙️', t:'הגדרות'},
-  {id:4, ic:'🎥', t:'ניתוח משחקים'}
+  {id:2, ic:'⚙️', t:'הגדרות'},
+  {id:3, ic:'🎥', t:'ניתוח משחקים'}
 ];
 var TRAINING_PLANS = [];
 var TRAINING_PLANS_LOADED = false;
@@ -413,7 +395,7 @@ function loadMatches(){
   db.collection(P+'matches').where('coachUid','==',ME.uid).get().then(function(snap){
     MATCHES = snap.docs.map(function(d){ return d.data(); });
     MATCHES_LOADED = true;
-    if(TAB===4) renderTab(4);
+    if(TAB===3) renderTab(3);
     if(currentMatchId) renderMatchDetail();
   });
 }
@@ -422,7 +404,7 @@ function loadMatchEvents(){
   db.collection(P+'matchevents').where('coachUid','==',ME.uid).get().then(function(snap){
     MATCH_EVENTS = snap.docs.map(function(d){ return d.data(); });
     MATCH_EVENTS_LOADED = true;
-    if(TAB===4) renderTab(4);
+    if(TAB===3) renderTab(3);
     if(currentMatchId) renderMatchDetail();
   });
 }
@@ -597,8 +579,8 @@ function deleteMatch(m){
   toDelete.forEach(function(e){ db.collection(P+'matchevents').doc(e.id).delete(); });
   MATCH_EVENTS = MATCH_EVENTS.filter(function(e){ return e.matchId!==m.id; });
   closeMatchDetail();
-  document.querySelectorAll('.nav-btn').forEach(function(b,i){ b.classList.toggle('sel', i===4); });
-  renderTab(4);
+  document.querySelectorAll('.nav-btn').forEach(function(b,i){ b.classList.toggle('sel', i===3); });
+  renderTab(3);
 }
 
 function todayIso(){
@@ -608,45 +590,8 @@ function todayIso(){
   return d.getFullYear()+'-'+mm+'-'+dd;
 }
 
-var DAYS = [{k:'sun',l:'יום א\''},{k:'mon',l:'יום ב\''},{k:'tue',l:'יום ג\''},{k:'wed',l:'יום ד\''},{k:'thu',l:'יום ה\''},{k:'fri',l:'יום ו\''},{k:'sat',l:'שבת'}];
 var HEB_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-function startOfWeek(d){
-  var dt = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  dt.setDate(dt.getDate() - dt.getDay());
-  return dt;
-}
-var CURRENT_WEEK_START = startOfWeek(new Date());
-function addDays(d, n){
-  var dt = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  dt.setDate(dt.getDate() + n);
-  return dt;
-}
-function weekOfMonth(d){
-  var firstOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
-  var firstWeekStart = startOfWeek(firstOfMonth);
-  return Math.floor((d.getTime() - firstWeekStart.getTime()) / (7*24*60*60*1000)) + 1;
-}
 function fmtDateShort(d){ return d.getDate()+' ב'+HEB_MONTHS[d.getMonth()]; }
-function weekHeaderLabel(weekStart){
-  var weekEnd = addDays(weekStart, 6);
-  var monthLabel = HEB_MONTHS[weekEnd.getMonth()]+' '+weekEnd.getFullYear();
-  var wom = weekOfMonth(weekStart);
-  return monthLabel+' · שבוע '+wom+' ('+fmtDateShort(weekStart)+' - '+fmtDateShort(weekEnd)+')';
-}
-function genTimeSlots(){
-  var arr = [], h = 14, m = 0;
-  while(h<23 || (h===23 && m===0)){
-    arr.push((h<10?'0':'')+h+':'+(m===0?'00':m));
-    m += 15;
-    if(m===60){ m=0; h++; }
-  }
-  return arr;
-}
-var TIME_SLOTS = genTimeSlots();
-var PITCHES = [];
-var PITCHES_LOADED = false;
-var currentPitchIdx = null;
-var currentPitchDay = 'sun';
 
 /* ---------------- Alerts / reminders ---------------- */
 function daysBetween(dateStr){
@@ -657,45 +602,7 @@ function daysBetween(dateStr){
   return Math.round((d.getTime()-today.getTime())/86400000);
 }
 function computeAlerts(){
-  var alerts = [];
-  // Consecutive absences: scan PITCHES (best-effort chronological order:
-  // pitches in array order, days in DAYS order sun..sat, sessions in schedule order per day).
-  // Note: there is no absolute date per session beyond day-of-week, so this is a
-  // best-effort ordering proxy across all pitches/sessions rather than true calendar order.
-  var streaks = {}; // name -> current consecutive absent streak
-  var flagged = {}; // name -> already flagged (avoid duplicate alerts per player)
-  PITCHES.forEach(function(p){
-    DAYS.forEach(function(d){
-      var sessions = (p.schedule && p.schedule[d.k]) || [];
-      sessions.forEach(function(s){
-        var attendance = s.attendance || {};
-        for(var name in attendance){
-          var val = attendance[name];
-          if(val==='absent'){
-            streaks[name] = (streaks[name]||0)+1;
-            if(streaks[name]>=3 && !flagged[name]){
-              flagged[name] = true;
-              var absCat = findPlayerCategory(name);
-              if(categoryAllowed(absCat)){
-                alerts.push({type:'absence', severity:'danger', category:absCat, playerName:name,
-                  text:'לשחקן '+name+' 3 היעדרויות רצופות'});
-              }
-            }
-          } else {
-            streaks[name] = 0;
-          }
-        }
-      });
-    });
-  });
-  return alerts;
-}
-function findPlayerCategory(name){
-  for(var i=0;i<AGE_GROUPS.length;i++){
-    var t = CLUB_TEAMS[AGE_GROUPS[i]];
-    if(t && t.players && t.players.some(function(pl){ return pl.name===name; })) return AGE_GROUPS[i];
-  }
-  return '';
+  return [];
 }
 /* ---------------- Global search (hamburger drawer) ---------------- */
 function globalSearch(query){
@@ -831,12 +738,10 @@ function dashStatsHtml(){
       playersCount += t.players.length;
     }
   });
-  var pitchesCount = (typeof PITCHES!=='undefined' && PITCHES) ? PITCHES.length : 0;
   var alertsCount = computeAlerts().length;
   var stats = [
     {ic:'👥', num:teamsCount, label:'קבוצות פעילות'},
     {ic:'🧑‍🤝‍🧑', num:playersCount, label:'שחקנים'},
-    {ic:'🏟', num:pitchesCount, label:'מגרשים'},
     {ic:'🔔', num:alertsCount, label:'התראות פתוחות'}
   ];
   return '<div class="dash-stats">'+stats.map(function(s){
@@ -1041,16 +946,15 @@ function renderTab(i){
   var c = document.getElementById('content');
   // A manager whose club is pending Super Admin approval (or was rejected) gets a blocked
   // screen on every tab except Settings, where they can see status / resubmit.
-  if(ME.role==='manager' && MY_CLUB_LOADED && MY_CLUB && i!==3 && (MY_CLUB.status==='pending' || MY_CLUB.status==='rejected')){
+  if(ME.role==='manager' && MY_CLUB_LOADED && MY_CLUB && i!==2 && (MY_CLUB.status==='pending' || MY_CLUB.status==='rejected')){
     c.innerHTML = '<div class="section-title">⏳ ממתין לאישור</div>'+clubPendingScreenHtml(MY_CLUB.status);
     wireClubPendingScreen();
     return;
   }
   if(i===0) c.innerHTML = tplPlans();
   else if(i===1) c.innerHTML = tplTeams();
-  else if(i===2) c.innerHTML = tplPitches();
-  else if(i===3) c.innerHTML = tplSettings();
-  else if(i===4) c.innerHTML = tplMatches();
+  else if(i===2) c.innerHTML = tplSettings();
+  else if(i===3) c.innerHTML = tplMatches();
   else if(i===SUPERADMIN_TAB_ID) c.innerHTML = tplSuperAdmin();
   wireTab(i);
 }
@@ -1562,38 +1466,10 @@ var PHYSICAL_ATTRS = [
   {k:'rating_endurance', l:'סבולת'}
 ];
 var BADGES = [
-  {id:'attend10', ic:'🏅', t:'10 אימונים', d:'נוכחות ב-10 אימונים לפחות'},
-  {id:'attend25', ic:'🎖️', t:'25 אימונים', d:'נוכחות ב-25 אימונים לפחות'},
-  {id:'streak5', ic:'🔥', t:'רצף נוכחות', d:'5 אימונים רצופים ברצף ללא היעדרות'},
   {id:'fullskills', ic:'⭐', t:'שחקן מצטיין', d:'כל המדדים הפיזיים (1-5) בציון 4 ומעלה'}
 ];
-function countPlayerAttendance(playerName){
-  var present = 0, maxStreak = 0, curStreak = 0;
-  PITCHES.forEach(function(p){
-    DAYS.forEach(function(d){
-      var sessions = (p.schedule && p.schedule[d.k]) || [];
-      sessions.forEach(function(s){
-        var att = s.attendance || {};
-        var val = att[playerName];
-        if(val===undefined) return;
-        if(val==='present'){
-          present++;
-          curStreak++;
-          if(curStreak>maxStreak) maxStreak = curStreak;
-        } else {
-          curStreak = 0;
-        }
-      });
-    });
-  });
-  return {present:present, maxStreak:maxStreak};
-}
 function computePlayerBadges(player){
   var earned = {};
-  var stats = countPlayerAttendance(player.name);
-  if(stats.present>=10) earned.attend10 = true;
-  if(stats.present>=25) earned.attend25 = true;
-  if(stats.maxStreak>=5) earned.streak5 = true;
   var allHigh = PHYSICAL_ATTRS.every(function(a){ return (typeof player[a.k]==='number' ? player[a.k] : 0)>=4; });
   if(allHigh) earned.fullskills = true;
   return earned;
@@ -1698,394 +1574,9 @@ function openAddPlayerModal(editIdx){
   }
 }
 
-/* ---------------- Tab 2: Pitch board (multi-pitch weekly schedules) ---------------- */
-function tplPitches(){
-  if(!PITCHES_LOADED){
-    loadPitches();
-    return '<div class="section-title">🏟 לוח מגרשים</div><div class="muted" style="text-align:center">טוען...</div>';
-  }
-  return '<div class="section-title">🏟 לוח מגרשים</div>'+
-    '<div class="muted" style="margin-bottom:10px">נהל/י כמה מגרשים — לכל מגרש לוז שבועי משלו</div>'+
-    '<button class="btn" id="btnAddPitch" style="margin-bottom:14px">+ מגרש חדש</button>'+
-    (PITCHES.length===0
-      ? '<div class="card" style="text-align:center;color:var(--sub)">עדיין לא נוספו מגרשים</div>'
-      : PITCHES.map(function(p,i){
-          return '<div class="card"><div class="row"><b data-openpitch="'+i+'" style="cursor:pointer">'+p.name+'</b>'+
-            '<button class="logout-btn" data-delpitch="'+i+'" title="מחק">🗑</button></div></div>';
-        }).join('')
-    );
-}
-function loadPitches(){
-  if(!ME.uid) return;
-  db.collection(P+'pitches').where('coachUid','==',clubScopeId()).get().then(function(snap){
-    PITCHES = snap.docs.map(function(d){ return d.data(); });
-    PITCHES_LOADED = true;
-    if(TAB===2) renderTab(2);
-    refreshAlertsUI();
-  });
-}
-function emptySchedule(){
-  var s = {};
-  DAYS.forEach(function(d){ s[d.k] = []; });
-  return s;
-}
-function savePitch(p){
-  db.collection(P+'pitches').doc(p.id).set(p);
-}
-function openAddPitchModal(){
-  var html = '<h3 style="margin-bottom:14px">מגרש חדש</h3>'+
-    '<div class="field"><label>שם המגרש</label><input id="pitchNameInput" placeholder="לדוגמה: מגרש ראשי"></div>'+
-    '<button class="btn" id="btnSaveNewPitch">הוסף</button>';
-  openModal(html);
-  document.getElementById('btnSaveNewPitch').onclick = function(){
-    var name = document.getElementById('pitchNameInput').value.trim();
-    if(!name) return;
-    var p = {id:genCode(8), coachUid:clubScopeId(), name:name, schedule:emptySchedule()};
-    PITCHES.push(p);
-    savePitch(p);
-    closeModal();
-    renderTab(2);
-  };
-}
-function openPitchDetail(idx){
-  currentPitchIdx = idx;
-  currentPitchDay = 'sun';
-  document.getElementById('pitchScreen').style.display = 'flex';
-  renderPitchDetail();
-}
-function closePitchDetail(){
-  document.getElementById('pitchScreen').style.display = 'none';
-  currentPitchIdx = null;
-}
-var GRID_ROW_H = 18;
-var GRID_START_MIN = 14*60;
-var GRID_END_MIN = 23*60;
-var SESSION_COLORS = ['#22b8d8','#34d399','#fbbf24','#f87171','#a78bfa','#fb923c'];
-function timeToMin(t){ var p = t.split(':'); return parseInt(p[0],10)*60+parseInt(p[1],10); }
-function minToTime(m){ var h = Math.floor(m/60), mm = m%60; return (h<10?'0':'')+h+':'+(mm===0?'00':mm); }
-function renderPitchDetail(){
-  var p = PITCHES[currentPitchIdx];
-  document.getElementById('pitchScreenTitle').textContent = p.name;
-  var gridH = ((GRID_END_MIN-GRID_START_MIN)/15)*GRID_ROW_H;
-  var hourLines = '';
-  for(var hm=GRID_START_MIN; hm<=GRID_END_MIN; hm+=60){
-    var top = ((hm-GRID_START_MIN)/15)*GRID_ROW_H;
-    hourLines += '<div class="hour-line" style="top:'+top+'px">'+minToTime(hm)+'</div>';
-  }
-  var body = document.getElementById('pitchScreenBody');
-  body.innerHTML =
-    '<div class="row" style="margin-bottom:10px">'+
-      '<button class="btn ghost sm" id="btnWeekPrev" style="width:auto">◀ שבוע קודם</button>'+
-      '<b id="weekHeaderLabel" style="cursor:pointer;text-align:center;flex:1" title="לחץ לבחירת שבוע">'+weekHeaderLabel(CURRENT_WEEK_START)+'</b>'+
-      '<button class="btn ghost sm" id="btnWeekNext" style="width:auto">שבוע הבא ▶</button>'+
-    '</div>'+
-    '<div class="muted" style="margin-bottom:8px">לחיצה ארוכה על שעה ריקה בלוז מוסיפה אימון חדש. לחיצה על אימון קיים פותחת פרטים. הלוז חוזר על עצמו בכל שבוע (תבנית שבועית).</div>'+
-    '<button class="btn ghost sm" id="btnAddSession" style="margin-bottom:10px">+ הוספת אימון</button>'+
-    '<div class="week-grid-wrap">'+
-      '<div class="week-dayhead"><div class="week-hourcol"></div>'+
-        DAYS.map(function(d){ return '<div class="week-daycol-head">'+d.l+'</div>'; }).join('')+
-      '</div>'+
-      '<div class="week-grid">'+
-        '<div class="week-hourcol" style="height:'+gridH+'px">'+hourLines+'</div>'+
-        DAYS.map(function(d){
-          var sessions = p.schedule[d.k] || [];
-          var blocks = sessions.map(function(s,i){
-            var top = ((timeToMin(s.start)-GRID_START_MIN)/15)*GRID_ROW_H;
-            var h = ((timeToMin(s.end)-timeToMin(s.start))/15)*GRID_ROW_H;
-            return '<div class="session-block" data-day="'+d.k+'" data-sessidx="'+i+'" style="top:'+top+'px;height:'+(h-2)+'px;background:'+(s.color||SESSION_COLORS[0])+'">'+
-              '<b>'+s.category+'</b><br>'+s.start+'-'+s.end+
-            '</div>';
-          }).join('');
-          return '<div class="week-daycol" data-day="'+d.k+'" style="height:'+gridH+'px">'+blocks+'</div>';
-        }).join('')+
-      '</div>'+
-    '</div>';
-  document.getElementById('btnAddSession').onclick = function(){ openAddSessionModal(currentPitchDay||'sun', null); };
-  document.getElementById('btnWeekPrev').onclick = function(){
-    CURRENT_WEEK_START = addDays(CURRENT_WEEK_START, -7);
-    renderPitchDetail();
-  };
-  document.getElementById('btnWeekNext').onclick = function(){
-    CURRENT_WEEK_START = addDays(CURRENT_WEEK_START, 7);
-    renderPitchDetail();
-  };
-  document.getElementById('weekHeaderLabel').onclick = function(){
-    openWeekPickerModal();
-  };
-  document.querySelectorAll('.session-block').forEach(function(el){
-    el.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
-    el.onclick = function(e){
-      e.stopPropagation();
-      openSessionDetailModal(el.dataset.day, parseInt(el.dataset.sessidx,10));
-    };
-  });
-  document.querySelectorAll('.week-daycol').forEach(function(col){
-    var pressTimer = null;
-    col.addEventListener('pointerdown', function(e){
-      if(e.target.closest && e.target.closest('.session-block')) return;
-      var rect = col.getBoundingClientRect();
-      var y = e.clientY - rect.top;
-      pressTimer = setTimeout(function(){
-        pressTimer = null;
-        var startMin = GRID_START_MIN + Math.round(y/GRID_ROW_H)*15;
-        if(startMin > GRID_END_MIN-15) startMin = GRID_END_MIN-15;
-        openAddSessionModal(col.dataset.day, minToTime(startMin));
-      }, 550);
-    });
-    ['pointerup','pointermove','pointercancel','pointerleave'].forEach(function(evt){
-      col.addEventListener(evt, function(){ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } });
-    });
-  });
-}
-function openWeekPickerModal(){
-  var iso = CURRENT_WEEK_START.getFullYear()+'-'+
-    (CURRENT_WEEK_START.getMonth()+1<10?'0':'')+(CURRENT_WEEK_START.getMonth()+1)+'-'+
-    (CURRENT_WEEK_START.getDate()<10?'0':'')+CURRENT_WEEK_START.getDate();
-  var html = '<h3 style="margin-bottom:14px">דילוג לשבוע מסוים</h3>'+
-    '<div class="field"><label>בחר תאריך בתוך השבוע המבוקש</label><input type="date" id="weekJumpDateInput" value="'+iso+'"></div>'+
-    '<button class="btn" id="btnJumpWeek">עבור לשבוע זה</button>';
-  openModal(html);
-  document.getElementById('btnJumpWeek').onclick = function(){
-    var v = document.getElementById('weekJumpDateInput').value;
-    if(!v) return;
-    var parts = v.split('-');
-    var picked = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10));
-    CURRENT_WEEK_START = startOfWeek(picked);
-    closeModal();
-    renderPitchDetail();
-  };
-}
 function getTeamCoachName(cat){
   var t = CLUB_TEAMS[cat];
   return (t && t.staff && t.staff.length) ? t.staff[0].name : '';
-}
-function findScheduleConflict(day, start, end, category, targetPitchId, excludeSessionIdx){
-  var newStart = timeToMin(start), newEnd = timeToMin(end);
-  var newCoach = getTeamCoachName(category);
-  for(var pi=0; pi<PITCHES.length; pi++){
-    var pitch = PITCHES[pi];
-    var sessions = (pitch.schedule && pitch.schedule[day]) || [];
-    for(var si=0; si<sessions.length; si++){
-      if(pitch.id===targetPitchId && si===excludeSessionIdx) continue;
-      var s = sessions[si];
-      var sStart = timeToMin(s.start), sEnd = timeToMin(s.end);
-      var overlaps = (newStart < sEnd) && (newEnd > sStart);
-      if(!overlaps) continue;
-      if(pitch.id===targetPitchId){
-        return {type:'pitch', pitch:pitch, session:s};
-      }
-      var sCoach = getTeamCoachName(s.category);
-      if(newCoach && sCoach && newCoach===sCoach){
-        return {type:'coach', pitch:pitch, session:s, coach:newCoach};
-      }
-    }
-  }
-  return null;
-}
-function openAddSessionModal(day, startTime){
-  var start = startTime || TIME_SLOTS[0];
-  var startIdx = TIME_SLOTS.indexOf(start);
-  var defEnd = TIME_SLOTS[Math.min(startIdx+4, TIME_SLOTS.length-1)];
-  var html = '<h3 style="margin-bottom:14px">הוספת אימון</h3>'+
-    '<div class="field"><label>יום</label><select id="sessionDayInput">'+
-      DAYS.map(function(d){ return '<option value="'+d.k+'"'+(d.k===day?' selected':'')+'>'+d.l+'</option>'; }).join('')+
-    '</select></div>'+
-    '<div class="field"><label>קבוצה</label><select id="sessionCatInput">'+
-      AGE_GROUPS.map(function(cat){ return '<option value="'+cat+'">'+cat+'</option>'; }).join('')+
-    '</select></div>'+
-    '<div class="field"><label>משעה</label><select id="sessionStartInput">'+
-      TIME_SLOTS.map(function(t){ return '<option value="'+t+'"'+(t===start?' selected':'')+'>'+t+'</option>'; }).join('')+
-    '</select></div>'+
-    '<div class="field"><label>עד שעה</label><select id="sessionEndInput">'+
-      TIME_SLOTS.map(function(t){ return '<option value="'+t+'"'+(t===defEnd?' selected':'')+'>'+t+'</option>'; }).join('')+
-    '</select></div>'+
-    '<button class="btn" id="btnSaveSession">הוסף</button>';
-  openModal(html);
-  document.getElementById('btnSaveSession').onclick = function(){
-    var p = PITCHES[currentPitchIdx];
-    var d = document.getElementById('sessionDayInput').value;
-    var cat = document.getElementById('sessionCatInput').value;
-    var st = document.getElementById('sessionStartInput').value;
-    var en = document.getElementById('sessionEndInput').value;
-    if(en<=st) return;
-    var conflict = findScheduleConflict(d, st, en, cat, p.id, -1);
-    if(conflict){
-      if(conflict.type==='pitch'){
-        alert('מגרש זה תפוס כבר בשעה הזו (אימון '+conflict.session.category+', '+conflict.session.start+'-'+conflict.session.end+')');
-      } else {
-        alert('קיימת התנגשות: המאמן '+conflict.coach+' משובץ באותה שעה במגרש '+conflict.pitch.name);
-      }
-      return;
-    }
-    currentPitchDay = d;
-    p.schedule[d].push({category:cat, start:st, end:en, color:SESSION_COLORS[0]});
-    p.schedule[d].sort(function(a,b){ return a.start<b.start?-1:1; });
-    savePitch(p);
-    closeModal();
-    renderPitchDetail();
-  };
-}
-function openSessionDetailModal(day, idx){
-  var p = PITCHES[currentPitchIdx];
-  var s = p.schedule[day][idx];
-  var html = '<div class="row" style="margin-bottom:6px"><h3 id="sessCatLink" style="margin:0;cursor:pointer;text-decoration:underline">'+s.category+'</h3><button class="logout-btn" id="btnSessMenu" title="עוד">⋮</button></div>'+
-    '<div class="muted" style="margin-bottom:14px">'+s.start+' - '+s.end+'</div>'+
-    '<button class="btn ghost sm" id="btnViewRoster" style="margin-bottom:14px">👥 צפה בסגל הקבוצה</button>'+
-    '<button class="btn sm" id="btnAttendance" style="margin-bottom:14px">✅ רישום נוכחות</button>'+
-    '<div class="muted" style="margin-bottom:14px">מאמן: '+(getTeamCoachName(s.category)||'לא הוגדר')+'</div>'+
-    '<div id="sessMenuBox" style="display:none">'+
-      '<div class="muted" style="margin-bottom:8px">צבע ביומן</div>'+
-      '<div style="display:flex;gap:8px;margin-bottom:14px">'+
-        SESSION_COLORS.map(function(c){ return '<button class="color-sw sessColorBtn" data-color="'+c+'" style="background:'+c+'"></button>'; }).join('')+
-      '</div>'+
-      '<button class="btn ghost sm" id="btnDelSession" style="color:#f87171;border-color:#f87171">🗑 מחק אימון</button>'+
-    '</div>';
-  openModal(html);
-  var openRoster = function(){
-    closeModal();
-    document.getElementById('pitchScreen').style.display = 'none';
-    if(!CLUB_TEAMS_LOADED) loadClubTeams();
-    openTeamDetail(s.category);
-  };
-  document.getElementById('sessCatLink').onclick = openRoster;
-  document.getElementById('btnViewRoster').onclick = openRoster;
-  document.getElementById('btnAttendance').onclick = function(){ openAttendanceModal(day, idx); };
-  document.getElementById('btnSessMenu').onclick = function(){
-    var box = document.getElementById('sessMenuBox');
-    box.style.display = box.style.display==='none' ? 'block' : 'none';
-  };
-  document.querySelectorAll('.sessColorBtn').forEach(function(btn){
-    btn.onclick = function(){
-      s.color = btn.dataset.color;
-      savePitch(p);
-      closeModal();
-      renderPitchDetail();
-    };
-  });
-  document.getElementById('btnDelSession').onclick = function(){
-    p.schedule[day].splice(idx,1);
-    savePitch(p);
-    closeModal();
-    renderPitchDetail();
-  };
-}
-function chargePunch(pl){
-  if(pl.sub_type==='punch' && typeof pl.remaining_punches==='number') pl.remaining_punches = Math.max(0, pl.remaining_punches-1);
-}
-function refundPunch(pl){
-  if(pl.sub_type==='punch' && typeof pl.remaining_punches==='number') pl.remaining_punches = pl.remaining_punches+1;
-}
-function renderAttendanceModal(day, idx){
-  var p = PITCHES[currentPitchIdx];
-  var s = p.schedule[day][idx];
-  var team = CLUB_TEAMS[s.category] || {players:[]};
-  var attendance = s.attendance || {};
-  var guests = s.guests || [];
-  var html = '<h3 style="margin-bottom:6px">רישום נוכחות</h3>'+
-    '<div class="muted" style="margin-bottom:14px">'+s.category+' · '+s.start+' - '+s.end+'</div>'+
-    (team.players.length===0 && guests.length===0 ? '<div class="muted">אין שחקנים בקבוצה זו</div>' :
-      team.players.map(function(pl,i){
-        var cur = attendance[pl.name] || 'present';
-        return '<div class="card" style="padding:10px">'+
-          '<div class="row" style="margin-bottom:8px"><b>'+pl.name+'</b>'+
-          (pl.sub_type==='punch' ? '<span class="muted" style="font-size:11px">ניקובים: '+(typeof pl.remaining_punches==='number'?pl.remaining_punches:'-')+'</span>' : '')+
-          '</div>'+
-          '<div class="action-row" data-attrow="p'+i+'">'+
-            '<button type="button" class="attBtn'+(cur==='present'?' sel':'')+'" data-val="present">✔ נוכח</button>'+
-            '<button type="button" class="attBtn'+(cur==='absent'?' sel':'')+'" data-val="absent">✘ חיסור</button>'+
-            '<button type="button" class="attBtn'+(cur==='excused'?' sel':'')+'" data-val="excused">⚠ מוצדק</button>'+
-          '</div></div>';
-      }).join('')+
-      guests.map(function(g,gi){
-        var cur = attendance[g.name] || 'present';
-        return '<div class="card" style="padding:10px">'+
-          '<div class="row" style="margin-bottom:8px"><b>'+g.name+'</b> <span class="badge">אורח</span>'+
-          '<button type="button" class="btn ghost sm" data-delguest="'+gi+'" title="הסר אורח" style="width:auto;display:inline-block;margin-right:8px;color:#f87171;border-color:#f87171">🗑 הסר</button>'+
-          '</div>'+
-          '<div class="action-row" data-attrow="g'+gi+'">'+
-            '<button type="button" class="attBtn'+(cur==='present'?' sel':'')+'" data-val="present">✔ נוכח</button>'+
-            '<button type="button" class="attBtn'+(cur==='absent'?' sel':'')+'" data-val="absent">✘ חיסור</button>'+
-            '<button type="button" class="attBtn'+(cur==='excused'?' sel':'')+'" data-val="excused">⚠ מוצדק</button>'+
-          '</div></div>';
-      }).join('')
-    )+
-    '<div id="guestAddBox" style="margin-top:10px">'+
-      '<button type="button" class="btn ghost sm" id="btnAddGuestToggle">+ הוסף שחקן אורח/ניסיון</button>'+
-      '<div id="guestAddForm" style="display:none;margin-top:8px">'+
-        '<div class="field"><label>שם השחקן</label><input id="guestNameInput" placeholder="שם מלא"></div>'+
-        '<div class="field"><label>טלפון הורה</label><input id="guestParentPhoneInput" placeholder="טלפון הורה"></div>'+
-        '<button type="button" class="btn" id="btnConfirmAddGuest" style="margin-top:6px">הוסף</button>'+
-      '</div>'+
-    '</div>'+
-    '<button class="btn" id="btnSaveAttendance" style="margin-top:10px">שמור נוכחות</button>';
-  openModal(html);
-  document.querySelectorAll('[data-attrow]').forEach(function(row){
-    row.querySelectorAll('.attBtn').forEach(function(btn){
-      btn.onclick = function(){
-        row.querySelectorAll('.attBtn').forEach(function(b){ b.classList.remove('sel'); });
-        btn.classList.add('sel');
-      };
-    });
-  });
-  document.getElementById('btnAddGuestToggle').onclick = function(){
-    document.getElementById('guestAddForm').style.display = 'block';
-  };
-  document.querySelectorAll('[data-delguest]').forEach(function(btn){
-    btn.onclick = function(){
-      var gi = parseInt(btn.getAttribute('data-delguest'), 10);
-      var removed = guests.splice(gi, 1)[0];
-      if(removed) delete attendance[removed.name];
-      s.guests = guests;
-      s.attendance = attendance;
-      savePitch(p);
-      renderAttendanceModal(day, idx);
-    };
-  });
-  document.getElementById('btnConfirmAddGuest').onclick = function(){
-    var nameInput = document.getElementById('guestNameInput');
-    var phoneInput = document.getElementById('guestParentPhoneInput');
-    var name = (nameInput.value||'').trim();
-    if(!name){ nameInput.focus(); return; }
-    guests.push({ name: name, parentPhone: (phoneInput.value||'').trim() });
-    s.guests = guests;
-    savePitch(p);
-    renderAttendanceModal(day, idx);
-  };
-  document.getElementById('btnSaveAttendance').onclick = function(){
-    var newAttendance = {};
-    var charged = s.attendanceCharged || {};
-    team.players.forEach(function(pl,i){
-      var row = document.querySelector('[data-attrow="p'+i+'"]');
-      var selBtn = row.querySelector('.attBtn.sel');
-      var val = selBtn ? selBtn.dataset.val : 'present';
-      newAttendance[pl.name] = val;
-      var wasCharged = !!charged[pl.name];
-      if(val==='present' && !wasCharged){
-        chargePunch(pl);
-        charged[pl.name] = true;
-      } else if(val!=='present' && wasCharged){
-        refundPunch(pl);
-        charged[pl.name] = false;
-      }
-    });
-    guests.forEach(function(g,gi){
-      var row = document.querySelector('[data-attrow="g'+gi+'"]');
-      var selBtn = row ? row.querySelector('.attBtn.sel') : null;
-      var val = selBtn ? selBtn.dataset.val : 'present';
-      newAttendance[g.name] = val;
-    });
-    s.attendance = newAttendance;
-    s.attendanceCharged = charged;
-    s.guests = guests;
-    saveClubTeams();
-    savePitch(p);
-    closeModal();
-    renderPitchDetail();
-    refreshAlertsUI();
-  };
-}
-function openAttendanceModal(day, idx){
-  renderAttendanceModal(day, idx);
 }
 
 /* ---------------- Tab 3: Settings ---------------- */
@@ -2174,7 +1665,7 @@ function wireClubPendingScreen(){
     db.collection(P+'clubs').doc(ME.uid).delete().then(function(){
       MY_CLUB = null;
       MY_CLUB_LOADED = false;
-      renderTab(3);
+      renderTab(2);
     });
   };
 }
@@ -2240,7 +1731,7 @@ function updateClubColor(newColor){
   db.collection(P+'clubs').doc(ME.uid).set({color:newColor}, {merge:true}).then(function(){
     MY_CLUB.color = newColor;
     applyClubTheme(MY_CLUB);
-    renderTab(3);
+    renderTab(2);
   });
 }
 function joinClubByCode(code){
@@ -2265,9 +1756,8 @@ function joinClubByCode(code){
     }
     MY_CLUB_LOADED = false;
     CLUB_TEAMS_LOADED = false;
-    PITCHES_LOADED = false;
     loadMyClub();
-    renderTab(3);
+    renderTab(2);
   });
 }
 // Reuses the exact same phone formatting convention as the phone-OTP login (line ~858):
@@ -2313,14 +1803,14 @@ function inviteCoachByPhone(rawPhone){
       alert('המאמן הוזמן והצטרף למועדון');
       MY_CLUB_LOADED = false;
       loadMyClub();
-      renderTab(3);
+      renderTab(2);
     } else {
       var invites = (MY_CLUB.pendingInvites || []).filter(function(inv){ return inv.phone!==phone; });
       invites.push({phone:phone, addedAt: Date.now()});
       clubRef.set({pendingInvites:invites}, {merge:true}).then(function(){
         MY_CLUB.pendingInvites = invites;
         alert('הוזמן בהצלחה — ההזמנה תתממש כאשר המאמן יתחבר לראשונה עם הטלפון הזה');
-        renderTab(3);
+        renderTab(2);
       });
     }
   });
@@ -2330,7 +1820,7 @@ function cancelPendingInvite(phone){
   var invites = (MY_CLUB.pendingInvites || []).filter(function(inv){ return inv.phone!==phone; });
   MY_CLUB.pendingInvites = invites;
   db.collection(P+'clubs').doc(ME.uid).set({pendingInvites:invites}, {merge:true}).then(function(){
-    renderTab(3);
+    renderTab(2);
   });
 }
 // Called once ME.uid/ME.phone are known on login (real phone-OTP flow), BEFORE enterApp().
@@ -2392,9 +1882,8 @@ function leaveClub(){
   MY_CLUB = null;
   MY_CLUB_LOADED = true;
   CLUB_TEAMS_LOADED = false;
-  PITCHES_LOADED = false;
   applyClubTheme(null);
-  renderTab(3);
+  renderTab(2);
 }
 function removeCoachFromClub(uid){
   if(ME.role!=='manager' || !MY_CLUB) return;
@@ -2414,7 +1903,7 @@ function removeCoachFromClub(uid){
     ref.set({memberInfo:MY_CLUB.memberInfo}, {merge:true});
   }
   delete CLUB_COACH_NAMES[uid];
-  renderTab(3);
+  renderTab(2);
 }
 // Can the current user edit member uid's title/assignedCategories? (canManageStaff members may narrow
 // within their own effectiveCategories; the owner may always edit anyone to anything.)
@@ -2452,7 +1941,7 @@ function updateClubMemberInfo(uid, patch){
   mi[uid] = updated;
   MY_CLUB.memberInfo = mi;
   clubRef.set({memberInfo:mi}, {merge:true}).then(function(){
-    renderTab(3);
+    renderTab(2);
   });
 }
 function tplClubSection(){
@@ -2648,12 +2137,10 @@ function clubAdminDashHtml(){
   var rows = clubAdminTeamRows();
   var teamsCount = rows.length;
   var playersCount = rows.reduce(function(s,r){ return s+r.playersCount; }, 0);
-  var pitchesCount = (typeof PITCHES!=='undefined' && PITCHES) ? PITCHES.length : 0;
   var coachRows = clubAdminCoachRows(rows);
   var stats = [
     {ic:'👥', num:teamsCount, label:'קבוצות פעילות'},
     {ic:'🧑‍🤝‍🧑', num:playersCount, label:'שחקנים'},
-    {ic:'🏟', num:pitchesCount, label:'מגרשים'},
     {ic:'👨‍🏫', num:coachRows.length, label:'מאמנים'}
   ];
   var statsHtml = '<div class="dash-stats">'+stats.map(function(s){
@@ -2802,21 +2289,6 @@ function wireTab(i){
       el.onclick = function(){ openTeamDetail(el.dataset.openteam); };
     });
   } else if(i===2){
-    var nbp = document.getElementById('btnAddPitch');
-    if(nbp) nbp.onclick = function(){ openAddPitchModal(); };
-    document.querySelectorAll('[data-openpitch]').forEach(function(el){
-      el.onclick = function(){ openPitchDetail(parseInt(el.dataset.openpitch,10)); };
-    });
-    document.querySelectorAll('[data-delpitch]').forEach(function(btn){
-      btn.onclick = function(){
-        var idx = parseInt(btn.dataset.delpitch,10);
-        var p = PITCHES[idx];
-        if(p && p.id) db.collection(P+'pitches').doc(p.id).delete();
-        PITCHES.splice(idx,1);
-        renderTab(2);
-      };
-    });
-  } else if(i===3){
     wireClubPendingScreen();
     var btnOpenReportArchive = document.getElementById('btnOpenReportArchive');
     if(btnOpenReportArchive) btnOpenReportArchive.onclick = function(){ openReportArchive(); };
@@ -2878,7 +2350,7 @@ function wireTab(i){
     });
     var btnOpenTeamPlans = document.getElementById('btnOpenTeamPlans');
     if(btnOpenTeamPlans) btnOpenTeamPlans.onclick = function(){ openTeamPlansView(); };
-  } else if(i===4){
+  } else if(i===3){
     var nbm = document.getElementById('btnAddMatch');
     if(nbm) nbm.onclick = function(){ openAddMatchModal(); };
     document.querySelectorAll('[data-openmatch]').forEach(function(el){
@@ -3720,8 +3192,6 @@ function playerReportSummaryText(player, category){
   var lines = [];
   lines.push('דוח שחקן — '+p.name);
   if(category) lines.push('קבוצה: '+category);
-  var stats = countPlayerAttendance(p.name);
-  lines.push('נוכחות: '+stats.present+' אימונים'+(stats.maxStreak?' · רצף מקסימלי '+stats.maxStreak:''));
   lines.push('מדדים פיזיים: '+PHYSICAL_ATTRS.map(function(a){ return a.l+' '+((typeof p[a.k]==='number')?p[a.k]:0)+'/5'; }).join(' · '));
   return lines.join('\n');
 }
@@ -3758,22 +3228,6 @@ function todayLabel(){
   var d = new Date();
   return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
 }
-function attendancePctForPlayer(player, category){
-  var stats = countPlayerAttendance(player.name);
-  // total scheduled session-slots this player is assigned to attend, across the team's recurring weekly schedule
-  var total = 0;
-  PITCHES.forEach(function(pt){
-    DAYS.forEach(function(d){
-      var sessions = (pt.schedule && pt.schedule[d.k]) || [];
-      sessions.forEach(function(s){
-        var att = s.attendance || {};
-        if(att[player.name]!==undefined) total++;
-      });
-    });
-  });
-  var pct = total>0 ? Math.round((stats.present/total)*100) : 0;
-  return {pct:pct, present:stats.present, total:total, maxStreak:stats.maxStreak};
-}
 function reportPageHtml(rec){
   var clubName = (typeof MY_CLUB!=='undefined' && MY_CLUB && MY_CLUB.name) ? MY_CLUB.name : 'מועדון כדורגל';
   var accent = (typeof MY_CLUB!=='undefined' && MY_CLUB && MY_CLUB.color) ? MY_CLUB.color : DEFAULT_ACCENT;
@@ -3787,10 +3241,6 @@ function reportPageHtml(rec){
         '<div class="report-sub">'+clubName+(rec.category?' · '+rec.category:'')+'</div>'+
         '<div class="report-sub">דוח חודשי — '+rec.month_label+'</div>'+
       '</div>'+
-    '</div>'+
-    '<div class="report-section">'+
-      '<div class="st">נוכחות החודש</div>'+
-      '<div class="report-row"><span>אחוז נוכחות</span><b>'+rec.attendance_pct+'%</b></div>'+
     '</div>'+
     (rec.physical_html ? '<div class="report-section"><div class="st">מדדים פיזיים</div>'+rec.physical_html+'</div>' : '')+
     (rec.badges_html ? '<div class="report-section"><div class="st">תגים והישגים</div>'+rec.badges_html+'</div>' : '')+
@@ -3815,7 +3265,6 @@ function openMonthlyReportFeedbackModal(player, category){
   };
 }
 function buildReportRecord(player, category, feedback){
-  var attStats = attendancePctForPlayer(player, category);
   return {
     id: genCode(10),
     coachUid: ME.uid,
@@ -3823,7 +3272,6 @@ function buildReportRecord(player, category, feedback){
     category: category||'',
     photo: player.photo||'',
     month_label: currentMonthLabel(),
-    attendance_pct: attStats.pct,
     coach_feedback: feedback||'',
     created_at_label: todayLabel(),
     physical_html: playerPhysicalBarsHtml(player),
@@ -3899,7 +3347,7 @@ function renderReportArchiveScreen(){
       : COACH_REPORTS.slice().reverse().map(function(r){
           return '<div class="card">'+
             '<div class="row"><b>'+r.playerName+'</b><button class="logout-btn" data-delreport="'+r.id+'" title="מחק">🗑</button></div>'+
-            '<div class="muted" style="margin-top:4px">'+r.month_label+' · נוכחות '+r.attendance_pct+'% · '+(r.created_at_label||'')+'</div>'+
+            '<div class="muted" style="margin-top:4px">'+r.month_label+' · '+(r.created_at_label||'')+'</div>'+
             '<button class="btn ghost sm" data-viewreport="'+r.id+'" style="margin-top:8px">פתח דוח</button>'+
           '</div>';
         }).join('')
@@ -3935,10 +3383,9 @@ function goHome(){
 document.getElementById('btnCloseTeamScreen').onclick = function(){ closeTeamDetail(); goHome(); };
 document.getElementById('btnCloseMatchScreen').onclick = function(){
   closeMatchDetail();
-  document.querySelectorAll('.nav-btn').forEach(function(b,i){ b.classList.toggle('sel', i===4); });
-  renderTab(4);
+  document.querySelectorAll('.nav-btn').forEach(function(b,i){ b.classList.toggle('sel', i===3); });
+  renderTab(3);
 };
-document.getElementById('btnClosePitchScreen').onclick = function(){ closePitchDetail(); goHome(); };
 document.getElementById('btnCloseDrillLib').onclick = function(){ closeDrillLib(); };
 document.getElementById('btnCloseCoachTrainingLib').onclick = function(){ closeCoachTrainingLib(); };
 </script>

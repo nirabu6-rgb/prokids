@@ -74,16 +74,10 @@ service cloud.firestore {
       allow delete: if isClubAdmin(clubId);
     }
 
-    // Roster + pitches: shared by every active member of the club, keyed by clubScopeId (the
+    // Roster: shared by every active member of the club, keyed by clubScopeId (the
     // club admin's uid, whether it's the admin themself or a joined coach acting inside it).
     match /fc_clubteams/{clubId} {
       allow read, write: if isClubMember(clubId) && isActiveClub(clubId);
-    }
-    match /fc_pitches/{docId} {
-      allow read, update, delete: if isSignedIn()
-        && isClubMember(resource.data.coachUid) && isActiveClub(resource.data.coachUid);
-      allow create: if isSignedIn()
-        && isClubMember(request.resource.data.coachUid) && isActiveClub(request.resource.data.coachUid);
     }
     // fc_groupplans/{clubId_category}: no clubId field on the doc itself -- the tenant id is the
     // first '_'-delimited segment of the doc id (see groupPlanDocId() in soccer.html).
