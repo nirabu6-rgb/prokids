@@ -132,6 +132,21 @@ service cloud.firestore {
       allow create: if ownedByRequester(request.resource.data.coachUid);
     }
 
-    // Everything else is denied by default (no catch-all rule).
+    // This Firestore project (soccer-26e99) is also used by athleteiq.html, an unrelated app
+    // that shares nothing with Pro Coach except the project -- it keys its own collections with
+    // the 'ath_' prefix instead of 'fc_' (Firestore rules can't wildcard-match a name *prefix*
+    // within a path segment, so each of its known collections is listed explicitly). Locking
+    // Pro Coach down must not silently break it, so these keep the previous fully-open behavior
+    // (AthleteIQ's own security hardening is a separate task, not a side effect of this one).
+    match /ath_clubcoaches/{docId} { allow read, write: if true; }
+    match /ath_clubfields/{docId} { allow read, write: if true; }
+    match /ath_clubgroupplans/{docId} { allow read, write: if true; }
+    match /ath_clubschedule/{docId} { allow read, write: if true; }
+    match /ath_coachtrainings/{docId} { allow read, write: if true; }
+    match /ath_profiles/{docId} { allow read, write: if true; }
+
+    // Everything else (anything neither fc_* nor the ath_* collections above) is denied by
+    // default -- if AthleteIQ (or another app sharing this project) adds a new collection later,
+    // it needs its own explicit rule here too, the same way Pro Coach's collections each have one.
   }
 }
