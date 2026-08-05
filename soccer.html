@@ -251,6 +251,14 @@ h1,h2,h3,.section-title,.dash-greet{letter-spacing:-.01em}
   <div class="builder-body" id="matchScreenBody"></div>
 </div>
 
+<div class="builder-screen" id="tasksScreen" style="display:none">
+  <div class="builder-header">
+    <button class="icon-btn" id="btnCloseTasksScreen" title="סגור">→</button>
+    <b style="flex:1">📋 משימות צוות</b>
+  </div>
+  <div class="builder-body" id="tasksScreenBody"></div>
+</div>
+
 <div class="builder-screen" id="drillLibScreen" style="display:none">
   <div class="builder-header">
     <button class="icon-btn" id="btnCloseDrillLib" title="סגור">→</button>
@@ -783,6 +791,63 @@ function dashStatsHtml(){
       '<div><div class="dash-stat-num">'+s.num+'</div><div class="dash-stat-label">'+s.label+'</div></div></div>';
   }).join('')+'</div>';
 }
+function dashAvailabilityHtml(){
+  var counts = {fit:0, limited:0, injured:0};
+  AGE_GROUPS.forEach(function(cat){
+    if(!categoryAllowed(cat)) return;
+    var t = CLUB_TEAMS[cat];
+    if(!t || !t.players) return;
+    t.players.forEach(function(p){
+      var st = p.fitness_status || 'fit';
+      if(counts[st]===undefined) st = 'fit';
+      counts[st]++;
+    });
+  });
+  if(counts.fit+counts.limited+counts.injured===0) return '';
+  var pills = [
+    {n:counts.fit, l:'כשירים', c:'var(--good)'},
+    {n:counts.limited, l:'מוגבלים', c:'var(--warn)'},
+    {n:counts.injured, l:'פצועים', c:'var(--bad)'}
+  ];
+  return '<div class="section-title" style="font-size:15px">🩺 זמינות שחקנים</div>'+
+    '<div class="dash-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">'+
+      pills.map(function(s){
+        return '<div class="dash-stat-card"><div class="dash-stat-ic" style="background:color-mix(in srgb,'+s.c+' 20%,var(--card));color:'+s.c+'">●</div>'+
+          '<div><div class="dash-stat-num">'+s.n+'</div><div class="dash-stat-label">'+s.l+'</div></div></div>';
+      }).join('')+
+    '</div>';
+}
+function upcomingBirthdays(){
+  var today = new Date(); today.setHours(0,0,0,0);
+  var list = [];
+  AGE_GROUPS.forEach(function(cat){
+    if(!categoryAllowed(cat)) return;
+    var t = CLUB_TEAMS[cat];
+    if(!t || !t.players) return;
+    t.players.forEach(function(p){
+      if(!p.birth_date) return;
+      var parts = p.birth_date.split('-');
+      if(parts.length!==3) return;
+      var bMonth = parseInt(parts[1],10)-1, bDay = parseInt(parts[2],10);
+      var next = new Date(today.getFullYear(), bMonth, bDay);
+      if(next < today) next = new Date(today.getFullYear()+1, bMonth, bDay);
+      var daysUntil = Math.round((next.getTime()-today.getTime())/86400000);
+      if(daysUntil<=30) list.push({name:p.name, category:cat, date:next, daysUntil:daysUntil});
+    });
+  });
+  list.sort(function(a,b){ return a.daysUntil-b.daysUntil; });
+  return list;
+}
+function dashBirthdaysHtml(){
+  var list = upcomingBirthdays();
+  if(list.length===0) return '';
+  return '<div class="section-title" style="font-size:15px">🎂 ימי הולדת קרובים</div>'+
+    list.map(function(b){
+      var label = b.daysUntil===0 ? 'היום!' : (b.daysUntil===1 ? 'מחר' : 'בעוד '+b.daysUntil+' ימים');
+      return '<div class="card" style="padding:10px"><div class="row"><b>'+b.name+'</b><span class="muted">'+label+'</span></div>'+
+        '<div class="muted" style="font-size:11px;margin-top:2px">'+b.category+' · '+fmtDateShort(b.date)+'</div></div>';
+    }).join('');
+}
 function alertSeverityIcon(a){
   if(a.severity==='danger') return '🔴';
   return '🟡';
@@ -958,6 +1023,7 @@ function enterAppBody(){
   loadClubTeams();
   loadMatches();
   loadMatchEvents();
+  loadTeamFiles();
   if(ME.role==='manager') loadMyClub();
 }
 function buildNav(){
@@ -1004,6 +1070,8 @@ function tplPlans(){
   dashHeaderHtml()+
   dashStatsHtml()+
   '<div id="alertsBox">'+alertsSectionHtml()+'</div>'+
+  dashAvailabilityHtml()+
+  dashBirthdaysHtml()+
   '<div class="section-title">📋 תוכניות אימון קבוצתיות</div>'+
   '<div class="muted" style="margin-bottom:10px">בנה תוכנית אימון עם סרטוטים אינטראקטיביים על המגרש ושמור אותה לשימוש חוזר</div>'+
   '<div class="action-row" style="margin-bottom:14px">'+
@@ -1322,7 +1390,7 @@ function loadClubTeams(){
     CLUB_TEAMS = (doc.exists && doc.data().categories) ? doc.data().categories : {};
     AGE_GROUPS.forEach(function(cat){ if(!CLUB_TEAMS[cat]) CLUB_TEAMS[cat] = {staff:[], players:[]}; });
     CLUB_TEAMS_LOADED = true;
-    if(TAB===1) renderTab(1);
+    if(TAB===1 || TAB===0) renderTab(TAB);
     if(currentTeamCategory) renderTeamDetail();
     refreshAlertsUI();
   });
@@ -1447,10 +1515,27 @@ function renderTeamDetail(){
         '</div></div>';
       }).join('')
     )+
-    '<button class="btn" id="btnAddPlayer">+ הוסף שחקן</button>';
+    '<button class="btn" id="btnAddPlayer" style="margin-bottom:18px">+ הוסף שחקן</button>'+
+    '<div class="section-title" style="font-size:16px">📁 קבצי קבוצה</div>'+
+    (teamFilesForCategory(currentTeamCategory).length===0 ? '<div class="muted" style="margin-bottom:10px">אין עדיין קבצים/קישורים</div>' :
+      teamFilesForCategory(currentTeamCategory).map(function(f){
+        return '<div class="card"><div class="row"><a href="'+f.url+'" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700;text-decoration:none">🔗 '+f.title+'</a>'+
+          '<button class="logout-btn" data-deltfile="'+f.id+'" title="מחק">🗑</button></div></div>';
+      }).join('')
+    )+
+    '<button class="btn ghost sm" id="btnAddTeamFile">+ הוסף קישור</button>';
   document.getElementById('btnOpenGroupPlan').onclick = function(){ openGroupPlanModal(); };
   document.getElementById('btnAddStaff').onclick = function(){ openAddStaffModal(); };
   document.getElementById('btnAddPlayer').onclick = function(){ openAddPlayerModal(); };
+  document.getElementById('btnAddTeamFile').onclick = function(){ openAddTeamFileModal(); };
+  document.querySelectorAll('[data-deltfile]').forEach(function(btn){
+    btn.onclick = function(){
+      if(!confirm('למחוק את הקישור?')) return;
+      db.collection(P+'teamfiles').doc(btn.dataset.deltfile).delete();
+      TEAM_FILES = TEAM_FILES.filter(function(x){ return x.id!==btn.dataset.deltfile; });
+      renderTeamDetail();
+    };
+  });
   document.querySelectorAll('[data-editplayer]').forEach(function(el){
     el.onclick = function(){ openAddPlayerModal(parseInt(el.dataset.editplayer,10)); };
   });
@@ -1888,6 +1973,125 @@ function openAttendanceModal(sessionId){
   };
 }
 
+/* ---------------- Team files (links, per category) ---------------- */
+var TEAM_FILES = [];
+var TEAM_FILES_LOADED = false;
+function loadTeamFiles(){
+  if(!ME.uid) return;
+  db.collection(P+'teamfiles').where('coachUid','==',clubScopeId()).get().then(function(snap){
+    TEAM_FILES = snap.docs.map(function(d){ return d.data(); });
+    TEAM_FILES_LOADED = true;
+    if(currentTeamCategory) renderTeamDetail();
+  });
+}
+function teamFilesForCategory(cat){
+  return TEAM_FILES.filter(function(f){ return f.category===cat; });
+}
+function openAddTeamFileModal(){
+  var html = '<h3 style="margin-bottom:14px">קישור חדש</h3>'+
+    '<div class="field"><label>כותרת</label><input id="tfTitleInput" placeholder="לדוגמה: תיקיית Google Drive"></div>'+
+    '<div class="field"><label>קישור</label><input id="tfUrlInput" placeholder="https://..."></div>'+
+    '<button class="btn" id="btnSaveTeamFile">הוסף</button>';
+  openModal(html);
+  document.getElementById('btnSaveTeamFile').onclick = function(){
+    var title = document.getElementById('tfTitleInput').value.trim();
+    var url = document.getElementById('tfUrlInput').value.trim();
+    if(!title || !url) return;
+    var f = {id:genCode(8), coachUid:clubScopeId(), category:currentTeamCategory, title:title, url:url, createdAt:Date.now()};
+    TEAM_FILES.push(f);
+    db.collection(P+'teamfiles').doc(f.id).set(f);
+    closeModal();
+    renderTeamDetail();
+  };
+}
+
+/* ---------------- Team task board (staff-only, opened from Settings) ---------------- */
+var TASKS = [];
+var TASKS_LOADED = false;
+function loadTasks(){
+  if(!ME.uid) return;
+  db.collection(P+'tasks').where('coachUid','==',clubScopeId()).get().then(function(snap){
+    TASKS = snap.docs.map(function(d){ return d.data(); });
+    TASKS_LOADED = true;
+    var scr = document.getElementById('tasksScreen');
+    if(scr && scr.style.display!=='none') renderTasksScreen();
+  });
+}
+function saveTask(t){
+  db.collection(P+'tasks').doc(t.id).set(t);
+}
+function openTasksScreen(){
+  document.getElementById('tasksScreen').style.display = 'flex';
+  if(!TASKS_LOADED){
+    document.getElementById('tasksScreenBody').innerHTML = '<div class="muted" style="text-align:center">טוען...</div>';
+    loadTasks();
+  } else {
+    renderTasksScreen();
+  }
+}
+function renderTasksScreen(){
+  var open = TASKS.filter(function(t){ return t.status!=='done'; })
+    .sort(function(a,b){ return (a.dueDate||'9999').localeCompare(b.dueDate||'9999'); });
+  var done = TASKS.filter(function(t){ return t.status==='done'; });
+  function taskCard(t){
+    return '<div class="card"><div class="row"><b>'+t.title+'</b>'+
+      '<button class="logout-btn" data-deltask="'+t.id+'" title="מחק">🗑</button></div>'+
+      (t.assignee ? '<div class="muted" style="margin-top:2px">👤 '+t.assignee+'</div>' : '')+
+      (t.dueDate ? '<div class="muted" style="margin-top:2px">📅 '+t.dueDate+'</div>' : '')+
+      (t.notes ? '<div class="muted" style="margin-top:2px">'+t.notes+'</div>' : '')+
+      '<button class="btn ghost sm" data-toggletask="'+t.id+'" style="margin-top:8px">'+(t.status==='done'?'↩ החזר לפתוח':'✔ סמן כהושלם')+'</button>'+
+    '</div>';
+  }
+  var body = document.getElementById('tasksScreenBody');
+  body.innerHTML =
+    '<button class="btn" id="btnAddTask" style="margin-bottom:14px">+ משימה חדשה</button>'+
+    '<div class="section-title" style="font-size:15px">פתוחות ('+open.length+')</div>'+
+    (open.length===0 ? '<div class="muted" style="margin-bottom:10px">אין משימות פתוחות</div>' : open.map(taskCard).join(''))+
+    (done.length ? '<div class="section-title" style="font-size:15px;margin-top:14px">הושלמו ('+done.length+')</div>'+done.map(taskCard).join('') : '');
+  document.getElementById('btnAddTask').onclick = function(){ openAddTaskModal(); };
+  document.querySelectorAll('[data-toggletask]').forEach(function(btn){
+    btn.onclick = function(){
+      var t = TASKS.filter(function(x){ return x.id===btn.dataset.toggletask; })[0];
+      if(!t) return;
+      t.status = t.status==='done' ? 'open' : 'done';
+      saveTask(t);
+      renderTasksScreen();
+    };
+  });
+  document.querySelectorAll('[data-deltask]').forEach(function(btn){
+    btn.onclick = function(){
+      if(!confirm('למחוק את המשימה?')) return;
+      db.collection(P+'tasks').doc(btn.dataset.deltask).delete();
+      TASKS = TASKS.filter(function(x){ return x.id!==btn.dataset.deltask; });
+      renderTasksScreen();
+    };
+  });
+}
+function openAddTaskModal(){
+  var html = '<h3 style="margin-bottom:14px">משימה חדשה</h3>'+
+    '<div class="field"><label>כותרת</label><input id="taskTitleInput" placeholder="לדוגמה: להכין מערך אימון שבועי"></div>'+
+    '<div class="field"><label>מוקצה ל</label><input id="taskAssigneeInput" placeholder="שם המאמן/ת"></div>'+
+    '<div class="field"><label>תאריך יעד (אופציונלי)</label><input type="date" id="taskDueInput"></div>'+
+    '<div class="field"><label>הערות (אופציונלי)</label><textarea id="taskNotesInput" rows="3"></textarea></div>'+
+    '<button class="btn" id="btnSaveTask">הוסף</button>';
+  openModal(html);
+  document.getElementById('btnSaveTask').onclick = function(){
+    var title = document.getElementById('taskTitleInput').value.trim();
+    if(!title) return;
+    var t = {
+      id: genCode(8), coachUid: clubScopeId(), title: title,
+      assignee: document.getElementById('taskAssigneeInput').value.trim(),
+      dueDate: document.getElementById('taskDueInput').value,
+      notes: document.getElementById('taskNotesInput').value.trim(),
+      status: 'open', createdBy: ME.name, createdAt: Date.now()
+    };
+    TASKS.push(t);
+    saveTask(t);
+    closeModal();
+    renderTasksScreen();
+  };
+}
+
 /* ---------------- Tab 3: Settings ---------------- */
 var MY_CLUB = null;
 var MY_CLUB_LOADED = false;
@@ -2066,7 +2270,10 @@ function joinClubByCode(code){
     MY_CLUB_LOADED = false;
     CLUB_TEAMS_LOADED = false;
     SESSIONS_LOADED = false;
+    TEAM_FILES_LOADED = false;
+    TASKS_LOADED = false;
     loadMyClub();
+    loadTeamFiles();
     renderTab(3);
   });
 }
@@ -2193,7 +2400,10 @@ function leaveClub(){
   MY_CLUB_LOADED = true;
   CLUB_TEAMS_LOADED = false;
   SESSIONS_LOADED = false;
+  TEAM_FILES_LOADED = false;
+  TASKS_LOADED = false;
   applyClubTheme(null);
+  loadTeamFiles();
   renderTab(3);
 }
 function removeCoachFromClub(uid){
@@ -2572,7 +2782,8 @@ function tplSettings(){
       '<div class="muted" style="margin-top:4px;font-size:11px">כדי להפוך לחשבון מנהל-על ראשון, יש ליצור ידנית מסמך בשם ה-UID הזה באוסף fc_superadmins בקונסולת Firestore</div>'
     )+
   '</div>'+
-  '<button class="btn ghost" id="btnOpenReportArchive" style="margin-bottom:14px">🗄 ארכיון דוחות</button>'+
+  '<button class="btn ghost" id="btnOpenReportArchive" style="margin-bottom:10px">🗄 ארכיון דוחות</button>'+
+  '<button class="btn ghost" id="btnOpenTasksScreen" style="margin-bottom:14px">📋 משימות צוות</button>'+
   tplClubSection();
 }
 function wireTab(i){
@@ -2605,6 +2816,8 @@ function wireTab(i){
     wireClubPendingScreen();
     var btnOpenReportArchive = document.getElementById('btnOpenReportArchive');
     if(btnOpenReportArchive) btnOpenReportArchive.onclick = function(){ openReportArchive(); };
+    var btnOpenTasksScreen = document.getElementById('btnOpenTasksScreen');
+    if(btnOpenTasksScreen) btnOpenTasksScreen.onclick = function(){ openTasksScreen(); };
     var btnCreateClub = document.getElementById('btnCreateClub');
     if(btnCreateClub) btnCreateClub.onclick = function(){
       var name = document.getElementById('clubNameInput').value.trim();
@@ -3714,6 +3927,7 @@ document.getElementById('btnCloseMatchScreen').onclick = function(){
 };
 document.getElementById('btnCloseDrillLib').onclick = function(){ closeDrillLib(); };
 document.getElementById('btnCloseCoachTrainingLib').onclick = function(){ closeCoachTrainingLib(); };
+document.getElementById('btnCloseTasksScreen').onclick = function(){ document.getElementById('tasksScreen').style.display = 'none'; };
 </script>
 </body>
 </html>

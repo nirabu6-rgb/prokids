@@ -92,6 +92,20 @@ service cloud.firestore {
     match /fc_groupplans/{planId} {
       allow read, write: if isClubMember(planId.split('_')[0]) && isActiveClub(planId.split('_')[0]);
     }
+    // fc_tasks/{docId}: club staff task board. fc_teamfiles/{docId}: per-team link list.
+    // Same shared-by-club-membership pattern as fc_sessions above.
+    match /fc_tasks/{docId} {
+      allow read, update, delete: if isSignedIn()
+        && isClubMember(resource.data.coachUid) && isActiveClub(resource.data.coachUid);
+      allow create: if isSignedIn()
+        && isClubMember(request.resource.data.coachUid) && isActiveClub(request.resource.data.coachUid);
+    }
+    match /fc_teamfiles/{docId} {
+      allow read, update, delete: if isSignedIn()
+        && isClubMember(resource.data.coachUid) && isActiveClub(resource.data.coachUid);
+      allow create: if isSignedIn()
+        && isClubMember(request.resource.data.coachUid) && isActiveClub(request.resource.data.coachUid);
+    }
 
     // Still per-individual-coach collections today (not yet club-shared -- tracked as a follow-up
     // migration): only the creating coach can read/write their own docs, plus their club admin can
