@@ -170,37 +170,11 @@ h1,h2,h3,.section-title,.dash-greet{letter-spacing:-.01em}
       <p class="sub">כניסה למאמנים ומנהלים מקצועיים</p>
 
       <div id="stepAuth">
-        <div class="field"><label>אימייל</label><input id="authEmailInput" type="email" placeholder="you@example.com"></div>
-        <div class="field"><label>סיסמה</label><input id="authPasswordInput" type="password" placeholder="לפחות 6 תווים"></div>
-        <button class="btn" id="btnLogin">כניסה מאובטחת</button>
-        <button class="btn ghost" id="btnGoRegister" style="margin-top:8px">אין לך חשבון? הירשם</button>
-        <button class="btn ghost" id="btnUseEmailLink" style="margin-top:8px">כניסה עם קישור באימייל (בלי סיסמה)</button>
-        <div class="err" id="authErr">אימייל או סיסמה שגויים. נסה/י שוב.</div>
-      </div>
-
-      <div id="stepEmailLink" style="display:none">
-        <p class="sub" style="margin-bottom:14px">נשלח לך קישור כניסה חד-פעמי לאימייל — בלי צורך בסיסמה</p>
+        <p class="sub" style="margin-bottom:14px">הזן/י אימייל ונשלח קישור כניסה חד-פעמי — בלי צורך בסיסמה</p>
         <div class="field"><label>אימייל</label><input id="linkEmailInput" type="email" placeholder="you@example.com"></div>
         <button class="btn" id="btnSendEmailLink">שלח לי קישור כניסה</button>
-        <button class="btn ghost" id="btnBackToAuthFromLink" style="margin-top:8px">חזרה</button>
         <p class="sub" id="emailLinkSentMsg" style="display:none;margin-top:14px">שלחנו קישור כניסה לכתובת <b id="emailLinkSentAddr"></b>. פתח/י את המייל ולחץ/י על הקישור כדי להיכנס.</p>
         <div class="err" id="emailLinkErr">שגיאה בשליחת הקישור. נסה/י שוב.</div>
-      </div>
-
-      <div id="stepRegister" style="display:none">
-        <div class="field"><label>אימייל</label><input id="regEmailInput" type="email" placeholder="you@example.com"></div>
-        <div class="field"><label>סיסמה</label><input id="regPasswordInput" type="password" placeholder="לפחות 6 תווים"></div>
-        <button class="btn" id="btnRegister">הרשמה</button>
-        <button class="btn ghost" id="btnGoLogin" style="margin-top:8px">כבר יש לך חשבון? התחבר</button>
-        <div class="err" id="regErr">שגיאה בהרשמה. נסה/י שוב.</div>
-      </div>
-
-      <div id="stepVerifyEmail" style="display:none">
-        <p class="sub" style="margin-bottom:14px">שלחנו מייל אימות לכתובת <b id="verifyEmailAddr"></b>. יש ללחוץ על הקישור במייל, ואז ללחוץ "המשך" כאן.</p>
-        <button class="btn" id="btnCheckVerified">המשך</button>
-        <button class="btn ghost" id="btnResendVerify" style="margin-top:8px">שלח שוב מייל אימות</button>
-        <button class="btn ghost" id="btnLogoutFromVerify" style="margin-top:8px">התנתק</button>
-        <div class="err" id="verifyErr">האימייל עדיין לא אומת. בדוק/י את תיבת הדואר (וגם ספאם).</div>
       </div>
 
       <div id="stepProfile" style="display:none">
@@ -883,19 +857,16 @@ function alertsSectionHtml(alerts){
   }).join('');
 }
 
-/* ---------------- Auth: email + password, with mandatory email verification ----------------
-   Registration also collects a phone number, but it's stored as a plain contact field on the
-   fc_coaches profile now -- it is no longer the auth identity (see resolvePendingInvitesForMe,
-   which still matches invites by that stored phone). */
+/* ---------------- Auth: passwordless, one-time email link only ----------------
+   No password anywhere -- signing in and signing up are the same action (Firebase
+   creates the account on first link click if it doesn't exist yet). Phone is collected
+   afterwards as a plain contact field on the fc_coaches profile, not an auth identity
+   (see resolvePendingInvitesForMe, which still matches invites by that stored phone). */
 function showAuthStep(id){
-  ['stepAuth','stepEmailLink','stepRegister','stepVerifyEmail','stepProfile'].forEach(function(s){
+  ['stepAuth','stepProfile'].forEach(function(s){
     document.getElementById(s).style.display = (s===id) ? 'block' : 'none';
   });
 }
-document.getElementById('btnGoRegister').onclick = function(){ showAuthStep('stepRegister'); };
-document.getElementById('btnGoLogin').onclick = function(){ showAuthStep('stepAuth'); };
-document.getElementById('btnUseEmailLink').onclick = function(){ showAuthStep('stepEmailLink'); };
-document.getElementById('btnBackToAuthFromLink').onclick = function(){ showAuthStep('stepAuth'); };
 var EMAIL_LINK_SETTINGS = { url: window.location.href.split('#')[0].split('?')[0], handleCodeInApp: true };
 document.getElementById('btnSendEmailLink').onclick = function(){
   var email = document.getElementById('linkEmailInput').value.trim();
@@ -911,42 +882,6 @@ document.getElementById('btnSendEmailLink').onclick = function(){
     document.getElementById('emailLinkErr').style.display = 'block';
   });
 };
-document.getElementById('btnLogin').onclick = function(){
-  var email = document.getElementById('authEmailInput').value.trim();
-  var pw = document.getElementById('authPasswordInput').value;
-  if(!email || !pw) return;
-  document.getElementById('authErr').style.display = 'none';
-  auth.signInWithEmailAndPassword(email, pw).catch(function(err){
-    console.error(err);
-    document.getElementById('authErr').style.display = 'block';
-  });
-  // success is picked up by onAuthStateChanged below
-};
-document.getElementById('btnRegister').onclick = function(){
-  var email = document.getElementById('regEmailInput').value.trim();
-  var pw = document.getElementById('regPasswordInput').value;
-  if(!email || pw.length<6) return;
-  document.getElementById('regErr').style.display = 'none';
-  auth.createUserWithEmailAndPassword(email, pw).then(function(cred){
-    return cred.user.sendEmailVerification();
-  }).catch(function(err){
-    console.error(err);
-    document.getElementById('regErr').style.display = 'block';
-  });
-  // success is picked up by onAuthStateChanged below
-};
-document.getElementById('btnResendVerify').onclick = function(){
-  if(auth.currentUser) auth.currentUser.sendEmailVerification();
-};
-document.getElementById('btnCheckVerified').onclick = function(){
-  if(!auth.currentUser) return;
-  document.getElementById('verifyErr').style.display = 'none';
-  auth.currentUser.reload().then(function(){
-    if(auth.currentUser.emailVerified) afterEmailVerified();
-    else document.getElementById('verifyErr').style.display = 'block';
-  });
-};
-document.getElementById('btnLogoutFromVerify').onclick = function(){ auth.signOut(); };
 function afterEmailVerified(){
   var user = auth.currentUser;
   ME.uid = user.uid;
@@ -990,17 +925,13 @@ document.getElementById('btnLogout').onclick = function(){
     document.getElementById('appScreen').style.display = 'none';
     document.getElementById('loginScreen').style.display = 'flex';
     showAuthStep('stepAuth');
-    document.getElementById('authEmailInput').value = '';
-    document.getElementById('authPasswordInput').value = '';
+    document.getElementById('linkEmailInput').value = '';
+    document.getElementById('emailLinkSentMsg').style.display = 'none';
+    document.getElementById('btnSendEmailLink').style.display = 'block';
   });
 };
 auth.onAuthStateChanged(function(user){
   if(!user || ME.uid) return;
-  if(!user.emailVerified){
-    document.getElementById('verifyEmailAddr').textContent = user.email || '';
-    showAuthStep('stepVerifyEmail');
-    return;
-  }
   afterEmailVerified();
 });
 // Completing a one-time email-link sign-in: the user arrives back here via the link in
