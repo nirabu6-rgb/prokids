@@ -3113,7 +3113,7 @@ function updBell(){
   if(l)l.textContent=n?'התראות ('+n+')':'התראות';
 }
 function unitL(it){if(!it)return 'יחידות';var u=UNITS.find(function(x){return x.v===(it.unitType||'unit');});return u?u.l:'יחידות';}
-function fmtW(g){if(g==null)return '—';return g>=1000?(g/1000).toFixed(2)+' ק"ג':g+'גרם';}
+function fmtW(g){if(g==null)return '—';return g>=1000?(g/1000).toFixed(2)+' ק"ג':parseFloat(g.toFixed(2))+'גרם';}
 function ago(ts){var d=Math.floor((Date.now()-ts)/1000);if(d<60)return 'לפני '+d+' שנ\'';if(d<3600)return 'לפני '+Math.floor(d/60)+' דק\'';if(d<86400)return 'לפני '+Math.floor(d/3600)+' שע\'';return 'לפני '+Math.floor(d/86400)+' ימים';}
 function fmtTs(ts){var d=new Date(ts);return d.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'})+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});}
 

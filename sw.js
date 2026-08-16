@@ -1,4 +1,4 @@
-const CACHE = 'ws3-v15';
+const CACHE = 'ws3-v16';
 const FILES = ['./weightstock.html'];
 
 self.addEventListener('install', function(e) {
