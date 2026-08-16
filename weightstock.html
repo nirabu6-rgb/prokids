@@ -2370,7 +2370,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 <!-- SIDEBAR NAV (desktop) -->
 <nav id="sidebar-nav" style="display:none;">
   <div class="sidebar-logo">
-    <div class="sidebar-logo-icon"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M4 8l8 11 8-11M9 19h6"/></svg></div>
+    <div class="sidebar-logo-icon"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="15" fill="rgba(74,143,232,.15)" stroke="rgba(74,143,232,.35)" stroke-width="1"/><rect x="14.5" y="10" width="3" height="16" rx="1.5" fill="#475569"/><rect x="4" y="10" width="24" height="3" rx="1.5" fill="#4A8FE8"/><circle cx="16" cy="11.5" r="2" fill="#93c5fd"/><ellipse cx="8" cy="19" rx="5" ry="1.8" fill="#3b82f6" opacity=".8"/><ellipse cx="24" cy="19" rx="5" ry="1.8" fill="#10b981" opacity=".8"/><line x1="8" y1="13" x2="6" y2="19" stroke="rgba(148,197,253,.7)" stroke-width="1.2"/><line x1="8" y1="13" x2="10" y2="19" stroke="rgba(148,197,253,.7)" stroke-width="1.2"/><line x1="24" y1="13" x2="22" y2="19" stroke="rgba(148,197,253,.7)" stroke-width="1.2"/><line x1="24" y1="13" x2="26" y2="19" stroke="rgba(148,197,253,.7)" stroke-width="1.2"/><rect x="7" y="24" width="18" height="2.5" rx="1.25" fill="#1e3a5f"/></svg></div>
     <div>
       <div class="sidebar-logo-text">WeightStock</div>
       <div class="sidebar-logo-sub">ניהול מלאי חכם</div>
@@ -2395,41 +2395,67 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 
 <!-- SPLASH -->
 <div id="splash" style="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;">
-  <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:18px;">
-    <!-- base platform -->
-    <rect x="30" y="84" width="40" height="6" rx="3" fill="#334155"/>
+  <!-- animated scale logo -->
+  <svg id="splash-svg" width="130" height="130" viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:10px;filter:drop-shadow(0 8px 32px rgba(74,143,232,.45));">
+    <!-- glow ring -->
+    <circle cx="65" cy="65" r="60" fill="rgba(74,143,232,.07)" stroke="rgba(74,143,232,.18)" stroke-width="1.5"/>
+    <!-- base -->
+    <rect x="44" y="108" width="42" height="7" rx="3.5" fill="#1e3a5f"/>
     <!-- pole -->
-    <rect x="48" y="40" width="4" height="46" rx="2" fill="#475569"/>
-    <!-- top bar -->
-    <rect x="18" y="36" width="64" height="5" rx="2.5" fill="#3b82f6"/>
-    <!-- left pan string -->
-    <line x1="24" y1="41" x2="20" y2="60" stroke="#64748b" stroke-width="1.5"/>
-    <line x1="24" y1="41" x2="28" y2="60" stroke="#64748b" stroke-width="1.5"/>
-    <!-- right pan string -->
-    <line x1="76" y1="41" x2="72" y2="60" stroke="#64748b" stroke-width="1.5"/>
-    <line x1="76" y1="41" x2="80" y2="60" stroke="#64748b" stroke-width="1.5"/>
-    <!-- left pan -->
-    <path d="M14 60 Q24 66 34 60" stroke="#3b82f6" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <!-- right pan -->
-    <path d="M66 60 Q76 66 86 60" stroke="#10b981" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <!-- left box on pan -->
-    <rect x="18" y="53" width="12" height="8" rx="2" fill="#2563eb" opacity=".85"/>
-    <!-- right boxes on pan -->
-    <rect x="69" y="55" width="8" height="5" rx="1.5" fill="#059669" opacity=".85"/>
-    <rect x="74" y="51" width="8" height="9" rx="1.5" fill="#10b981" opacity=".7"/>
-    <!-- center dot -->
-    <circle cx="50" cy="37" r="3.5" fill="#93c5fd"/>
+    <rect x="62" y="48" width="6" height="62" rx="3" fill="url(#poleGrad)"/>
+    <!-- top beam — rotates around center pivot -->
+    <g id="beam" style="transform-origin:65px 46px;">
+      <rect x="18" y="43" width="94" height="6" rx="3" fill="url(#beamGrad)"/>
+      <!-- pivot jewel -->
+      <circle cx="65" cy="46" r="5" fill="#93c5fd" stroke="#fff" stroke-width="1.5"/>
+      <!-- left arm strings -->
+      <line x1="24" y1="49" x2="18" y2="72" stroke="rgba(148,197,253,.6)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="24" y1="49" x2="30" y2="72" stroke="rgba(148,197,253,.6)" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- right arm strings -->
+      <line x1="106" y1="49" x2="100" y2="72" stroke="rgba(148,197,253,.6)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="106" y1="49" x2="112" y2="72" stroke="rgba(148,197,253,.6)" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- left pan -->
+      <ellipse cx="24" cy="73" rx="12" ry="4" fill="url(#panL)" stroke="rgba(74,143,232,.5)" stroke-width="1"/>
+      <!-- left box -->
+      <rect x="18" y="62" width="12" height="10" rx="3" fill="#3b82f6" opacity=".9"/>
+      <rect x="20" y="64" width="4" height="2" rx="1" fill="rgba(255,255,255,.3)"/>
+      <!-- right pan -->
+      <ellipse cx="106" cy="73" rx="12" ry="4" fill="url(#panR)" stroke="rgba(16,185,129,.5)" stroke-width="1"/>
+      <!-- right boxes -->
+      <rect x="101" y="64" width="10" height="7" rx="2.5" fill="#10b981" opacity=".9"/>
+      <rect x="103" y="66" width="3" height="1.5" rx=".75" fill="rgba(255,255,255,.3)"/>
+      <rect x="100" y="60" width="7" height="5" rx="2" fill="#059669" opacity=".8"/>
+    </g>
+    <defs>
+      <linearGradient id="beamGrad" x1="18" y1="0" x2="112" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#4A8FE8"/>
+        <stop offset="50%" stop-color="#93c5fd"/>
+        <stop offset="100%" stop-color="#4A8FE8"/>
+      </linearGradient>
+      <linearGradient id="poleGrad" x1="0" y1="48" x2="0" y2="110" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#475569"/>
+        <stop offset="100%" stop-color="#1e293b"/>
+      </linearGradient>
+      <radialGradient id="panL" cx="50%" cy="30%">
+        <stop offset="0%" stop-color="#93c5fd"/>
+        <stop offset="100%" stop-color="#3b82f6"/>
+      </radialGradient>
+      <radialGradient id="panR" cx="50%" cy="30%">
+        <stop offset="0%" stop-color="#6ee7b7"/>
+        <stop offset="100%" stop-color="#059669"/>
+      </radialGradient>
+    </defs>
   </svg>
-  <div style="font-size:26px;font-weight:800;color:#f1f5f9;letter-spacing:-.5px;">WeightStock</div>
-  <div style="font-size:13px;color:#64748b;margin-top:6px;letter-spacing:.5px;">מלאי חכם לפי משקל</div>
-  <div style="margin-top:32px;display:flex;gap:6px;">
-    <span style="width:7px;height:7px;border-radius:50%;background:#3b82f6;animation:sp 1.2s infinite ease-in-out;"></span>
-    <span style="width:7px;height:7px;border-radius:50%;background:#3b82f6;animation:sp 1.2s .2s infinite ease-in-out;"></span>
-    <span style="width:7px;height:7px;border-radius:50%;background:#3b82f6;animation:sp 1.2s .4s infinite ease-in-out;"></span>
-  </div>
+  <div style="font-size:28px;font-weight:800;color:#f1f5f9;letter-spacing:-.5px;text-shadow:0 2px 16px rgba(74,143,232,.5);">WeightStock</div>
+  <div style="font-size:13px;color:#7ea8d8;margin-top:6px;letter-spacing:.8px;">מלאי חכם לפי משקל</div>
 </div>
 <style>
-@keyframes sp{0%,80%,100%{opacity:.2;transform:scale(.8);}40%{opacity:1;transform:scale(1);}}
+@keyframes sway{
+  0%  {transform:rotate(-6deg);}
+  50% {transform:rotate(6deg);}
+  100%{transform:rotate(-6deg);}
+}
+#beam{animation:sway 2s ease-in-out infinite;}
 </style>
 
 </div>
@@ -5142,7 +5168,7 @@ function updateDashLogo(){
   if(logo){
     el.innerHTML='<img src="'+logo+'" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-left:6px;" alt="לוגו">';
   } else {
-    el.innerHTML='&#x2696;&#xFE0F;';
+    el.innerHTML='<svg viewBox="0 0 28 28" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-left:4px;"><rect x="12.5" y="7" width="3" height="15" rx="1.5" fill="var(--muted)"/><rect x="3" y="7" width="22" height="3" rx="1.5" fill="var(--accent)"/><circle cx="14" cy="8.5" r="2" fill="#93c5fd"/><ellipse cx="6.5" cy="17" rx="4.5" ry="1.7" fill="var(--accent)" opacity=".75"/><ellipse cx="21.5" cy="17" rx="4.5" ry="1.7" fill="var(--ok)" opacity=".75"/><line x1="6.5" y1="10" x2="4.5" y2="17" stroke="rgba(148,197,253,.6)" stroke-width="1.2"/><line x1="6.5" y1="10" x2="8.5" y2="17" stroke="rgba(148,197,253,.6)" stroke-width="1.2"/><line x1="21.5" y1="10" x2="19.5" y2="17" stroke="rgba(148,197,253,.6)" stroke-width="1.2"/><line x1="21.5" y1="10" x2="23.5" y2="17" stroke="rgba(148,197,253,.6)" stroke-width="1.2"/><rect x="8" y="21" width="12" height="2" rx="1" fill="var(--muted)" opacity=".5"/></svg>';
   }
 }
 window.updateDashLogo=updateDashLogo;
