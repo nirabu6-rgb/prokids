@@ -5120,15 +5120,16 @@ function initCloud(){
   }
 }
 
-function toggleDemo(){
-  if(!inp.files||!inp.files[0])return;
+function handleLogoUpload(inp){
+  if(!inp||!inp.files||!inp.files[0])return;
   var reader=new FileReader();
   reader.onload=function(e){
     var data=e.target.result;
     localStorage.setItem('ws3_logo',data);
-    document.getElementById('logo-img').src=data;
-    document.getElementById('logo-img').style.display='block';
-    document.getElementById('logo-placeholder').style.display='none';
+    var img=document.getElementById('logo-img');
+    var ph=document.getElementById('logo-placeholder');
+    if(img){img.src=data;img.style.display='block';}
+    if(ph){ph.style.display='none';}
     updateDashLogo();
   };
   reader.readAsDataURL(inp.files[0]);
@@ -6734,28 +6735,32 @@ function createAutoOrder(){
 window.createAutoOrder=createAutoOrder;
 
 (function boot(){
-  applyTheme(LS.get('theme','light'));
-  checkAutoTheme();
-  var savedLang=LS.get('lang','he');
-  applyLang(savedLang||'he');
+  // always hide splash after 2s regardless of errors
   setTimeout(function(){
     var sp=document.getElementById('splash');
     if(sp){sp.style.opacity='0';setTimeout(function(){sp.style.display='none';},500);}
-  },1800);
-  applyAccent();
-  var vm=LS.get('tmpl',null);
-  var mgr=LS.get('um_manager',null);
-  if(!vm||!mgr){showOnboarding();return;}  // הגדרה ראשונה
-  /* try restore session */
-  var authResult=initAuth();
-  if(authResult===true){
-    /* valid session restored */
-    applyUserPerms();
-    renderDash(); updBell(); updateDashLogo(); renderDailyTip(); updateOnlineStatus();
-    initCloud();
-    updateUnitUI();
+  },2000);
+  try{
+    applyTheme(LS.get('theme','light'));
+    checkAutoTheme();
+    var savedLang=LS.get('lang','he');
+    try{applyLang(savedLang||'he');}catch(e){console.warn('applyLang error',e);}
+    applyAccent();
+    var vm=LS.get('tmpl',null);
+    var mgr=LS.get('um_manager',null);
+    if(!vm||!mgr){showOnboarding();return;}
+    var authResult=initAuth();
+    if(authResult===true){
+      applyUserPerms();
+      renderDash(); updBell(); updateDashLogo(); renderDailyTip(); updateOnlineStatus();
+      try{initCloud();}catch(e){console.warn('initCloud error',e);}
+      updateUnitUI();
+    }
+  }catch(e){
+    console.error('boot error',e);
+    // show login as fallback
+    try{showUMLogin();}catch(e2){}
   }
-  /* authResult===null means login screen is shown — wait for user */
 })();
 
 setInterval(function(){
