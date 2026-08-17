@@ -1534,17 +1534,49 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   <button class="navbtn" id="nav-screen-categories" onclick="navTo('screen-categories')"><span class="ic">🏷️</span>קטגוריות</button>
   <button class="navbtn" id="nav-screen-reports" onclick="openReports()"><span class="ic">📈</span>דוחות</button>
 </nav>
-<div id="fab-menu" style="display:none;position:fixed;bottom:140px;left:50%;transform:translateX(-50%);z-index:60;background:var(--card);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.22);overflow:hidden;border:1px solid var(--border);min-width:260px;max-width:340px;width:90%;">
-  <div style="padding:10px 14px 6px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;">פעולות</div>
-  <button onclick="closeFabMenu();openSetupWizard();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">⚖️ משטח שקילה חדש</button>
-  <button onclick="closeFabMenu();openSuppliers();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">🏭 ספקים</button>
-  <div style="padding:10px 14px 6px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;">כלים</div>
-  <button onclick="closeFabMenu();openAlerts();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">🔔 התראות מלאי נמוך</button>
-  <button onclick="closeFabMenu();openExport();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📤 יצוא נתונים</button>
-  <button onclick="closeFabMenu();navTo('screen-history');" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">⏱️ היסטוריית שקילות</button>
-  <button onclick="closeFabMenu();openAutoOrders();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📦 הזמנות אוטומטיות</button>
-  <button onclick="closeFabMenu();openWhatsAppOrder();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📲 הזמן ב-WhatsApp</button>
-  <button onclick="closeFabMenu();openTVMode();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📺 מצב תצוגה</button>
+<div id="fab-menu" style="display:none;position:fixed;bottom:140px;left:50%;transform:translateX(-50%);z-index:60;background:var(--card);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.22);overflow:hidden;border:1px solid var(--border);min-width:260px;max-width:340px;width:90%;max-height:72vh;overflow-y:auto;">
+
+  <!-- הוספה -->
+  <button onclick="toggleFabSection('fab-s-add')" style="width:100%;background:var(--card2);border:none;border-bottom:1px solid var(--border);padding:12px 16px;text-align:right;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+    <span>➕ הוספה</span><span id="fab-s-add-ic" style="color:var(--muted);font-size:16px;transition:transform .2s;">▼</span>
+  </button>
+  <div id="fab-s-add">
+    <button onclick="closeFabMenu();openSetupWizard();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">⚖️ משטח שקילה חדש</button>
+    <button onclick="closeFabMenu();openSuppliers();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">🏭 ספקים</button>
+  </div>
+
+  <!-- כלים -->
+  <button onclick="toggleFabSection('fab-s-tools')" style="width:100%;background:var(--card2);border:none;border-bottom:1px solid var(--border);padding:12px 16px;text-align:right;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+    <span>🔧 כלים</span><span id="fab-s-tools-ic" style="color:var(--muted);font-size:16px;transition:transform .2s;">›</span>
+  </button>
+  <div id="fab-s-tools" style="display:none;">
+    <button onclick="closeFabMenu();openAlerts();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">🔔 התראות מלאי נמוך</button>
+    <button onclick="closeFabMenu();navTo('screen-history');" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">⏱️ היסטוריית שקילות</button>
+    <button onclick="closeFabMenu();openTVMode();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📺 מצב תצוגה</button>
+    <button onclick="closeFabMenu();openExport();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📤 יצוא נתונים</button>
+    <button onclick="closeFabMenu();openReports();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📊 דוחות וגרפים</button>
+  </div>
+
+  <!-- הזמנות -->
+  <button onclick="toggleFabSection('fab-s-orders')" style="width:100%;background:var(--card2);border:none;border-bottom:1px solid var(--border);padding:12px 16px;text-align:right;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+    <span>📦 הזמנות</span><span id="fab-s-orders-ic" style="color:var(--muted);font-size:16px;transition:transform .2s;">›</span>
+  </button>
+  <div id="fab-s-orders" style="display:none;">
+    <button onclick="closeFabMenu();openAutoOrders();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📦 הזמנות אוטומטיות</button>
+    <button onclick="closeFabMenu();openWhatsAppOrder();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📲 הזמן ב-WhatsApp</button>
+    <button onclick="closeFabMenu();openOrderHistory();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📋 היסטוריית הזמנות</button>
+  </div>
+
+  <!-- ניהול — מנהל בלבד -->
+  <div id="fab-mgr-section" style="display:none;">
+    <button onclick="toggleFabSection('fab-s-mgmt')" style="width:100%;background:var(--card2);border:none;border-bottom:1px solid var(--border);padding:12px 16px;text-align:right;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+      <span>👑 ניהול</span><span id="fab-s-mgmt-ic" style="color:var(--muted);font-size:16px;transition:transform .2s;">›</span>
+    </button>
+    <div id="fab-s-mgmt" style="display:none;">
+      <button onclick="closeFabMenu();openActLog();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📋 יומן פעולות</button>
+    </div>
+  </div>
+
 </div>
 <button class="fab" id="main-fab" onclick="toggleFabMenu()">+</button>
 
@@ -1957,44 +1989,12 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <span style="color:var(--muted);">›</span>
         </button>
       </div>
-      <!-- actlog moved to FAB menu -->
       <div id="st-actlog-btn" style="display:none;"></div>
-      <!-- דוחות -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
-        <button onclick="closeModal('modal-settings');openReports();" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
-          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">📊 דוחות וגרפים</div>
-          <span style="color:var(--muted);">›</span>
-        </button>
-      </div>
-      <!-- יצוא -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
-        <button onclick="closeModal('modal-settings');openExport();" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
-          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">📤 יצוא נתונים</div>
-          <span style="color:var(--muted);">›</span>
-        </button>
-      </div>
-
-      <!-- היסטוריה -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
-        <button onclick="closeModal('modal-settings');openOrderHistory()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
-          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">📋 היסטוריית הזמנות</div>
-          <span style="color:var(--muted);">›</span>
-        </button>
-      </div>
-
 
       <!-- מנוי -->
       <div class="card" style="margin:0;padding:0;overflow:hidden;">
         <button onclick="closeModal('modal-settings');openUpgradePlans();" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
           <div style="display:flex;align-items:center;gap:10px;font-weight:700;">💳 מנוי<span id="settings-plan-badge" style="font-size:11px;background:rgba(37,99,235,.12);color:var(--accent);border-radius:20px;padding:2px 10px;font-weight:600;"></span></div>
-          <span style="color:var(--muted);">›</span>
-        </button>
-      </div>
-
-      <!-- TV Mode -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
-        <button onclick="openTVMode()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
-          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">&#x1F4FA; מסך TV</div>
           <span style="color:var(--muted);">›</span>
         </button>
       </div>
@@ -3295,6 +3295,9 @@ function applyUserPerms(){
   if(empBtn)empBtn.style.display=mgr?'':'none';
   var logBtn=document.getElementById('st-actlog-btn');
   if(logBtn)logBtn.style.display=mgr?'':'none';
+  /* Manager-only FAB section */
+  var fabMgr=document.getElementById('fab-mgr-section');
+  if(fabMgr)fabMgr.style.display=mgr?'block':'none';
   /* Manager-only sidebar employees button */
   var sideEmp=document.getElementById('side-screen-employees');
   if(sideEmp)sideEmp.style.display=mgr?'flex':'';
@@ -4254,8 +4257,17 @@ function closeFabMenu(){
   document.getElementById('fab-menu').style.display='none';
   document.getElementById('main-fab').textContent='+';
 }
+function toggleFabSection(id){
+  var el=document.getElementById(id);
+  var ic=document.getElementById(id+'-ic');
+  if(!el)return;
+  var open=el.style.display!=='none';
+  el.style.display=open?'none':'block';
+  if(ic)ic.textContent=open?'›':'▼';
+}
 window.toggleFabMenu=toggleFabMenu;
 window.closeFabMenu=closeFabMenu;
+window.toggleFabSection=toggleFabSection;
 
 function toggleItemMenu(){
   var m=document.getElementById('item-fab-menu');
