@@ -667,12 +667,12 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 .ptable tr:last-child td{border-bottom:none;}
 
 /* ── USER MANAGEMENT ── */
-.um-screen{position:fixed;inset:0;background:var(--bg);z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.um-screen{position:fixed;inset:0;background:#f8faff;z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
 .um-screen.show{display:flex;}
-.um-box{background:var(--card);border-radius:20px;padding:32px 28px;width:100%;max-width:420px;box-shadow:var(--shadow-lg);}
-.um-logo{font-size:52px;text-align:center;margin-bottom:12px;}
-.um-title{font-size:22px;font-weight:800;text-align:center;color:var(--text);margin-bottom:4px;}
-.um-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;}
+.um-box{background:var(--card);border-radius:20px;padding:32px 28px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.10);}
+.um-logo{font-size:44px;text-align:center;margin-bottom:8px;}
+.um-title{font-size:22px;font-weight:800;text-align:center;color:var(--text);margin-bottom:3px;}
+.um-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;}
 .um-pin-row{display:flex;gap:10px;justify-content:center;margin:20px 0;}
 .um-pin-box{width:52px;height:60px;border:2px solid var(--border);border-radius:12px;font-size:24px;font-weight:800;text-align:center;background:var(--card2);color:var(--text);outline:none;transition:border-color .2s;}
 .um-pin-box:focus{border-color:var(--accent);}
@@ -701,18 +701,28 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 .actlog-when{font-size:11px;color:var(--muted);margin-top:2px;}
 
 /* ── ONBOARDING ── */
-.ob-overlay{position:fixed;inset:0;background:linear-gradient(170deg,#f0f6ff 0%,#ffffff 60%,#f8faff 100%);z-index:300;overflow-y:auto;display:none;}
+.ob-overlay{position:fixed;inset:0;background:#f8faff;z-index:300;overflow-y:auto;display:none;}
 .ob-overlay.show{display:block;}
-.ob-wrap{max-width:600px;margin:0 auto;padding:36px 18px 60px;}
-.ob-logo{font-size:44px;margin-bottom:8px;}
-.ob-title{font-size:26px;font-weight:800;margin-bottom:6px;color:var(--text);}
-.ob-sub{color:var(--muted);font-size:14px;margin-bottom:28px;line-height:1.6;}
-.tmpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.ob-wrap{max-width:480px;margin:0 auto;padding:28px 18px 60px;}
+.ob-header{text-align:center;padding:24px 0 20px;}
+.ob-header-logo{font-size:40px;margin-bottom:6px;}
+.ob-header-app{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.3px;}
+/* step progress dots */
+.ob-progress{display:flex;align-items:center;justify-content:center;gap:0;margin:0 auto 28px;max-width:220px;}
+.ob-progress-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--card);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.ob-progress-dot.done{background:var(--accent);border-color:var(--accent);color:#fff;}
+.ob-progress-dot.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 0 4px rgba(0,80,200,.15);}
+.ob-progress-line{flex:1;height:2px;background:var(--border);transition:background .2s;}
+.ob-progress-line.done{background:var(--accent);}
+.ob-logo{font-size:40px;margin-bottom:6px;text-align:center;}
+.ob-title{font-size:22px;font-weight:800;margin-bottom:4px;color:var(--text);text-align:center;}
+.ob-sub{color:var(--muted);font-size:13px;margin-bottom:22px;line-height:1.6;text-align:center;}
+.tmpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
 .tmpl-card{
   background:var(--card);
   border:2px solid var(--border);
   border-radius:16px;
-  padding:18px 14px;
+  padding:16px 12px;
   cursor:pointer;
   transition:border-color .15s,box-shadow .15s;
   text-align:center;
@@ -722,9 +732,9 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   border-color:var(--accent);
   box-shadow:0 4px 16px rgba(0,59,142,.15);
 }
-.tmpl-card .tc-icon{font-size:36px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;height:60px;}
-.tmpl-card .tc-icon svg{width:56px;height:56px;}
-.tmpl-card .tc-name{font-size:15px;font-weight:700;margin-bottom:4px;}
+.tmpl-card .tc-icon{font-size:36px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;height:56px;}
+.tmpl-card .tc-icon svg{width:52px;height:52px;}
+.tmpl-card .tc-name{font-size:14px;font-weight:700;margin-bottom:3px;}
 .tmpl-card .tc-desc{font-size:11px;color:var(--muted);line-height:1.4;}
 .ob-step{display:none;}.ob-step.active{display:block;}
 .ob-biz{
@@ -734,6 +744,8 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   box-shadow:var(--shadow);
   border:1px solid var(--border);
 }
+.ob-biz label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;}
+.ob-biz input,.ob-biz select{margin-bottom:0;}
 
 /* ── GLOBAL SEARCH ── */
 #search-bar{
@@ -1174,43 +1186,42 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   </div>
 </div>
 
-<div class="ob-overlay" id="login-overlay">
-  <div class="ob-wrap" style="max-width:400px;">
-    <div style="text-align:center;margin-bottom:28px;">
-      <div style="font-size:52px;margin-bottom:8px;">⚖️</div>
-      <div style="font-size:24px;font-weight:800;" id="login-bizname">WeightStock</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:4px;">מערכת מלאי חכם</div>
-    </div>
-    <div class="ob-biz">
-      <div id="login-err" style="display:none;background:rgba(185,28,28,.1);color:var(--crit);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:14px;text-align:center;"></div>
-      <label>מספר תעודת זהות</label>
-      <input id="login-id" type="tel" placeholder="000000000" inputmode="numeric" maxlength="9">
-      <label style="margin-top:14px;">סיסמה</label>
-      <input id="login-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-      <button class="btn ok" style="margin-top:20px;" onclick="doLogin()">כניסה למערכת</button>
-    </div>
-  </div>
-</div>
-
 <!-- ── ONBOARDING ── -->
 <div class="ob-overlay" id="ob-overlay">
   <div class="ob-wrap">
-    <div class="ob-step active" id="ob-s1">
-      <div class="ob-logo">⚖️</div>
-      <div class="ob-title">ברוכים הבאים ל-WeightStock</div>
-      <div class="ob-sub">מערכת מלאי חכמה לפי משקל.<br>בחר את סוג העסק שלך — נטען מלאי התחלתי מותאם, ותוכל לערוך הכל.</div>
-      <div class="tmpl-grid" id="tmpl-grid"></div>
-      <div class="muted" style="font-size:12px;text-align:center;">אפשר לשנות בכל עת מהגדרות</div>
+    <!-- header -->
+    <div class="ob-header">
+      <div class="ob-header-logo">⚖️</div>
+      <div class="ob-header-app">WeightStock</div>
     </div>
+    <!-- progress dots (updated by JS) -->
+    <div class="ob-progress" id="ob-progress">
+      <div class="ob-progress-dot active" id="ob-dot-1">1</div>
+      <div class="ob-progress-line" id="ob-line-1"></div>
+      <div class="ob-progress-dot" id="ob-dot-2">2</div>
+      <div class="ob-progress-line" id="ob-line-2"></div>
+      <div class="ob-progress-dot" id="ob-dot-3">3</div>
+      <div class="ob-progress-line" id="ob-line-3"></div>
+      <div class="ob-progress-dot" id="ob-dot-4">4</div>
+    </div>
+
+    <!-- שלב 1: בחירת תבנית -->
+    <div class="ob-step active" id="ob-s1">
+      <div class="ob-title">ברוכים הבאים!</div>
+      <div class="ob-sub">בחר את סוג העסק שלך — נטען תצורה מותאמת ותוכל לערוך הכל</div>
+      <div class="tmpl-grid" id="tmpl-grid"></div>
+      <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:4px;">אפשר לשנות בכל עת מהגדרות</div>
+    </div>
+
+    <!-- שלב 2: פרטי העסק -->
     <div class="ob-step" id="ob-s2">
-      <div class="ob-logo" id="ob-s2-icon">🏪</div>
-      <div class="ob-title" id="ob-s2-name">הגדרת עסק</div>
-      <div class="ob-sub">שלב 2 מתוך 3 — פרטי יצירת קשר ומיקום</div>
+      <div class="ob-title" id="ob-s2-name">פרטי העסק</div>
+      <div class="ob-sub">שלב 2 מתוך 4 — מידע כללי ויצירת קשר</div>
       <div class="ob-biz">
         <label>שם העסק *</label>
         <input id="ob-bizname" placeholder="חנות כהן בע&quot;מ">
         <label style="margin-top:12px;">סוג עסק</label>
-        <input id="ob-biztype" placeholder="חנות פרזול" readonly style="background:var(--bg);color:var(--muted);cursor:default;">
+        <input id="ob-biztype" readonly style="background:var(--bg);color:var(--muted);cursor:default;">
         <label style="margin-top:12px;">טלפון</label>
         <input id="ob-bizphone" type="tel" placeholder="03-0000000" dir="ltr">
         <label style="margin-top:12px;">מייל</label>
@@ -1221,66 +1232,62 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
         <input id="ob-bizcity" placeholder="תל אביב">
         <label style="margin-top:12px;">אתר אינטרנט</label>
         <input id="ob-bizweb" type="url" placeholder="https://www.mybusiness.co.il" dir="ltr">
-        <label style="margin-top:12px;">סוג מטבע</label>
+        <label style="margin-top:12px;">מטבע</label>
         <select id="ob-cur">
           <option value="₪">₪ שקל</option>
           <option value="$">$ דולר</option>
           <option value="€">€ אירו</option>
         </select>
         <div class="row" style="margin-top:18px;">
-          <button class="btn sec" onclick="obBack()">חזור</button>
+          <button class="btn sec" onclick="obBack()">← חזור</button>
           <button class="btn" onclick="obToReg()">הבא ›</button>
         </div>
       </div>
     </div>
+
+    <!-- שלב 3: פרטי מנהל -->
     <div class="ob-step" id="ob-s3">
-      <div class="ob-logo">👑</div>
-      <div class="ob-title">הגדרת מנהל ראשי</div>
-      <div class="ob-sub">שלב 3 מתוך 3 — פרטי המנהל וקוד כניסה</div>
+      <div class="ob-title">פרטי המנהל</div>
+      <div class="ob-sub">שלב 3 מתוך 4 — הגדר קוד כניסה אישי</div>
       <div class="ob-biz">
-        <div id="reg-err" style="display:none;background:rgba(185,28,28,.1);color:var(--crit);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:14px;text-align:center;"></div>
-        <label>שם מלא</label>
+        <div id="reg-err" style="display:none;background:rgba(185,28,28,.1);color:var(--crit);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;text-align:center;"></div>
+        <label>שם מלא *</label>
         <input id="ob-fullname" placeholder="ישראל ישראלי">
-        <label style="margin-top:14px;">מספר טלפון</label>
+        <label style="margin-top:12px;">טלפון</label>
         <input id="ob-phone" type="tel" placeholder="050-0000000">
-        <label style="margin-top:14px;">קוד כניסה למנהל (4 ספרות)</label>
-        <input id="ob-pin" type="tel" inputmode="numeric" maxlength="4" placeholder="1234" dir="ltr" style="letter-spacing:6px;font-size:22px;font-weight:800;text-align:center;">
-        <div style="font-size:11px;color:var(--muted);margin-top:4px;">שמור את הקוד הזה — בו תתחבר כמנהל</div>
-        <label style="margin-top:14px;">אימות קוד</label>
-        <input id="ob-pin2" type="tel" inputmode="numeric" maxlength="4" placeholder="1234" dir="ltr" style="letter-spacing:6px;font-size:22px;font-weight:800;text-align:center;">
+        <label style="margin-top:16px;">קוד כניסה — 4 ספרות</label>
+        <input id="ob-pin" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:8px;font-size:24px;font-weight:800;text-align:center;">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:center;">שמור את הקוד — בו תכנס כמנהל</div>
+        <label style="margin-top:12px;">אימות קוד</label>
+        <input id="ob-pin2" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:8px;font-size:24px;font-weight:800;text-align:center;">
         <div class="row" style="margin-top:18px;">
-          <button class="btn sec" onclick="obBack2()">חזור</button>
+          <button class="btn sec" onclick="obBack2()">← חזור</button>
           <button class="btn ok" onclick="obToPlans()">הבא ›</button>
         </div>
       </div>
     </div>
+
+    <!-- שלב 4: בחר מסלול -->
     <div class="ob-step" id="ob-s4">
-      <div class="ob-logo">💳</div>
       <div class="ob-title">בחר מסלול</div>
-      <div class="ob-sub">14 ימי ניסיון חינם בכל מסלול</div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+      <div class="ob-sub">שלב 4 מתוך 4 — 14 ימי ניסיון חינם בכל מסלול</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
         <div class="plan-card" id="plan-basic" onclick="selectPlan('basic')">
           <div class="plan-top"><span class="plan-name">מצומצם</span><span class="plan-price">₪49 / חודש</span></div>
-          <ul class="plan-list">
-            <li>עד 5 משטחי שקילה</li><li>עד 20 פריטים</li><li>עד 3 ספקים</li><li>דוח בסיסי</li>
-          </ul>
+          <ul class="plan-list"><li>עד 5 משטחי שקילה</li><li>עד 20 פריטים</li><li>עד 3 ספקים</li><li>דוח בסיסי</li></ul>
         </div>
         <div class="plan-card selected" id="plan-pro" onclick="selectPlan('pro')">
           <div class="plan-badge">הכי פופולרי</div>
           <div class="plan-top"><span class="plan-name">גדול</span><span class="plan-price">₪149 / חודש</span></div>
-          <ul class="plan-list">
-            <li>עד 25 משטחי שקילה</li><li>עד 100 פריטים</li><li>עד 20 ספקים</li><li>כל הדוחות + ייצוא</li>
-          </ul>
+          <ul class="plan-list"><li>עד 25 משטחי שקילה</li><li>עד 100 פריטים</li><li>עד 20 ספקים</li><li>כל הדוחות + ייצוא</li></ul>
         </div>
         <div class="plan-card" id="plan-enterprise" onclick="selectPlan('enterprise')">
           <div class="plan-top"><span class="plan-name">ענק</span><span class="plan-price">₪349 / חודש</span></div>
-          <ul class="plan-list">
-            <li>משטחים ופריטים ללא הגבלה</li><li>ספקים ללא הגבלה</li><li>כל הדוחות + ייצוא</li><li>תמיכה עדיפות</li>
-          </ul>
+          <ul class="plan-list"><li>משטחים ופריטים ללא הגבלה</li><li>ספקים ללא הגבלה</li><li>כל הדוחות + ייצוא</li><li>תמיכה עדיפות</li></ul>
         </div>
       </div>
-      <button class="btn ok" style="margin-top:18px;" onclick="obFinish()">התחל ניסיון חינם ✓</button>
-      <div class="muted" style="font-size:11px;text-align:center;margin-top:10px;">לא נדרש כרטיס אשראי לניסיון</div>
+      <button class="btn ok" style="margin-top:16px;width:100%;" onclick="obFinish()">התחל ניסיון חינם ✓</button>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;">לא נדרש כרטיס אשראי לניסיון</div>
     </div>
   </div>
 </div>
@@ -3176,14 +3183,7 @@ function showOnboarding(){
 window.showOnboarding=showOnboarding;
 
 function showLogin(){
-  var acc=LS.get('account',null);
-  var lo=document.getElementById('login-overlay');
-  var bizname=acc?LS.get('settings',{}).bizName||'WeightStock':'WeightStock';
-  document.getElementById('login-bizname').textContent=bizname;
-  document.getElementById('login-id').value='';
-  document.getElementById('login-pw').value='';
-  document.getElementById('login-err').style.display='none';
-  lo.classList.add('show');
+  showUMLogin(); /* redirect old calls to PIN login */
 }
 window.showLogin=showLogin;
 
@@ -3707,40 +3707,56 @@ function obToPlans(){
   if(pin!==pin2){errEl.textContent='הקודים לא תואמים';errEl.style.display='block';return;}
   document.getElementById('ob-s3').classList.remove('active');
   document.getElementById('ob-s4').classList.add('active');
+  obSetProgress(4);
 }
 window.obToPlans=obToPlans;
 
 function pwHash(s){var h=0;for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h.toString(36);}
 
+function obSetProgress(step){
+  for(var i=1;i<=4;i++){
+    var dot=document.getElementById('ob-dot-'+i);
+    if(!dot)continue;
+    dot.className='ob-progress-dot'+(i<step?' done':i===step?' active':'');
+  }
+  for(var j=1;j<=3;j++){
+    var line=document.getElementById('ob-line-'+j);
+    if(line)line.className='ob-progress-line'+(j<step?' done':'');
+  }
+}
+
 function obSelect(key){
   _obTmpl=key;
   var t=TEMPLATES[key];
-  document.getElementById('ob-s2-icon').textContent=t.icon;
-  document.getElementById('ob-s2-name').textContent=t.name;
+  document.getElementById('ob-s2-name').textContent=t.name||'פרטי העסק';
   document.getElementById('ob-bizname').value='';
   document.getElementById('ob-biztype').value=t.name||'';
   document.getElementById('ob-s1').classList.remove('active');
   document.getElementById('ob-s2').classList.add('active');
+  obSetProgress(2);
 }
 window.obSelect=obSelect;
 
 function obBack(){
   document.getElementById('ob-s2').classList.remove('active');
   document.getElementById('ob-s1').classList.add('active');
+  obSetProgress(1);
 }
 window.obBack=obBack;
 
 function obToReg(){
   var biz=document.getElementById('ob-bizname').value.trim();
-  if(!biz){alert('הכנס שם עסק');return;}
+  if(!biz){showToast('הכנס שם עסק');return;}
   document.getElementById('ob-s2').classList.remove('active');
   document.getElementById('ob-s3').classList.add('active');
+  obSetProgress(3);
 }
 window.obToReg=obToReg;
 
 function obBack2(){
   document.getElementById('ob-s3').classList.remove('active');
   document.getElementById('ob-s2').classList.add('active');
+  obSetProgress(2);
 }
 window.obBack2=obBack2;
 
