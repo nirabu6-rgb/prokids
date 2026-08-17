@@ -225,6 +225,35 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 }
 .topbar .muted{color:var(--muted);font-size:12px;}
 
+/* ── DASHBOARD BUSINESS HEADER ── */
+#dash-biz-header{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  padding:18px 18px 14px;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:40;
+  box-shadow:0 2px 16px rgba(0,0,0,.07);
+}
+#dash-biz-avatar{
+  width:52px;height:52px;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent) 0%,#0040cc 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;flex-shrink:0;
+  box-shadow:0 3px 10px rgba(0,80,200,.25);
+}
+#dash-biz-info{flex:1;min-width:0;}
+#dash-biz-name{font-size:20px;font-weight:800;color:var(--text);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#dash-biz-type{font-size:12px;color:var(--muted);margin-top:2px;font-weight:500;}
+#dash-biz-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
+.biz-pill{display:inline-flex;align-items:center;gap:4px;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:3px 9px;font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;}
+.biz-pill svg{flex-shrink:0;}
+#dash-header-actions{display:flex;gap:4px;align-items:center;flex-shrink:0;}
+#db-user-chip{font-size:11px;color:var(--accent);font-weight:600;margin-top:2px;}
+
 /* ── ICON BUTTONS ── */
 .icon-btn{
   background:#F0F4FA;
@@ -1416,40 +1445,29 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 </div>
 
 <div class="screen active" id="screen-dashboard">
-  <div class="topbar">
-    <div><h2><span id="dash-logo">&#x2696;&#xFE0F;</span> WeightStock</h2><div class="muted" id="db-sub" style="font-size:12px;">מערכת מלאי חכם לפי משקל</div><div id="db-user-chip" style="font-size:11px;color:var(--accent);font-weight:600;margin-top:2px;"></div></div>
-    <div style="display:flex;gap:4px;align-items:center;">
+
+  <!-- ── Business Header ── -->
+  <div id="dash-biz-header">
+    <div id="dash-biz-avatar"><span id="dash-logo">⚖️</span></div>
+    <div id="dash-biz-info">
+      <div id="dash-biz-name">WeightStock</div>
+      <div id="dash-biz-type"></div>
+      <div id="dash-biz-pills"></div>
+    </div>
+    <div id="dash-header-actions">
       <div style="position:relative;">
-        <button class="icon-btn" id="view-toggle-btn" onclick="openViewPicker()" title="החלף תצוגה" style="font-size:16px;">⊞</button>
+        <button class="icon-btn" id="view-toggle-btn" onclick="openViewPicker()" title="החלף תצוגה" style="font-size:15px;">⊞</button>
         <div id="view-picker" style="display:none;position:absolute;top:42px;left:50%;transform:translateX(-50%);background:var(--card);border:1.5px solid var(--border);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:200;padding:8px;min-width:200px;">
           <div id="vp-grid" onclick="setDashView('grid')" class="vp-option">
-            <div class="vp-preview">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">
-                <div class="vp-block"></div><div class="vp-block"></div>
-                <div class="vp-block"></div><div class="vp-block"></div>
-              </div>
-            </div>
+            <div class="vp-preview"><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;"><div class="vp-block"></div><div class="vp-block"></div><div class="vp-block"></div><div class="vp-block"></div></div></div>
             <div class="vp-label">רשת<div class="vp-sub">כרטיסים בשתי עמודות</div></div>
           </div>
           <div id="vp-list" onclick="setDashView('list')" class="vp-option">
-            <div class="vp-preview">
-              <div style="display:flex;flex-direction:column;gap:3px;">
-                <div class="vp-block" style="height:10px;border-radius:3px;"></div>
-                <div class="vp-block" style="height:10px;border-radius:3px;"></div>
-                <div class="vp-block" style="height:10px;border-radius:3px;"></div>
-              </div>
-            </div>
+            <div class="vp-preview"><div style="display:flex;flex-direction:column;gap:3px;"><div class="vp-block" style="height:10px;border-radius:3px;"></div><div class="vp-block" style="height:10px;border-radius:3px;"></div><div class="vp-block" style="height:10px;border-radius:3px;"></div></div></div>
             <div class="vp-label">רשימה<div class="vp-sub">שורות רחבות עם פרטים</div></div>
           </div>
           <div id="vp-compact" onclick="setDashView('compact')" class="vp-option">
-            <div class="vp-preview">
-              <div style="display:flex;flex-direction:column;gap:2px;">
-                <div class="vp-block" style="height:6px;border-radius:2px;"></div>
-                <div class="vp-block" style="height:6px;border-radius:2px;"></div>
-                <div class="vp-block" style="height:6px;border-radius:2px;"></div>
-                <div class="vp-block" style="height:6px;border-radius:2px;"></div>
-              </div>
-            </div>
+            <div class="vp-preview"><div style="display:flex;flex-direction:column;gap:2px;"><div class="vp-block" style="height:6px;border-radius:2px;"></div><div class="vp-block" style="height:6px;border-radius:2px;"></div><div class="vp-block" style="height:6px;border-radius:2px;"></div><div class="vp-block" style="height:6px;border-radius:2px;"></div></div></div>
             <div class="vp-label">קומפקטי<div class="vp-sub">שורות צפופות ומהירות</div></div>
           </div>
         </div>
@@ -1457,6 +1475,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       <button class="icon-btn" onclick="toggleSearch()" id="search-btn" title="חיפוש" style="padding:0;display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></button>
     </div>
   </div>
+
   <div id="search-bar">
     <div style="display:flex;gap:8px;align-items:center;">
       <input id="global-search-input" placeholder="חיפוש משטחים, פריטים, ספקים..." oninput="runSearch(this.value)" autofocus style="flex:1;margin-top:0;">
@@ -1464,6 +1483,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     </div>
     <div id="search-results"></div>
   </div>
+
   <div class="summary-row" id="db-summary"></div>
   <div id="db-value-bar" style="margin-bottom:10px;"></div>
   <div id="db-shelves"></div>
@@ -2924,13 +2944,13 @@ var CAT_ICONS=['🔩','📦','🔧','🪛','🔨','⚡','🪵','🧴','🏗️',
    TEMPLATES — one per industry
 ════════════════════════════════════════════════════ */
 var TMPL_ICONS={
-  hardware:"<img src='https://images.unsplash.com/photo-1530124566582-5be75d07b8a7?w=80&h=80&fit=crop&crop=center&auto=format' style='width:68px;height:68px;border-radius:16px;object-fit:cover;display:block;' loading='lazy'>",
-  carpentry:"<img src='https://images.unsplash.com/photo-1504148455328-c376907d081c?w=80&h=80&fit=crop&crop=center&auto=format' style='width:68px;height:68px;border-radius:16px;object-fit:cover;display:block;' loading='lazy'>",
-  music:"<img src='https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=80&h=80&fit=crop&crop=center&auto=format' style='width:68px;height:68px;border-radius:16px;object-fit:cover;display:block;' loading='lazy'>",
-  construction:"<img src='https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=80&h=80&fit=crop&crop=center&auto=format' style='width:68px;height:68px;border-radius:16px;object-fit:cover;display:block;' loading='lazy'>",
-  food:"<img src='https://images.unsplash.com/photo-1542838132-92bf089f26cc?w=80&h=80&fit=crop&crop=center&auto=format' style='width:68px;height:68px;border-radius:16px;object-fit:cover;display:block;' loading='lazy'>",
-  pharmacy:"<img src='https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=80&h=80&fit=crop&crop=center&auto=format' style='width:68px;height:68px;border-radius:16px;object-fit:cover;display:block;' loading='lazy'>",
-  custom:"<img src='https://images.unsplash.com/photo-1533651180995-3b8dcd33e834?w=80&h=80&fit=crop&crop=center&auto=format' style='width:68px;height:68px;border-radius:16px;object-fit:cover;display:block;' loading='lazy'>"
+  hardware:"<svg viewBox='0 0 68 68' xmlns='http://www.w3.org/2000/svg'><rect width='68' height='68' rx='18' fill='#0f172a'/><rect x='14' y='30' width='40' height='8' rx='4' fill='#475569'/><rect x='30' y='14' width='8' height='40' rx='4' fill='#475569'/><rect x='18' y='18' width='12' height='4' rx='2' fill='#94a3b8' transform='rotate(45 24 20)'/><circle cx='34' cy='34' r='6' fill='#1e293b' stroke='#64748b' stroke-width='2'/><circle cx='34' cy='34' r='2.5' fill='#94a3b8'/><rect x='10' y='48' width='48' height='6' rx='3' fill='#1e40af' opacity='.7'/></svg>",
+  carpentry:"<svg viewBox='0 0 68 68' xmlns='http://www.w3.org/2000/svg'><rect width='68' height='68' rx='18' fill='#78350f'/><rect x='8' y='20' width='52' height='10' rx='3' fill='#fbbf24'/><line x1='16' y1='20' x2='16' y2='30' stroke='#92400e' stroke-width='1.5'/><line x1='24' y1='20' x2='24' y2='30' stroke='#92400e' stroke-width='1.5'/><line x1='32' y1='20' x2='32' y2='30' stroke='#92400e' stroke-width='1.5'/><line x1='40' y1='20' x2='40' y2='30' stroke='#92400e' stroke-width='1.5'/><line x1='48' y1='20' x2='48' y2='30' stroke='#92400e' stroke-width='1.5'/><rect x='8' y='33' width='52' height='10' rx='3' fill='#d97706'/><line x1='12' y1='33' x2='12' y2='43' stroke='#78350f' stroke-width='1.5'/><line x1='20' y1='33' x2='20' y2='43' stroke='#78350f' stroke-width='1.5'/><line x1='28' y1='33' x2='28' y2='43' stroke='#78350f' stroke-width='1.5'/><line x1='36' y1='33' x2='36' y2='43' stroke='#78350f' stroke-width='1.5'/><line x1='44' y1='33' x2='44' y2='43' stroke='#78350f' stroke-width='1.5'/><rect x='8' y='46' width='35' height='9' rx='3' fill='#fbbf24' opacity='.8'/><polygon points='48,43 62,38 62,50 48,55' fill='#d1d5db'/><rect x='44' y='42' width='5' height='14' rx='2' fill='#374151'/></svg>",
+  music:"<svg viewBox='0 0 68 68' xmlns='http://www.w3.org/2000/svg'><rect width='68' height='68' rx='18' fill='#4c1d95'/><ellipse cx='34' cy='42' rx='20' ry='11' fill='#7c3aed'/><ellipse cx='34' cy='36' rx='20' ry='9' fill='#ddd6fe'/><ellipse cx='34' cy='36' rx='14' ry='7' fill='#8b5cf6'/><ellipse cx='34' cy='36' rx='5' ry='3' fill='#ddd6fe' opacity='.4'/><rect x='30' y='12' width='3' height='24' rx='1.5' fill='#a16207'/><rect x='35' y='10' width='3' height='24' rx='1.5' fill='#a16207'/><circle cx='31.5' cy='10' r='4' fill='#78350f'/><circle cx='36.5' cy='8' r='4' fill='#78350f'/></svg>",
+  construction:"<svg viewBox='0 0 68 68' xmlns='http://www.w3.org/2000/svg'><rect width='68' height='68' rx='18' fill='#92400e'/><rect x='8' y='10' width='24' height='10' rx='2.5' fill='#fde68a'/><rect x='36' y='10' width='24' height='10' rx='2.5' fill='#fbbf24'/><rect x='8' y='23' width='17' height='10' rx='2.5' fill='#fbbf24'/><rect x='28' y='23' width='24' height='10' rx='2.5' fill='#fde68a'/><rect x='55' y='23' width='5' height='10' rx='2' fill='#fbbf24'/><rect x='8' y='36' width='24' height='10' rx='2.5' fill='#fde68a'/><rect x='36' y='36' width='24' height='10' rx='2.5' fill='#fbbf24'/><rect x='8' y='49' width='17' height='10' rx='2.5' fill='#fbbf24'/><rect x='28' y='49' width='24' height='10' rx='2.5' fill='#fde68a'/></svg>",
+  food:"<svg viewBox='0 0 68 68' xmlns='http://www.w3.org/2000/svg'><rect width='68' height='68' rx='18' fill='#14532d'/><circle cx='20' cy='24' r='8' fill='#ef4444'/><circle cx='20' cy='22' r='6' fill='#dc2626'/><ellipse cx='20' cy='19' rx='3' ry='2' fill='#f87171' opacity='.6'/><circle cx='40' cy='22' r='7' fill='#f59e0b'/><ellipse cx='40' cy='19' rx='3.5' ry='2' fill='#fcd34d' opacity='.6'/><path d='M50 30 Q55 20 60 30' stroke='#34d399' stroke-width='3' fill='none' stroke-linecap='round'/><rect x='56' y='18' width='3' height='12' rx='1.5' fill='#34d399'/><rect x='8' y='38' width='52' height='7' rx='3.5' fill='#166534'/><circle cx='18' cy='52' r='5' fill='#4ade80'/><circle cx='34' cy='52' r='5' fill='#86efac'/><circle cx='50' cy='52' r='5' fill='#4ade80'/></svg>",
+  pharmacy:"<svg viewBox='0 0 68 68' xmlns='http://www.w3.org/2000/svg'><rect width='68' height='68' rx='18' fill='#065f46'/><rect x='10' y='10' width='48' height='48' rx='12' fill='white' opacity='.95'/><rect x='27' y='16' width='14' height='36' rx='7' fill='#10b981'/><rect x='16' y='27' width='36' height='14' rx='7' fill='#10b981'/><circle cx='48' cy='16' r='4' fill='#ef4444' opacity='.85'/><circle cx='52' cy='22' r='3' fill='#f59e0b' opacity='.75'/></svg>",
+  custom:"<svg viewBox='0 0 68 68' xmlns='http://www.w3.org/2000/svg'><rect width='68' height='68' rx='18' fill='#312e81'/><polygon points='34,8 38,22 53,22 41,31 45,45 34,37 23,45 27,31 15,22 30,22' fill='#fbbf24'/><circle cx='34' cy='30' r='6' fill='#6d28d9'/><circle cx='12' cy='12' r='2.5' fill='#c4b5fd' opacity='.8'/><circle cx='56' cy='10' r='2' fill='#fbbf24' opacity='.8'/><circle cx='56' cy='54' r='2.5' fill='#c4b5fd' opacity='.7'/><circle cx='11' cy='54' r='2' fill='#fbbf24' opacity='.7'/></svg>"
 };
 
 var TEMPLATES={
@@ -4026,7 +4046,22 @@ function renderDash(){
       '</div>':'';
   }
   var s=getSettings();
-  document.getElementById('db-sub').textContent=s.bizName||(s.bizType||'מערכת מלאי חכם לפי משקל');
+  /* update business header */
+  var bnEl=document.getElementById('dash-biz-name');
+  if(bnEl)bnEl.textContent=s.bizName||'WeightStock';
+  var btEl=document.getElementById('dash-biz-type');
+  if(btEl)btEl.textContent=s.bizType||(s.bizName?'מערכת מלאי חכם':'');
+  var pillsEl=document.getElementById('dash-biz-pills');
+  if(pillsEl){
+    var pills='';
+    if(s.bizPhone)pills+='<span class="biz-pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 16.9v3a2 2 0 01-2.2 2A19.8 19.8 0 013.1 4.2 2 2 0 015.1 2h3a2 2 0 012 1.7c.1.9.4 1.8.7 2.6a2 2 0 01-.5 2.1L9.1 9.6a16 16 0 006.3 6.3l1.2-1.2a2 2 0 012.1-.5c.8.3 1.7.6 2.6.7A2 2 0 0122 16.9z"/></svg>'+s.bizPhone+'</span>';
+    if(s.bizCity)pills+='<span class="biz-pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7z"/><circle cx="12" cy="9" r="2.5"/></svg>'+(s.bizStreet?s.bizStreet+', ':'')+s.bizCity+'</span>';
+    if(s.bizEmail)pills+='<span class="biz-pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>'+s.bizEmail+'</span>';
+    if(s.bizWeb)pills+='<span class="biz-pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>'+(s.bizWeb.replace(/https?:\/\//,''))+'</span>';
+    pillsEl.innerHTML=pills;
+  }
+  var userEl=document.getElementById('db-user-chip');
+  if(userEl)userEl.textContent=_umUser?(_umUser.isManager?'👑 '+_umUser.name:'👤 '+_umUser.name):'';
   if(!shs.length){
     var t=activeTmpl(),td=t&&TEMPLATES[t]?TEMPLATES[t]:null;
     document.getElementById('db-shelves').innerHTML='<div class="empty"><div class="ic">'+(td?td.icon:'⚖️')+'</div><b>אין משטחי שקילה</b><div class="muted">לחץ + כדי להוסיף</div></div>';
