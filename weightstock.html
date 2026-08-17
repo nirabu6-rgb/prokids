@@ -4902,10 +4902,11 @@ function resetToOnboarding(){
 window.resetToOnboarding=resetToOnboarding;
 function logoutApp(){
   if(!confirm('להתנתק? הנתונים ישמרו.'))return;
-  LS.del('session'); _DR=null;
+  LS.del('session'); _DR=null; _umUser=null;
   closeModal('modal-settings');
   document.querySelectorAll('.modal-overlay').forEach(function(m){m.classList.remove('show');});
-  showLogin();
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  showUMLogin();
 }
 window.logoutApp=logoutApp;
 
