@@ -1173,11 +1173,34 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   <div class="um-box">
     <div class="um-logo" id="um-biz-icon">⚖️</div>
     <div class="um-title" id="um-biz-name">WeightStock</div>
-    <div class="um-sub">בחר משתמש להתחברות</div>
+    <div class="um-sub" id="um-sub-text">בחר משתמש להתחברות</div>
     <div class="um-user-list" id="um-user-list"></div>
-    <div id="um-pin-section" style="display:none;margin-top:20px;">
-      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:8px;">הכנס קוד כניסה</div>
-      <div class="um-pin-row" id="um-pin-row"></div>
+    <!-- PIN section (employees + manager PIN) -->
+    <div id="um-pin-section" style="display:none;margin-top:16px;">
+      <!-- Manager auth tabs -->
+      <div id="um-mgr-tabs" style="display:none;margin-bottom:14px;">
+        <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+          <button id="um-tab-pin" onclick="umSwitchTab('pin')" style="flex:1;padding:9px;font-size:13px;font-weight:700;background:var(--accent);color:#fff;border:none;cursor:pointer;">🔢 PIN</button>
+          <button id="um-tab-email" onclick="umSwitchTab('email')" style="flex:1;padding:9px;font-size:13px;font-weight:700;background:var(--card2);color:var(--text);border:none;cursor:pointer;">✉️ מייל</button>
+        </div>
+      </div>
+      <!-- PIN entry -->
+      <div id="um-pin-entry">
+        <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:8px;">הכנס קוד PIN</div>
+        <div class="um-pin-row" id="um-pin-row"></div>
+      </div>
+      <!-- Email+password entry -->
+      <div id="um-email-entry" style="display:none;">
+        <div class="ob-field" style="margin-bottom:10px;">
+          <label>אימייל</label>
+          <input id="um-email-inp" type="email" placeholder="manager@example.com" autocomplete="email">
+        </div>
+        <div class="ob-field">
+          <label>סיסמה</label>
+          <input id="um-pw-inp" type="password" placeholder="••••••" autocomplete="current-password">
+        </div>
+        <button class="btn ok" style="width:100%;margin-top:10px;" onclick="umSubmitEmail()">כניסה</button>
+      </div>
       <div id="um-pin-err" style="display:none;color:var(--crit);font-size:13px;text-align:center;margin-top:8px;"></div>
       <button class="btn sec" style="width:100%;margin-top:12px;" onclick="umCancelPin()">← חזור</button>
     </div>
@@ -1306,18 +1329,36 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <!-- שלב 3: פרטי מנהל -->
     <div class="ob-step" id="ob-s3">
       <div class="ob-title">פרטי המנהל</div>
-      <div class="ob-sub">שלב 3 מתוך 4 — הגדר קוד כניסה אישי</div>
+      <div class="ob-sub">שלב 3 מתוך 4 — פרטי כניסה</div>
       <div class="ob-biz">
         <div id="reg-err" style="display:none;background:rgba(185,28,28,.1);color:var(--crit);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;text-align:center;"></div>
-        <label>שם מלא *</label>
-        <input id="ob-fullname" placeholder="ישראל ישראלי">
-        <label style="margin-top:12px;">טלפון</label>
-        <input id="ob-phone" type="tel" placeholder="050-0000000">
-        <label style="margin-top:16px;">קוד כניסה — 4 ספרות</label>
-        <input id="ob-pin" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:8px;font-size:24px;font-weight:800;text-align:center;">
-        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:center;">שמור את הקוד — בו תכנס כמנהל</div>
-        <label style="margin-top:12px;">אימות קוד</label>
-        <input id="ob-pin2" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:8px;font-size:24px;font-weight:800;text-align:center;">
+        <div class="ob-field">
+          <label>שם מלא *</label>
+          <input id="ob-fullname" placeholder="ישראל ישראלי" autocomplete="name">
+        </div>
+        <div class="ob-field">
+          <label>טלפון</label>
+          <input id="ob-phone" type="tel" placeholder="050-0000000" autocomplete="tel">
+        </div>
+        <div class="ob-field">
+          <label>אימייל *</label>
+          <input id="ob-mgr-email" type="email" placeholder="manager@example.com" autocomplete="email">
+        </div>
+        <div class="ob-field">
+          <label>סיסמה * (מינימום 6 תווים)</label>
+          <input id="ob-mgr-pw" type="password" placeholder="••••••" autocomplete="new-password">
+        </div>
+        <div class="ob-field">
+          <label>אימות סיסמה *</label>
+          <input id="ob-mgr-pw2" type="password" placeholder="••••••" autocomplete="new-password">
+        </div>
+        <div style="background:var(--card2);border-radius:10px;padding:10px 14px;margin-top:4px;">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;">קוד PIN — כניסה מהירה (4 ספרות)</div>
+          <input id="ob-pin" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:8px;font-size:22px;font-weight:800;text-align:center;background:var(--card);">
+          <label style="margin-top:8px;display:block;">אימות PIN</label>
+          <input id="ob-pin2" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:8px;font-size:22px;font-weight:800;text-align:center;background:var(--card);">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">ניתן להשתמש ב-PIN במקום סיסמה בכניסות עתידיות</div>
+        </div>
         <div class="row" style="margin-top:18px;">
           <button class="btn sec" onclick="obBack2()">← חזור</button>
           <button class="btn ok" onclick="obToPlans()">הבא ›</button>
@@ -3316,11 +3357,31 @@ function showUMLogin(){
   var emps=getEmployees();
   var bizName=LS.get('settings',{}).bizName||'WeightStock';
   document.getElementById('um-biz-name').textContent=bizName;
+  document.getElementById('um-sub-text').textContent='בחר משתמש להתחברות';
   document.getElementById('um-pin-section').style.display='none';
+  document.getElementById('um-user-list').style.display='flex';
+  document.getElementById('um-user-list').style.flexDirection='column';
   var list=document.getElementById('um-user-list');
-  var html='<div class="um-user-btn" onclick="umSelectUser(\'manager\')">'+'<div class="um-user-avatar mgr">'+((mgr&&mgr.name)?mgr.name[0]:'מ')+'</div>'+'<div><div class="um-user-name">'+(mgr?mgr.name:'מנהל')+'</div><div class="um-user-role">מנהל ראשי • גישה מלאה</div></div></div>';
+  var now=Date.now();
+  var mgrConnected=mgr&&mgr.lastLogin&&(now-mgr.lastLogin)<30*60*1000;
+  var html='<div class="um-user-btn" onclick="umSelectUser(\'manager\')">'
+    +'<div class="um-user-avatar mgr">'+((mgr&&mgr.name)?mgr.name[0]:'מ')+'</div>'
+    +'<div style="flex:1"><div class="um-user-name">'+(mgr?mgr.name:'מנהל')+'</div>'
+    +'<div class="um-user-role">מנהל ראשי • גישה מלאה</div>'
+    +(mgrConnected?'<div style="font-size:11px;color:var(--ok);margin-top:2px;">🟢 מחובר</div>':'')
+    +'</div>'
+    +(mgr&&mgr.loginCount?'<div style="font-size:11px;color:var(--muted);margin-right:6px;">'+mgr.loginCount+' כניסות</div>':'')
+    +'</div>';
   emps.forEach(function(e){
-    html+='<div class="um-user-btn" onclick="umSelectUser(\''+e.id+'\')">'+'<div class="um-user-avatar">'+e.name[0]+'</div>'+'<div><div class="um-user-name">'+e.name+'</div><div class="um-user-role">עובד</div></div></div>';
+    var empConnected=e.lastLogin&&(now-e.lastLogin)<30*60*1000;
+    html+='<div class="um-user-btn" onclick="umSelectUser(\''+e.id+'\')">'
+      +'<div class="um-user-avatar">'+e.name[0]+'</div>'
+      +'<div style="flex:1"><div class="um-user-name">'+e.name+'</div>'
+      +'<div class="um-user-role">עובד'+(e.permissions&&e.permissions.editQty?' • עדכון מלאי':'')+'</div>'
+      +(empConnected?'<div style="font-size:11px;color:var(--ok);margin-top:2px;">🟢 מחובר</div>':'')
+      +'</div>'
+      +(e.loginCount?'<div style="font-size:11px;color:var(--muted);margin-right:6px;">'+e.loginCount+' כניסות</div>':'')
+      +'</div>';
   });
   list.innerHTML=html;
   document.getElementById('um-login-screen').classList.add('show');
@@ -3336,6 +3397,16 @@ function umSelectUser(id){
   document.getElementById('um-user-list').style.display='none';
   document.getElementById('um-pin-section').style.display='block';
   document.getElementById('um-pin-err').style.display='none';
+  /* show manager tabs only for manager */
+  var mgrTabs=document.getElementById('um-mgr-tabs');
+  if(id==='manager'){
+    mgrTabs.style.display='block';
+    umSwitchTab('pin');
+  } else {
+    mgrTabs.style.display='none';
+    document.getElementById('um-pin-entry').style.display='block';
+    document.getElementById('um-email-entry').style.display='none';
+  }
   document.getElementById('up0').focus();
   /* auto-advance */
   [0,1,2,3].forEach(function(i){
@@ -3347,6 +3418,20 @@ function umSelectUser(id){
     });
   });
 }
+
+function umSwitchTab(tab){
+  var isPIN=tab==='pin';
+  document.getElementById('um-tab-pin').style.background=isPIN?'var(--accent)':'var(--card2)';
+  document.getElementById('um-tab-pin').style.color=isPIN?'#fff':'var(--text)';
+  document.getElementById('um-tab-email').style.background=isPIN?'var(--card2)':'var(--accent)';
+  document.getElementById('um-tab-email').style.color=isPIN?'var(--text)':'#fff';
+  document.getElementById('um-pin-entry').style.display=isPIN?'block':'none';
+  document.getElementById('um-email-entry').style.display=isPIN?'none':'block';
+  document.getElementById('um-pin-err').style.display='none';
+  if(!isPIN)setTimeout(function(){document.getElementById('um-email-inp').focus();},50);
+  else document.getElementById('up0').focus();
+}
+window.umSwitchTab=umSwitchTab;
 window.umSelectUser=umSelectUser;
 
 function umCancelPin(){
@@ -3365,20 +3450,46 @@ function umSubmitPin(){
     var mgr=LS.get('um_manager',null);
     if(!mgr){errEl.textContent='מנהל לא מוגדר';errEl.style.display='block';return;}
     if(mgr.pin!==pin){errEl.textContent='קוד שגוי';errEl.style.display='block';[0,1,2,3].forEach(function(i){document.getElementById('up'+i).value='';});document.getElementById('up0').focus();return;}
+    mgr.loginCount=(mgr.loginCount||0)+1; mgr.lastLogin=Date.now();
+    LS.set('um_manager',mgr);
     _umUser={isManager:true,empId:'manager',name:mgr.name,perms:null,loginTime:Date.now()};
     LS.set('um_session',_umUser);
-    logAct('login','כניסת מנהל');
+    logAct('login','כניסת מנהל PIN');
     umEnterApp();
   } else {
     var emps=getEmployees();
     var emp=emps.find(function(e){return e.id===_umSelectingId;});
     if(!emp||emp.code!==pin){errEl.textContent='קוד שגוי';errEl.style.display='block';[0,1,2,3].forEach(function(i){document.getElementById('up'+i).value='';});document.getElementById('up0').focus();return;}
+    emp.loginCount=(emp.loginCount||0)+1; emp.lastLogin=Date.now();
+    setEmployees(emps);
     _umUser={isManager:false,empId:emp.id,name:emp.name,perms:emp.permissions,loginTime:Date.now()};
     LS.set('um_session',_umUser);
-    logAct('login','כניסת עובד');
+    logAct('login','כניסת עובד: '+emp.name);
     umEnterApp();
   }
 }
+
+function umSubmitEmail(){
+  var email=(document.getElementById('um-email-inp').value||'').trim().toLowerCase();
+  var pw=document.getElementById('um-pw-inp').value||'';
+  var errEl=document.getElementById('um-pin-err');
+  errEl.style.display='none';
+  if(!email||!pw){errEl.textContent='הכנס מייל וסיסמה';errEl.style.display='block';return;}
+  var mgr=LS.get('um_manager',null);
+  if(!mgr){errEl.textContent='מנהל לא מוגדר';errEl.style.display='block';return;}
+  if(mgr.email.toLowerCase()!==email||mgr.pwHash!==pwHash(pw)){
+    errEl.textContent='מייל או סיסמה שגויים';errEl.style.display='block';
+    document.getElementById('um-pw-inp').value='';
+    return;
+  }
+  mgr.loginCount=(mgr.loginCount||0)+1; mgr.lastLogin=Date.now();
+  LS.set('um_manager',mgr);
+  _umUser={isManager:true,empId:'manager',name:mgr.name,perms:null,loginTime:Date.now()};
+  LS.set('um_session',_umUser);
+  logAct('login','כניסת מנהל מייל+סיסמה');
+  umEnterApp();
+}
+window.umSubmitEmail=umSubmitEmail;
 window.umSubmitPin=umSubmitPin;
 
 function umEnterApp(){
@@ -3386,7 +3497,8 @@ function umEnterApp(){
   applyUserPerms();
   renderDash(); updBell(); updateDashLogo(); renderDailyTip();
   updateOnlineStatus&&updateOnlineStatus();
-  showToast('ברוך הבא, '+_umUser.name+' 👋');
+  var greeting=_umUser.isManager?'ברוך הבא מנהל, '+_umUser.name+' 👑':'שלום '+_umUser.name+' 👋 — ברוך הבא!';
+  showToast(greeting);
 }
 
 function applyUserPerms(){
@@ -3451,20 +3563,43 @@ function renderEmpList(){
   var mgrEl=document.getElementById('emp-mgr-name');
   var mgrAv=document.getElementById('emp-mgr-avatar');
   if(mgrEl&&mgr){mgrEl.textContent=mgr.name;if(mgrAv)mgrAv.textContent=mgr.name[0];}
+  var now=Date.now();
+  /* stats summary bar */
+  var subEl=document.getElementById('emp-screen-sub');
+  if(subEl){
+    var connectedCount=emps.filter(function(e){return e.lastLogin&&(now-e.lastLogin)<30*60*1000;}).length;
+    var totalLogins=emps.reduce(function(s,e){return s+(e.loginCount||0);},0)+(mgr?mgr.loginCount||0:0);
+    subEl.textContent=emps.length+' עובדים | '+connectedCount+' מחוברים כעת | '+totalLogins+' כניסות סה"כ';
+  }
   var html=emps.length?emps.map(function(e){
     var cnt=Object.values(e.permissions).filter(Boolean).length;
-    return '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;">'+
-      '<div class="um-user-avatar" style="font-size:16px;">'+e.name[0]+'</div>'+
-      '<div style="flex:1;">'+
-        '<div style="font-weight:700;font-size:15px;">'+e.name+'</div>'+
+    var connected=e.lastLogin&&(now-e.lastLogin)<30*60*1000;
+    var lastStr='';
+    if(e.lastLogin){
+      var diff=Math.round((now-e.lastLogin)/60000);
+      if(diff<60)lastStr='לפני '+diff+' דק\'';
+      else if(diff<1440)lastStr='לפני '+Math.round(diff/60)+' ש\'';
+      else lastStr='לפני '+Math.round(diff/1440)+' ימים';
+    }
+    return '<div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;">'+
+      '<div class="um-user-avatar" style="font-size:16px;flex-shrink:0;">'+e.name[0]+'</div>'+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'+
+          '<div style="font-weight:700;font-size:15px;">'+e.name+'</div>'+
+          (connected?'<span style="font-size:10px;background:rgba(22,163,74,.15);color:var(--ok);border-radius:20px;padding:2px 7px;font-weight:700;">🟢 מחובר</span>':'')+
+        '</div>'+
         '<div style="font-size:12px;color:var(--muted);margin-top:2px;">קוד: <b>'+e.code+'</b> &nbsp;|&nbsp; '+cnt+' מתוך '+PERMISSIONS.length+' הרשאות</div>'+
+        '<div style="font-size:11px;color:var(--muted);margin-top:3px;">'+
+          (e.loginCount?'<span>'+e.loginCount+' כניסות</span>':'')+
+          (lastStr?'<span style="margin-right:8px;">כניסה אחרונה: '+lastStr+'</span>':'')+
+        '</div>'+
         '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">'+
           PERMISSIONS.filter(function(p){return e.permissions[p.key];}).map(function(p){
             return '<span style="font-size:10px;background:var(--accent-light);color:var(--accent);border-radius:6px;padding:2px 6px;">'+p.icon+' '+p.label+'</span>';
           }).join('')+
         '</div>'+
       '</div>'+
-      '<div style="display:flex;flex-direction:column;gap:6px;">'+
+      '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">'+
         '<button onclick="openEditEmpInline(\''+e.id+'\')" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;color:var(--text);">✏️ ערוך</button>'+
         '<button onclick="deleteEmp(\''+e.id+'\')" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;color:var(--crit);">🗑️</button>'+
       '</div>'+
@@ -3686,8 +3821,16 @@ function openChangeMgrPin(){
 window.openChangeMgrPin=openChangeMgrPin;
 
 /* ── Manager first-time setup (called after onboarding finishes) ── */
-function setupManagerUser(name,pin){
-  LS.set('um_manager',{name:name||'מנהל',pin:pin||'1234'});
+function setupManagerUser(name,pin,email,password){
+  var existing=LS.get('um_manager',{});
+  LS.set('um_manager',{
+    name:name||existing.name||'מנהל',
+    pin:pin||existing.pin||'1234',
+    email:email||existing.email||'',
+    pwHash:password?pwHash(password):(existing.pwHash||''),
+    loginCount:existing.loginCount||0,
+    lastLogin:existing.lastLogin||null
+  });
 }
 window.setupManagerUser=setupManagerUser;
 
@@ -3781,13 +3924,19 @@ window.upgradeTo=upgradeTo;
 
 function obToPlans(){
   var fullname=document.getElementById('ob-fullname').value.trim();
+  var email=document.getElementById('ob-mgr-email').value.trim();
+  var pw=document.getElementById('ob-mgr-pw').value;
+  var pw2=document.getElementById('ob-mgr-pw2').value;
   var pin=document.getElementById('ob-pin').value.trim();
   var pin2=document.getElementById('ob-pin2').value.trim();
   var errEl=document.getElementById('reg-err');
   errEl.style.display='none';
   if(!fullname){errEl.textContent='הכנס שם מלא';errEl.style.display='block';return;}
-  if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){errEl.textContent='הקוד חייב להיות 4 ספרות';errEl.style.display='block';return;}
-  if(pin!==pin2){errEl.textContent='הקודים לא תואמים';errEl.style.display='block';return;}
+  if(!email||!email.includes('@')){errEl.textContent='הכנס כתובת מייל תקינה';errEl.style.display='block';return;}
+  if(!pw||pw.length<6){errEl.textContent='הסיסמה חייבת להכיל לפחות 6 תווים';errEl.style.display='block';return;}
+  if(pw!==pw2){errEl.textContent='הסיסמאות לא תואמות';errEl.style.display='block';return;}
+  if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){errEl.textContent='ה-PIN חייב להיות 4 ספרות';errEl.style.display='block';return;}
+  if(pin!==pin2){errEl.textContent='קודי PIN לא תואמים';errEl.style.display='block';return;}
   document.getElementById('ob-s3').classList.remove('active');
   document.getElementById('ob-s4').classList.add('active');
   obSetProgress(4);
@@ -3849,6 +3998,8 @@ function obFinish(){
   var fullname=document.getElementById('ob-fullname').value.trim();
   var phone=document.getElementById('ob-phone').value.trim();
   var pin=document.getElementById('ob-pin').value.trim();
+  var mgrEmail=document.getElementById('ob-mgr-email').value.trim();
+  var mgrPw=document.getElementById('ob-mgr-pw').value;
   LS.set('tmpl',_obTmpl);
   _DR=null;
   var biz=document.getElementById('ob-bizname').value.trim();
@@ -3863,7 +4014,7 @@ function obFinish(){
   LS.set('account',{fullname:fullname,phone:phone});
   LS.set('plan',{key:_selectedPlan,name:PLANS[_selectedPlan].name,since:Date.now(),trialEnd:Date.now()+14*86400000});
   /* save manager credentials */
-  setupManagerUser(fullname||'מנהל', pin||'1234');
+  setupManagerUser(fullname||'מנהל', pin||'1234', mgrEmail, mgrPw);
   /* auto-login as manager */
   _umUser={isManager:true,empId:'manager',name:fullname||'מנהל',perms:null,loginTime:Date.now()};
   LS.set('um_session',_umUser);
