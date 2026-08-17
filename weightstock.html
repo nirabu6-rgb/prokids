@@ -101,7 +101,21 @@ html,body{
   height:100%;
   font-weight:400;
 }
-#app{max-width:600px;margin:0 auto;min-height:100vh;background:var(--bg);padding-bottom:72px;}
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:url('https://i.imgur.com/Jt7vL9E.jpeg') center/cover no-repeat;
+  z-index:-2;
+}
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:rgba(10,18,35,0.55);
+  z-index:-1;
+}
+#app{max-width:600px;margin:0 auto;min-height:100vh;background:rgba(240,244,250,0.88);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);padding-bottom:72px;}
 #main-content{width:100%;}
 .screen{display:none;padding:14px;}
 .screen.active{display:block;}
