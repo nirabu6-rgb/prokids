@@ -755,8 +755,10 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   box-shadow:var(--shadow);
   border:1px solid var(--border);
 }
-.ob-biz label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;}
-.ob-biz input,.ob-biz select{margin-bottom:0;}
+.ob-field{margin-bottom:12px;}
+.ob-field:last-of-type{margin-bottom:0;}
+.ob-field label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;}
+.ob-field input,.ob-field select{margin-top:0;}
 
 /* ── GLOBAL SEARCH ── */
 #search-bar{
@@ -1229,26 +1231,42 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       <div class="ob-title" id="ob-s2-name">פרטי העסק</div>
       <div class="ob-sub">שלב 2 מתוך 4 — מידע כללי ויצירת קשר</div>
       <div class="ob-biz">
-        <label>שם העסק *</label>
-        <input id="ob-bizname" placeholder="חנות כהן בע&quot;מ">
-        <label style="margin-top:12px;">סוג עסק</label>
-        <input id="ob-biztype" readonly style="background:var(--bg);color:var(--muted);cursor:default;">
-        <label style="margin-top:12px;">טלפון</label>
-        <input id="ob-bizphone" type="tel" placeholder="03-0000000" dir="ltr">
-        <label style="margin-top:12px;">מייל</label>
-        <input id="ob-bizemail" type="email" placeholder="info@mybusiness.co.il" dir="ltr">
-        <label style="margin-top:12px;">רחוב</label>
-        <input id="ob-bizstreet" placeholder="רחוב הרצל 1">
-        <label style="margin-top:12px;">עיר</label>
-        <input id="ob-bizcity" placeholder="תל אביב">
-        <label style="margin-top:12px;">אתר אינטרנט</label>
-        <input id="ob-bizweb" type="url" placeholder="https://www.mybusiness.co.il" dir="ltr">
-        <label style="margin-top:12px;">מטבע</label>
-        <select id="ob-cur">
-          <option value="₪">₪ שקל</option>
-          <option value="$">$ דולר</option>
-          <option value="€">€ אירו</option>
-        </select>
+        <div style="background:var(--card2);border-radius:10px;padding:8px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--muted);">סוג עסק:</span>
+          <span id="ob-biztype-lbl" style="font-size:13px;font-weight:700;color:var(--accent);">—</span>
+        </div>
+        <div class="ob-field">
+          <label>שם העסק *</label>
+          <input id="ob-bizname" placeholder="חנות כהן בע&quot;מ" autocomplete="organization">
+        </div>
+        <div class="ob-field">
+          <label>טלפון</label>
+          <input id="ob-bizphone" type="tel" placeholder="03-0000000" autocomplete="tel">
+        </div>
+        <div class="ob-field">
+          <label>מייל</label>
+          <input id="ob-bizemail" type="email" placeholder="info@mybusiness.co.il" autocomplete="email">
+        </div>
+        <div class="ob-field">
+          <label>רחוב</label>
+          <input id="ob-bizstreet" placeholder="רחוב הרצל 1" autocomplete="street-address">
+        </div>
+        <div class="ob-field">
+          <label>עיר</label>
+          <input id="ob-bizcity" placeholder="תל אביב" autocomplete="address-level2">
+        </div>
+        <div class="ob-field">
+          <label>אתר אינטרנט</label>
+          <input id="ob-bizweb" type="url" placeholder="https://www.mybusiness.co.il">
+        </div>
+        <div class="ob-field">
+          <label>מטבע</label>
+          <select id="ob-cur">
+            <option value="₪">₪ שקל</option>
+            <option value="$">$ דולר</option>
+            <option value="€">€ אירו</option>
+          </select>
+        </div>
         <div class="row" style="margin-top:18px;">
           <button class="btn sec" onclick="obBack()">← חזור</button>
           <button class="btn" onclick="obToReg()">הבא ›</button>
@@ -3775,7 +3793,8 @@ function obSelect(key){
   var t=TEMPLATES[key];
   document.getElementById('ob-s2-name').textContent=t.name||'פרטי העסק';
   document.getElementById('ob-bizname').value='';
-  document.getElementById('ob-biztype').value=t.name||'';
+  var lbl=document.getElementById('ob-biztype-lbl');
+  if(lbl)lbl.textContent=t.name||'';
   document.getElementById('ob-s1').classList.remove('active');
   document.getElementById('ob-s2').classList.add('active');
   obSetProgress(2);
