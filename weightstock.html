@@ -1562,6 +1562,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <span>➕ הוספה</span><span id="fab-s-add-ic" style="color:var(--muted);font-size:16px;transition:transform .2s;">▼</span>
   </button>
   <div id="fab-s-add">
+    <button onclick="closeFabMenu();openSettings();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">⚙️ הגדרות</button>
     <button onclick="closeFabMenu();openSetupWizard();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">⚖️ משטח שקילה חדש</button>
     <button onclick="closeFabMenu();openSuppliers();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">🏭 ספקים</button>
   </div>
@@ -4675,11 +4676,16 @@ window.deleteShelf=deleteShelf;
    SETTINGS
 ════════════════════════════════════════════════════ */
 function stToggle(id){
-  var el=document.getElementById(id), ic=document.getElementById(id+'-ic');
+  var el=document.getElementById(id);
+  if(!el)return;
+  var ic=document.getElementById(id+'-ic');
   var open=el.style.display==='block';
   el.style.display=open?'none':'block';
-  if(ic)ic.textContent=open?'›':'˅';
+  if(ic)ic.textContent=open?'›':'▼';
+  if(id==='st-scale-sec'&&!open)setTimeout(function(){try{loadScaleSettingsUI();}catch(e){}},60);
+  if(id==='st-sys-sec'&&!open)setTimeout(function(){try{renderLangGrid();}catch(e){}},60);
 }
+window.stToggle=stToggle;
 function openSettings(){
   var s=getSettings();
   var pb=document.getElementById('settings-plan-badge');
@@ -4931,13 +4937,7 @@ function processSerialWeight(raw){
   showToast('⚖️ משקל נקלט: '+w+' ק"ג');
 }
 
-/* init scale settings + lang grid when settings opens */
-var _origStToggle=window.stToggle;
-window.stToggle=function(id){
-  if(typeof _origStToggle==='function')_origStToggle(id);
-  if(id==='st-scale-sec')setTimeout(loadScaleSettingsUI,50);
-  if(id==='st-sys-sec')setTimeout(renderLangGrid,50);
-};
+/* stToggle is defined earlier with all behaviour merged in */
 
 function toggleDemo(){var s=getSettings();s.demo=!(s.demo!==false);LS.set('settings',s);document.getElementById('demo-tog').classList.toggle('on',s.demo!==false);}
 window.toggleDemo=toggleDemo;
