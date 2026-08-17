@@ -677,7 +677,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 .actlog-when{font-size:11px;color:var(--muted);margin-top:2px;}
 
 /* ── ONBOARDING ── */
-.ob-overlay{position:fixed;inset:0;background:var(--bg);z-index:300;overflow-y:auto;display:none;}
+.ob-overlay{position:fixed;inset:0;background:linear-gradient(170deg,#f0f6ff 0%,#ffffff 60%,#f8faff 100%);z-index:300;overflow-y:auto;display:none;}
 .ob-overlay.show{display:block;}
 .ob-wrap{max-width:600px;margin:0 auto;padding:36px 18px 60px;}
 .ob-logo{font-size:44px;margin-bottom:8px;}
@@ -698,7 +698,8 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   border-color:var(--accent);
   box-shadow:0 4px 16px rgba(0,59,142,.15);
 }
-.tmpl-card .tc-icon{font-size:36px;margin-bottom:8px;}
+.tmpl-card .tc-icon{font-size:36px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;height:60px;}
+.tmpl-card .tc-icon svg{width:56px;height:56px;}
 .tmpl-card .tc-name{font-size:15px;font-weight:700;margin-bottom:4px;}
 .tmpl-card .tc-desc{font-size:11px;color:var(--muted);line-height:1.4;}
 .ob-step{display:none;}.ob-step.active{display:block;}
@@ -1544,7 +1545,6 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   <button onclick="closeFabMenu();openAutoOrders();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📦 הזמנות אוטומטיות</button>
   <button onclick="closeFabMenu();openWhatsAppOrder();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📲 הזמן ב-WhatsApp</button>
   <button onclick="closeFabMenu();openTVMode();" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">📺 מצב תצוגה</button>
-  <button id="fab-actlog-btn" onclick="closeFabMenu();openActLog();" style="width:100%;background:none;border:none;padding:13px 16px;text-align:right;font-size:15px;color:var(--text);cursor:pointer;display:none;align-items:center;gap:10px;">📋 יומן פעולות</button>
 </div>
 <button class="fab" id="main-fab" onclick="toggleFabMenu()">+</button>
 
@@ -1982,13 +1982,6 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
         </button>
       </div>
 
-      <!-- תחום עסקי -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
-        <button onclick="resetToOnboarding()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
-          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">🏷️ שנה תחום עסקי</div>
-          <span style="color:var(--muted);">›</span>
-        </button>
-      </div>
 
       <!-- מנוי -->
       <div class="card" style="margin:0;padding:0;overflow:hidden;">
@@ -2825,6 +2818,16 @@ var CAT_ICONS=['🔩','📦','🔧','🪛','🔨','⚡','🪵','🧴','🏗️',
 /* ════════════════════════════════════════════════════
    TEMPLATES — one per industry
 ════════════════════════════════════════════════════ */
+var TMPL_ICONS={
+  hardware:"<svg viewBox='0 0 56 56' fill='none' xmlns='http://www.w3.org/2000/svg'><rect width='56' height='56' rx='14' fill='#1e293b'/><polygon points='28,11 35.5,15.5 35.5,24.5 28,29 20.5,24.5 20.5,15.5' fill='#94a3b8'/><polygon points='28,14 32.5,16.5 32.5,22.5 28,25 23.5,22.5 23.5,16.5' fill='#475569'/><rect x='25.5' y='29' width='5' height='13' rx='2' fill='#94a3b8'/><line x1='24' y1='33' x2='32' y2='33' stroke='#334155' stroke-width='1.2'/><line x1='24' y1='37' x2='32' y2='37' stroke='#334155' stroke-width='1.2'/><line x1='24' y1='41' x2='32' y2='41' stroke='#334155' stroke-width='1.2'/><polygon points='28,42 32,44.5 32,50 28,52 24,50 24,44.5' fill='#94a3b8'/><line x1='21' y1='16' x2='24.5' y2='19' stroke='white' stroke-width='1.5' stroke-linecap='round' opacity='.25'/></svg>",
+  carpentry:"<svg viewBox='0 0 56 56' fill='none' xmlns='http://www.w3.org/2000/svg'><rect width='56' height='56' rx='14' fill='#78350f'/><rect x='6' y='12' width='44' height='9' rx='2' fill='#fbbf24'/><line x1='14' y1='12' x2='14' y2='21' stroke='#b45309' stroke-width='1'/><line x1='22' y1='12' x2='22' y2='21' stroke='#b45309' stroke-width='1'/><line x1='30' y1='12' x2='30' y2='21' stroke='#b45309' stroke-width='1'/><line x1='38' y1='12' x2='38' y2='21' stroke='#b45309' stroke-width='1'/><rect x='6' y='23' width='44' height='9' rx='2' fill='#d97706'/><line x1='10' y1='23' x2='10' y2='32' stroke='#92400e' stroke-width='1'/><line x1='18' y1='23' x2='18' y2='32' stroke='#92400e' stroke-width='1'/><line x1='26' y1='23' x2='26' y2='32' stroke='#92400e' stroke-width='1'/><line x1='34' y1='23' x2='34' y2='32' stroke='#92400e' stroke-width='1'/><line x1='42' y1='23' x2='42' y2='32' stroke='#92400e' stroke-width='1'/><rect x='6' y='34' width='30' height='8' rx='2' fill='#fbbf24' opacity='.8'/><polygon points='40,31 52,27 52,37 40,41' fill='#d1d5db'/><rect x='37' y='30' width='4' height='12' rx='1.5' fill='#374151'/></svg>",
+  music:"<svg viewBox='0 0 56 56' fill='none' xmlns='http://www.w3.org/2000/svg'><rect width='56' height='56' rx='14' fill='#7f1d1d'/><ellipse cx='28' cy='37' rx='18' ry='10' fill='#dc2626'/><ellipse cx='28' cy='30' rx='18' ry='8' fill='#fca5a5'/><ellipse cx='28' cy='30' rx='13' ry='6' fill='#ef4444'/><ellipse cx='28' cy='30' rx='5' ry='2.5' fill='#fca5a5' opacity='.35'/><rect x='24.5' y='11' width='2.5' height='19' rx='1.2' fill='#b45309'/><rect x='28.5' y='9' width='2.5' height='19' rx='1.2' fill='#b45309'/><circle cx='25.7' cy='10' r='3' fill='#78350f'/><circle cx='29.7' cy='8' r='3' fill='#78350f'/></svg>",
+  construction:"<svg viewBox='0 0 56 56' fill='none' xmlns='http://www.w3.org/2000/svg'><rect width='56' height='56' rx='14' fill='#b45309'/><rect x='6' y='8' width='20' height='8' rx='2' fill='#fde68a'/><rect x='29' y='8' width='21' height='8' rx='2' fill='#fbbf24'/><rect x='6' y='18' width='14' height='8' rx='2' fill='#fbbf24'/><rect x='23' y='18' width='21' height='8' rx='2' fill='#fde68a'/><rect x='47' y='18' width='3' height='8' rx='1' fill='#fbbf24'/><rect x='6' y='28' width='20' height='8' rx='2' fill='#fde68a'/><rect x='29' y='28' width='21' height='8' rx='2' fill='#fbbf24'/><rect x='6' y='38' width='14' height='8' rx='2' fill='#fbbf24'/><rect x='23' y='38' width='21' height='8' rx='2' fill='#fde68a'/></svg>",
+  food:"<svg viewBox='0 0 56 56' fill='none' xmlns='http://www.w3.org/2000/svg'><rect width='56' height='56' rx='14' fill='#065f46'/><path d='M7 14H11L16 38H44L49 18H14' stroke='#34d399' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/><rect x='18' y='21' width='7' height='7' rx='1.5' fill='#10b981'/><rect x='27' y='21' width='7' height='7' rx='1.5' fill='#f59e0b'/><rect x='36' y='21' width='7' height='7' rx='1.5' fill='#ef4444'/><rect x='18' y='30' width='7' height='6' rx='1.5' fill='#60a5fa'/><rect x='27' y='30' width='7' height='6' rx='1.5' fill='#a78bfa'/><circle cx='18' cy='44' r='3.5' fill='#34d399'/><circle cx='38' cy='44' r='3.5' fill='#34d399'/><circle cx='7' cy='12' r='2.5' fill='#34d399' opacity='.5'/></svg>",
+  pharmacy:"<svg viewBox='0 0 56 56' fill='none' xmlns='http://www.w3.org/2000/svg'><rect width='56' height='56' rx='14' fill='#065f46'/><rect x='8' y='8' width='40' height='40' rx='10' fill='white' opacity='.95'/><rect x='22' y='13' width='12' height='30' rx='6' fill='#10b981'/><rect x='13' y='22' width='30' height='12' rx='6' fill='#10b981'/><ellipse cx='41' cy='14' rx='5' ry='3.5' fill='#ef4444' transform='rotate(-45 41 14)'/><ellipse cx='44' cy='17' rx='5' ry='3.5' fill='#fbbf24' opacity='.8' transform='rotate(-45 44 17)'/></svg>",
+  custom:"<svg viewBox='0 0 56 56' fill='none' xmlns='http://www.w3.org/2000/svg'><rect width='56' height='56' rx='14' fill='#4c1d95'/><polygon points='28,6 31.5,18 44,18 34,26 38,38 28,31 18,38 22,26 12,18 24.5,18' fill='#fbbf24'/><circle cx='28' cy='26' r='5' fill='#8b5cf6'/><circle cx='10' cy='10' r='2' fill='#c4b5fd' opacity='.7'/><circle cx='46' cy='9' r='1.5' fill='#fbbf24' opacity='.7'/><circle cx='46' cy='44' r='2' fill='#c4b5fd' opacity='.6'/><circle cx='9' cy='44' r='1.5' fill='#fbbf24' opacity='.6'/></svg>"
+};
+
 var TEMPLATES={
 
   hardware:{
@@ -3127,7 +3130,7 @@ function showOnboarding(){
   grid.innerHTML=Object.keys(TEMPLATES).map(function(k){
     var t=TEMPLATES[k];
     return '<div class="tmpl-card" onclick="obSelect(\''+k+'\')">'+
-      '<div class="tc-icon">'+t.icon+'</div>'+
+      '<div class="tc-icon">'+(TMPL_ICONS[k]||t.icon)+'</div>'+
       '<div class="tc-name">'+t.name+'</div>'+
       '<div class="tc-desc">'+t.desc+'</div></div>';
   }).join('');
@@ -3292,8 +3295,6 @@ function applyUserPerms(){
   if(empBtn)empBtn.style.display=mgr?'':'none';
   var logBtn=document.getElementById('st-actlog-btn');
   if(logBtn)logBtn.style.display=mgr?'':'none';
-  var fabActlog=document.getElementById('fab-actlog-btn');
-  if(fabActlog)fabActlog.style.display=mgr?'flex':'none';
   /* Manager-only sidebar employees button */
   var sideEmp=document.getElementById('side-screen-employees');
   if(sideEmp)sideEmp.style.display=mgr?'flex':'';
