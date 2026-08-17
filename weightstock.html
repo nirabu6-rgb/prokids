@@ -105,7 +105,7 @@ body::before{
   content:'';
   position:fixed;
   inset:0;
-  background:url('https://i.imgur.com/Jt7vL9E.jpeg') center/cover no-repeat;
+  background:url('https://i.imgur.com/Jt7vL9E.jpg') center/cover no-repeat;
   z-index:-2;
 }
 body::after{
@@ -1205,11 +1205,23 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <div class="ob-step" id="ob-s2">
       <div class="ob-logo" id="ob-s2-icon">🏪</div>
       <div class="ob-title" id="ob-s2-name">הגדרת עסק</div>
-      <div class="ob-sub">שלב 2 מתוך 3 — פרטי העסק</div>
+      <div class="ob-sub">שלב 2 מתוך 3 — פרטי יצירת קשר ומיקום</div>
       <div class="ob-biz">
-        <label>שם העסק</label>
+        <label>שם העסק *</label>
         <input id="ob-bizname" placeholder="חנות כהן בע&quot;מ">
-        <label style="margin-top:14px;">סוג מטבע</label>
+        <label style="margin-top:12px;">סוג עסק</label>
+        <input id="ob-biztype" placeholder="חנות פרזול" readonly style="background:var(--bg);color:var(--muted);cursor:default;">
+        <label style="margin-top:12px;">טלפון</label>
+        <input id="ob-bizphone" type="tel" placeholder="03-0000000" dir="ltr">
+        <label style="margin-top:12px;">מייל</label>
+        <input id="ob-bizemail" type="email" placeholder="info@mybusiness.co.il" dir="ltr">
+        <label style="margin-top:12px;">רחוב</label>
+        <input id="ob-bizstreet" placeholder="רחוב הרצל 1">
+        <label style="margin-top:12px;">עיר</label>
+        <input id="ob-bizcity" placeholder="תל אביב">
+        <label style="margin-top:12px;">אתר אינטרנט</label>
+        <input id="ob-bizweb" type="url" placeholder="https://www.mybusiness.co.il" dir="ltr">
+        <label style="margin-top:12px;">סוג מטבע</label>
         <select id="ob-cur">
           <option value="₪">₪ שקל</option>
           <option value="$">$ דולר</option>
@@ -3706,6 +3718,7 @@ function obSelect(key){
   document.getElementById('ob-s2-icon').textContent=t.icon;
   document.getElementById('ob-s2-name').textContent=t.name;
   document.getElementById('ob-bizname').value='';
+  document.getElementById('ob-biztype').value=t.name||'';
   document.getElementById('ob-s1').classList.remove('active');
   document.getElementById('ob-s2').classList.add('active');
 }
@@ -3741,7 +3754,12 @@ function obFinish(){
   var biz=document.getElementById('ob-bizname').value.trim();
   var cur=document.getElementById('ob-cur').value;
   var td=TEMPLATES[_obTmpl];
-  LS.set('settings',{bizName:biz,bizType:td.bizType||'',currency:cur,defaultAlert:20,demo:true,bizNotes:''});
+  var bizPhone=document.getElementById('ob-bizphone').value.trim();
+  var bizEmail=document.getElementById('ob-bizemail').value.trim();
+  var bizStreet=document.getElementById('ob-bizstreet').value.trim();
+  var bizCity=document.getElementById('ob-bizcity').value.trim();
+  var bizWeb=document.getElementById('ob-bizweb').value.trim();
+  LS.set('settings',{bizName:biz,bizType:td.bizType||td.name||'',currency:cur,defaultAlert:20,demo:true,bizNotes:'',bizPhone:bizPhone,bizEmail:bizEmail,bizStreet:bizStreet,bizCity:bizCity,bizWeb:bizWeb});
   LS.set('account',{fullname:fullname,phone:phone});
   LS.set('plan',{key:_selectedPlan,name:PLANS[_selectedPlan].name,since:Date.now(),trialEnd:Date.now()+14*86400000});
   /* save manager credentials */
