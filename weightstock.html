@@ -3858,11 +3858,15 @@ function renderDash(){
     var r=latestR(s.id); if(!r)return;
     var it=its.find(function(i){return i.id===s.itemId;}); if(!it)return;
     var qty=r.qty||0;
-    totalCost+=qty*(parseFloat(it.price)||0);
-    totalSell+=qty*(parseFloat(it.sellPrice)||parseFloat(it.price)||0);
+    var costP=parseFloat(it.price)||0;
+    var sellP=parseFloat(it.sellPrice)||0;
+    totalCost+=qty*costP;
+    if(sellP>0)totalSell+=qty*sellP;
+    else if(costP>0)totalSell+=qty*costP*1.3; // 30% ברירת מחדל אם אין מחיר מכירה
   });
   var cur=getCurrency();
   var profit=totalSell-totalCost;
+  var hasSellPrices=its.some(function(i){return parseFloat(i.sellPrice)>0;});
   document.getElementById('db-summary').innerHTML=
     '<div class="sum-tile"><div class="n">'+shs.length+'</div><div class="l">משטחים</div></div>'+
     '<div class="sum-tile"><div class="n" style="color:var(--warn);">'+warn+'</div><div class="l">אזהרות</div></div>'+
@@ -3870,17 +3874,18 @@ function renderDash(){
     '<div class="sum-tile"><div class="n" style="color:var(--ok);">'+online+'</div><div class="l">מחוברים</div></div>';
   var vb=document.getElementById('db-value-bar');
   if(vb){
-    var hasPrices=totalCost>0||totalSell>0;
+    var hasPrices=totalCost>0;
     vb.innerHTML=hasPrices?
       '<div style="display:grid;grid-template-columns:1fr 1fr'+(profit>0?' 1fr':'')+'  ;gap:8px;margin-bottom:4px;">'+
-        (totalCost>0?'<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;">'+
+        '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;">'+
           '<div style="font-size:10px;color:var(--muted);margin-bottom:3px;">💸 עלות מלאי</div>'+
           '<div style="font-size:16px;font-weight:800;color:var(--text);">'+cur+totalCost.toFixed(2)+'</div>'+
-        '</div>':'')+
-        (totalSell>0?'<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;">'+
-          '<div style="font-size:10px;color:var(--muted);margin-bottom:3px;">🏷️ ערך מכירה</div>'+
+        '</div>'+
+        '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;">'+
+          '<div style="font-size:10px;color:var(--muted);margin-bottom:3px;">🏷️ ערך מכירה'+(hasSellPrices?'':'*')+'</div>'+
           '<div style="font-size:16px;font-weight:800;color:var(--ok);">'+cur+totalSell.toFixed(2)+'</div>'+
-        '</div>':'')+
+          (hasSellPrices?'':'<div style="font-size:9px;color:var(--muted);">*הערכה +30%</div>')+
+        '</div>'+
         (profit>0?'<div style="background:rgba(0,122,77,.07);border:1px solid rgba(0,122,77,.2);border-radius:12px;padding:10px 12px;">'+
           '<div style="font-size:10px;color:var(--muted);margin-bottom:3px;">📈 רווח גולמי</div>'+
           '<div style="font-size:16px;font-weight:800;color:var(--ok);">'+cur+profit.toFixed(2)+'</div>'+
