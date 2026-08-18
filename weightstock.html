@@ -4713,6 +4713,7 @@ function renderSuppliersList(){
 }
 
 function openAddSupplier(){
+  if(!checkLimit('supplier'))return;
   ['se-name','se-tel','se-wa','se-email','se-ordermail','se-contact','se-notes'].forEach(function(id){document.getElementById(id).value='';});
   var sp=document.getElementById('se-payment');if(sp)sp.value='';
   document.getElementById('se-id').value='';
@@ -5627,6 +5628,7 @@ function wizBack(step){gS(step,step-1);}
 window.wizBack=wizBack;
 function gS(from,to){document.getElementById('wiz-s'+from).classList.remove('active');document.getElementById('wiz-s'+to).classList.add('active');document.getElementById('wiz-prog').style.width=(to*25)+'%';}
 function wizFinish(){
+  if(!checkLimit('shelf'))return;
   switchToUser();
   var sh={id:'s'+Date.now(),name:wD.name,zone:wD.zone||'',profile:wD.profile,itemId:wD.itemId,tare:wD.tare,alertType:wD.aType,alertValue:wD.aVal,notes:''};
   var shs=getShelves(); shs.push(sh); LS.set('shelves',shs);
