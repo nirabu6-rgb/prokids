@@ -190,10 +190,15 @@ button{cursor:pointer;font-family:inherit;}
       <div class="title">WeightStock Control</div>
       <div class="sub">כניסה לממשק בעלים</div>
     </div>
-    <div class="fl"><label>שם משתמש</label><input id="adm-user" type="text" placeholder="admin" autocomplete="username"></div>
-    <div class="fl"><label>סיסמה</label><input id="adm-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAdminLogin()"></div>
-    <div class="err" id="login-err">שם משתמש או סיסמה שגויים</div>
-    <button class="btn-login" onclick="doAdminLogin()">כניסה →</button>
+    <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px;">הכנס קוד כניסה 4 ספרות</div>
+    <div id="adm-pin-row" style="display:flex;justify-content:center;gap:10px;margin-bottom:14px;">
+      <input id="ap0" type="tel" inputmode="numeric" maxlength="1" style="width:52px;height:60px;border-radius:12px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-size:26px;font-weight:800;text-align:center;outline:none;" dir="ltr">
+      <input id="ap1" type="tel" inputmode="numeric" maxlength="1" style="width:52px;height:60px;border-radius:12px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-size:26px;font-weight:800;text-align:center;outline:none;" dir="ltr">
+      <input id="ap2" type="tel" inputmode="numeric" maxlength="1" style="width:52px;height:60px;border-radius:12px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-size:26px;font-weight:800;text-align:center;outline:none;" dir="ltr">
+      <input id="ap3" type="tel" inputmode="numeric" maxlength="1" style="width:52px;height:60px;border-radius:12px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-size:26px;font-weight:800;text-align:center;outline:none;" dir="ltr">
+    </div>
+    <div class="err" id="login-err">קוד שגוי — נסה שוב</div>
+    <button class="btn-login" onclick="doAdminLogin()" style="margin-top:4px;">כניסה →</button>
   </div>
 </div>
 
@@ -298,7 +303,7 @@ button{cursor:pointer;font-family:inherit;}
 </div>
 
 <script>
-var ADMIN_USER='nirabu', ADMIN_PASS='WeightStock2025!';
+var ADMIN_PIN='2025';
 var ADMIN_SESSION_KEY='ws3_admin_session';
 var LS_PFX='ws3_';
 
@@ -308,17 +313,38 @@ function lsDel(k){localStorage.removeItem(LS_PFX+k);}
 
 /* ── AUTH ── */
 function doAdminLogin(){
-  var u=document.getElementById('adm-user').value.trim();
-  var p=document.getElementById('adm-pw').value;
+  var pin=[0,1,2,3].map(function(i){return (document.getElementById('ap'+i)||{value:''}).value;}).join('');
   var err=document.getElementById('login-err');
   err.style.display='none';
-  if(u===ADMIN_USER&&p===ADMIN_PASS){
+  if(pin===ADMIN_PIN){
     sessionStorage.setItem(ADMIN_SESSION_KEY,'1');
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
     loadData(); startClock();
-  } else { err.style.display='block'; document.getElementById('adm-pw').value=''; }
+  } else {
+    err.style.display='block';
+    [0,1,2,3].forEach(function(i){document.getElementById('ap'+i).value='';});
+    document.getElementById('ap0').focus();
+  }
 }
+// auto-advance PIN boxes
+document.addEventListener('DOMContentLoaded',function(){
+  [0,1,2,3].forEach(function(i){
+    var el=document.getElementById('ap'+i);
+    if(!el)return;
+    el.addEventListener('input',function(){
+      el.value=el.value.replace(/\D/g,'').slice(-1);
+      if(el.value&&i<3)document.getElementById('ap'+(i+1)).focus();
+      if(i===3&&el.value)doAdminLogin();
+    });
+    el.addEventListener('keydown',function(e){
+      if(e.key==='Backspace'&&!el.value&&i>0)document.getElementById('ap'+(i-1)).focus();
+    });
+  });
+  // focus first box
+  var first=document.getElementById('ap0');
+  if(first)setTimeout(function(){first.focus();},100);
+});
 function doLogout(){ sessionStorage.removeItem(ADMIN_SESSION_KEY); location.reload(); }
 function startClock(){
   (function tick(){document.getElementById('adm-clock').textContent=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});})();
