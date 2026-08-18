@@ -1372,13 +1372,12 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <span style="color:var(--muted);"> · כוללת התקנה, חיבור לציוד והדרכה</span>
         </div>
       </div>
-      <!-- מתג חודשי / שנתי -->
-      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;">
-        <span id="ob-billing-m-lbl" style="font-size:13px;font-weight:700;color:var(--text);">חודשי</span>
-        <div onclick="obToggleBilling()" id="ob-billing-toggle" style="width:46px;height:26px;border-radius:13px;background:var(--accent);position:relative;cursor:pointer;transition:background .2s;">
-          <div id="ob-billing-knob" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;transform:translateX(0);"></div>
+      <!-- כפתורי חודשי / שנתי -->
+      <div style="display:flex;justify-content:center;margin-bottom:14px;">
+        <div style="display:inline-flex;border-radius:12px;overflow:hidden;border:2px solid var(--accent);background:var(--card2);">
+          <button id="ob-btn-monthly" onclick="obSetBilling(false)" style="padding:9px 22px;font-size:14px;font-weight:700;border:none;cursor:pointer;background:var(--accent);color:#fff;transition:background .18s,color .18s;">חודשי</button>
+          <button id="ob-btn-annual" onclick="obSetBilling(true)" style="padding:9px 22px;font-size:14px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--accent);transition:background .18s,color .18s;display:flex;align-items:center;gap:6px;">שנתי <span style="font-size:11px;background:rgba(34,197,94,.15);color:var(--ok);border-radius:20px;padding:1px 7px;font-weight:700;">חסכון 15%</span></button>
         </div>
-        <span id="ob-billing-y-lbl" style="font-size:13px;color:var(--muted);">שנתי <span style="font-size:11px;background:rgba(34,197,94,.15);color:var(--ok);border-radius:20px;padding:1px 7px;font-weight:700;">חסכון 15%</span></span>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
         <div class="plan-card" id="plan-basic" onclick="selectPlan('basic')">
@@ -3855,21 +3854,21 @@ var PLANS={
 };
 var SETUP_FEE=490;
 var _obBillingAnnual=false;
-function obToggleBilling(){
-  _obBillingAnnual=!_obBillingAnnual;
-  var knob=document.getElementById('ob-billing-knob');
-  var ml=document.getElementById('ob-billing-m-lbl');
-  var yl=document.getElementById('ob-billing-y-lbl');
-  if(knob)knob.style.transform=_obBillingAnnual?'translateX(-20px)':'translateX(0)';
-  if(ml)ml.style.color=_obBillingAnnual?'var(--muted)':'var(--text)';
-  if(yl)yl.style.color=_obBillingAnnual?'var(--text)':'var(--muted)';
+function obSetBilling(annual){
+  _obBillingAnnual=annual;
+  var bm=document.getElementById('ob-btn-monthly');
+  var by=document.getElementById('ob-btn-annual');
+  if(bm){bm.style.background=annual?'transparent':'var(--accent)';bm.style.color=annual?'var(--accent)':'#fff';}
+  if(by){by.style.background=annual?'var(--accent)':'transparent';by.style.color=annual?'#fff':'var(--accent)';}
   ['basic','pro','enterprise'].forEach(function(k){
     var el=document.getElementById('price-'+k);
     if(!el)return;
     var p=PLANS[k];
-    el.textContent=_obBillingAnnual?'₪'+p.priceAnnual.toLocaleString()+' / חודש (שנתי)':'₪'+p.price.toLocaleString()+' / חודש';
+    el.textContent=annual?'₪'+p.priceAnnual.toLocaleString()+' / חודש (שנתי)':'₪'+p.price.toLocaleString()+' / חודש';
   });
 }
+window.obSetBilling=obSetBilling;
+function obToggleBilling(){obSetBilling(!_obBillingAnnual);}
 window.obToggleBilling=obToggleBilling;
 var _selectedPlan='pro';
 

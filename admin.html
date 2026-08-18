@@ -339,31 +339,32 @@ function initAdminPin(){
   [0,1,2,3].forEach(function(i){
     var el=document.getElementById('ap'+i);
     if(!el)return;
-    el.addEventListener('focus',function(){el.select();});
+    el.addEventListener('focus',function(){setTimeout(function(){el.select();},0);});
     el.addEventListener('keydown',function(e){
       if(e.key==='Backspace'){
-        if(el.value){el.value='';}
-        else if(i>0){var prev=document.getElementById('ap'+(i-1));prev.value='';prev.focus();}
         e.preventDefault();
+        el.value='';
+        el.style.borderColor='var(--border)';
+        if(i>0){var prev=document.getElementById('ap'+(i-1));prev.focus();}
       } else if(e.key==='Enter'){
+        e.preventDefault();
         doAdminLogin();
       } else if(/^\d$/.test(e.key)){
+        e.preventDefault();
         el.value=e.key;
         el.style.borderColor='var(--accent)';
         if(i<3){document.getElementById('ap'+(i+1)).focus();}
         else{setTimeout(doAdminLogin,80);}
+      } else if(!/^(Tab|Shift|Control|Alt|Meta|Arrow)/.test(e.key)){
         e.preventDefault();
       }
     });
-    el.addEventListener('input',function(){
-      var v=el.value.replace(/\D/g,'').slice(-1);
-      el.value=v;
-      if(v){el.style.borderColor='var(--accent)';if(i<3)document.getElementById('ap'+(i+1)).focus();else setTimeout(doAdminLogin,80);}
-    });
   });
-  setTimeout(function(){var f=document.getElementById('ap0');if(f)f.focus();},150);
+  function focusFirst(){var f=document.getElementById('ap0');if(f){f.focus();}}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){setTimeout(focusFirst,100);});}
+  else{setTimeout(focusFirst,100);}
 }
-document.addEventListener('DOMContentLoaded',initAdminPin);
+initAdminPin();
 function doLogout(){ sessionStorage.removeItem(ADMIN_SESSION_KEY); location.reload(); }
 function startClock(){
   (function tick(){document.getElementById('adm-clock').textContent=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});})();
