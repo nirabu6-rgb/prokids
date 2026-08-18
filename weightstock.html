@@ -1373,18 +1373,26 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <span style="color:var(--muted);"> · כוללת התקנה, חיבור לציוד והדרכה</span>
         </div>
       </div>
+      <!-- מתג חודשי / שנתי -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;">
+        <span id="ob-billing-m-lbl" style="font-size:13px;font-weight:700;color:var(--text);">חודשי</span>
+        <div onclick="obToggleBilling()" id="ob-billing-toggle" style="width:46px;height:26px;border-radius:13px;background:var(--accent);position:relative;cursor:pointer;transition:background .2s;">
+          <div id="ob-billing-knob" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;transform:translateX(0);"></div>
+        </div>
+        <span id="ob-billing-y-lbl" style="font-size:13px;color:var(--muted);">שנתי <span style="font-size:11px;background:rgba(34,197,94,.15);color:var(--ok);border-radius:20px;padding:1px 7px;font-weight:700;">חסכון 15%</span></span>
+      </div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
         <div class="plan-card" id="plan-basic" onclick="selectPlan('basic')">
-          <div class="plan-top"><span class="plan-name">מצומצם</span><span class="plan-price">₪349 / חודש</span></div>
+          <div class="plan-top"><span class="plan-name">מצומצם</span><span class="plan-price" id="price-basic">₪499 / חודש</span></div>
           <ul class="plan-list"><li>עד 5 משטחי שקילה</li><li>עד 5 פריטים</li><li>עד 3 ספקים</li><li>דוח בסיסי</li></ul>
         </div>
         <div class="plan-card selected" id="plan-pro" onclick="selectPlan('pro')">
           <div class="plan-badge">הכי פופולרי</div>
-          <div class="plan-top"><span class="plan-name">גדול</span><span class="plan-price">₪499 / חודש</span></div>
+          <div class="plan-top"><span class="plan-name">גדול</span><span class="plan-price" id="price-pro">₪799 / חודש</span></div>
           <ul class="plan-list"><li>עד 10 משטחי שקילה</li><li>עד 10 פריטים</li><li>עד 7 ספקים</li><li>כל הדוחות + ייצוא</li></ul>
         </div>
         <div class="plan-card" id="plan-enterprise" onclick="selectPlan('enterprise')">
-          <div class="plan-top"><span class="plan-name">ענק</span><span class="plan-price">₪999 / חודש</span></div>
+          <div class="plan-top"><span class="plan-name">ענק</span><span class="plan-price" id="price-enterprise">₪1,299 / חודש</span></div>
           <ul class="plan-list"><li>משטחים ופריטים ללא הגבלה</li><li>ספקים ללא הגבלה</li><li>כל הדוחות + ייצוא</li><li>תמיכה עדיפות</li></ul>
         </div>
       </div>
@@ -1446,9 +1454,9 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <thead>
             <tr style="border-bottom:2px solid var(--border);">
               <th style="text-align:right;padding:8px 6px;color:var(--muted);">תכונה</th>
-              <th style="padding:8px 6px;text-align:center;color:var(--muted);">מצומצם<br><span style="font-size:11px;color:var(--accent);">₪349/חודש</span></th>
-              <th style="padding:8px 6px;text-align:center;color:var(--accent);font-weight:800;">גדול<br><span style="font-size:11px;">₪499/חודש</span></th>
-              <th style="padding:8px 6px;text-align:center;color:var(--muted);">ענק<br><span style="font-size:11px;color:var(--accent);">₪999/חודש</span></th>
+              <th style="padding:8px 6px;text-align:center;color:var(--muted);">מצומצם<br><span style="font-size:11px;color:var(--accent);">₪499/חודש</span></th>
+              <th style="padding:8px 6px;text-align:center;color:var(--accent);font-weight:800;">גדול<br><span style="font-size:11px;">₪799/חודש</span></th>
+              <th style="padding:8px 6px;text-align:center;color:var(--muted);">ענק<br><span style="font-size:11px;color:var(--accent);">₪1,299/חודש</span></th>
             </tr>
           </thead>
           <tbody>
@@ -2365,9 +2373,9 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <!-- מנוי -->
     <label style="margin-top:14px;">מסלול מנוי</label>
     <select id="calc-plan" onchange="calcUpdate()">
-      <option value="349">מצומצם — ₪349/חודש</option>
-      <option value="499" selected>גדול — ₪499/חודש</option>
-      <option value="999">ענק — ₪999/חודש</option>
+      <option value="499">מצומצם — ₪499/חודש</option>
+      <option value="799" selected>גדול — ₪799/חודש</option>
+      <option value="1299">ענק — ₪1,299/חודש</option>
     </select>
 
     <!-- תוצאות -->
@@ -3815,11 +3823,28 @@ window.setupManagerUser=setupManagerUser;
 
 /* ── PLANS ── */
 var PLANS={
-  basic:{name:'מצומצם',price:349,shelves:5,items:5,suppliers:3,reports:'basic'},
-  pro:{name:'גדול',price:499,shelves:10,items:10,suppliers:7,reports:'full'},
-  enterprise:{name:'ענק',price:999,shelves:9999,items:9999,suppliers:9999,reports:'full'}
+  basic:{name:'מצומצם',price:499,priceAnnual:424,shelves:5,items:5,suppliers:3,reports:'basic'},
+  pro:{name:'גדול',price:799,priceAnnual:679,shelves:10,items:10,suppliers:7,reports:'full'},
+  enterprise:{name:'ענק',price:1299,priceAnnual:1104,shelves:9999,items:9999,suppliers:9999,reports:'full'}
 };
 var SETUP_FEE=490;
+var _obBillingAnnual=false;
+function obToggleBilling(){
+  _obBillingAnnual=!_obBillingAnnual;
+  var knob=document.getElementById('ob-billing-knob');
+  var ml=document.getElementById('ob-billing-m-lbl');
+  var yl=document.getElementById('ob-billing-y-lbl');
+  if(knob)knob.style.transform=_obBillingAnnual?'translateX(-20px)':'translateX(0)';
+  if(ml)ml.style.color=_obBillingAnnual?'var(--muted)':'var(--text)';
+  if(yl)yl.style.color=_obBillingAnnual?'var(--text)':'var(--muted)';
+  ['basic','pro','enterprise'].forEach(function(k){
+    var el=document.getElementById('price-'+k);
+    if(!el)return;
+    var p=PLANS[k];
+    el.textContent=_obBillingAnnual?'₪'+p.priceAnnual.toLocaleString()+' / חודש (שנתי)':'₪'+p.price.toLocaleString()+' / חודש';
+  });
+}
+window.obToggleBilling=obToggleBilling;
 var _selectedPlan='pro';
 
 function selectPlan(key){
