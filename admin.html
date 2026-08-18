@@ -196,15 +196,11 @@ button{cursor:pointer;font-family:inherit;}
       <div class="sub">כניסה לממשק בעלים</div>
     </div>
     <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px;">הכנס קוד כניסה 4 ספרות</div>
-    <!-- תיבות תצוגה בלבד -->
-    <div dir="ltr" style="display:flex;justify-content:center;gap:12px;margin-bottom:14px;position:relative;" onclick="document.getElementById('adm-hidden').focus()">
+    <div dir="ltr" style="display:flex;justify-content:center;gap:12px;margin-bottom:14px;">
       <div class="ap-box" id="apb0"></div>
       <div class="ap-box" id="apb1"></div>
       <div class="ap-box" id="apb2"></div>
       <div class="ap-box" id="apb3"></div>
-      <!-- input נסתר שמקבל את כל הקלט -->
-      <input id="adm-hidden" type="tel" inputmode="numeric" maxlength="4" autocomplete="off"
-        style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;" aria-label="קוד כניסה">
     </div>
     <div class="err" id="login-err">קוד שגוי — נסה שוב</div>
     <button class="btn-login" onclick="doAdminLogin()" style="margin-top:4px;">כניסה →</button>
@@ -332,60 +328,34 @@ function doAdminLogin(){
     loadData(); startClock();
   } else {
     err.style.display='block';
-    _admError();
+    _admPin='';_admRender();
+    for(var i=0;i<4;i++){var b=document.getElementById('apb'+i);if(b){b.classList.add('error');}}
+    setTimeout(function(){for(var i=0;i<4;i++){var b=document.getElementById('apb'+i);if(b)b.classList.remove('error');}},400);
   }
 }
 var _admPin='';
 function _admRender(){
-  [0,1,2,3].forEach(function(i){
+  for(var i=0;i<4;i++){
     var b=document.getElementById('apb'+i);
     if(!b)return;
-    b.textContent=_admPin[i]?'•':'';
-    b.className='ap-box'+(i<_admPin.length?' filled':'')+(i===_admPin.length?' active':'');
-  });
-}
-function _admError(){
-  _admPin='';_admRender();
-  [0,1,2,3].forEach(function(i){var b=document.getElementById('apb'+i);if(b)b.classList.add('error');});
-  setTimeout(function(){[0,1,2,3].forEach(function(i){var b=document.getElementById('apb'+i);if(b)b.classList.remove('error');});},400);
-  document.getElementById('adm-hidden').focus();
-}
-function initAdminPin(){
-  function onKey(e){
-    var ls=document.getElementById('login-screen');
-    if(!ls||ls.style.display==='none')return;
-    if(e.key==='Backspace'){
-      e.preventDefault();
-      if(_admPin.length>0){_admPin=_admPin.slice(0,-1);_admRender();}
-    } else if(e.key==='Enter'){
-      e.preventDefault();
-      doAdminLogin();
-    } else if(/^\d$/.test(e.key)&&_admPin.length<4){
-      e.preventDefault();
-      _admPin+=e.key;_admRender();
-      if(_admPin.length===4)setTimeout(doAdminLogin,80);
-    }
+    b.textContent=_admPin.length>i?'•':'';
+    b.className='ap-box'+(_admPin.length>i?' filled':'')+(_admPin.length===i?' active':'');
   }
-  /* נייד: input על תיבה נסתרת */
-  var inp=document.getElementById('adm-hidden');
-  if(inp){
-    inp.addEventListener('keydown',onKey);
-    inp.addEventListener('input',function(){
-      var v=inp.value.replace(/\D/g,'');inp.value='';
-      for(var j=0;j<v.length&&_admPin.length<4;j++){_admPin+=v[j];}
-      _admRender();
-      if(_admPin.length===4)setTimeout(doAdminLogin,80);
-    });
-  }
-  /* מחשב: מאזין גלובלי — תמיד עובד */
-  document.addEventListener('keydown',onKey);
-  /* פוקוס ראשוני לנייד */
-  function focusHidden(){if(inp)inp.focus();}
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){setTimeout(focusHidden,100);});}
-  else{setTimeout(focusHidden,100);}
-  _admRender();
 }
-initAdminPin();
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('app').style.display==='block')return;
+  if(e.key==='Backspace'){
+    e.preventDefault();
+    if(_admPin.length>0){_admPin=_admPin.slice(0,-1);_admRender();}
+  } else if(e.key==='Enter'){
+    e.preventDefault();
+    if(_admPin.length===4)doAdminLogin();
+  } else if(/^\d$/.test(e.key)&&_admPin.length<4){
+    e.preventDefault();
+    _admPin+=e.key;_admRender();
+    if(_admPin.length===4)setTimeout(doAdminLogin,80);
+  }
+});
 function doLogout(){ sessionStorage.removeItem(ADMIN_SESSION_KEY); location.reload(); }
 function startClock(){
   (function tick(){document.getElementById('adm-clock').textContent=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});})();
