@@ -6,11 +6,12 @@
 <title>WeightStock — Owner Control Panel</title>
 <style>
 :root{
-  --bg:#0b1120;--card:#111827;--card2:#1a2236;--card3:#1e2a42;
-  --border:#243050;--text:#e8eeff;--muted:#6b7db3;
-  --accent:#2563eb;--accent2:#1d4ed8;--green:#16a34a;
-  --ok:#22c55e;--warn:#f59e0b;--crit:#ef4444;--purple:#8b5cf6;
-  --grad:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%);
+  --bg:#001a3a;--card:#00244f;--card2:#002d60;--card3:#003470;
+  --border:#004080;--text:#e8f0f8;--muted:#6a9cc0;
+  --accent:#00A859;--accent2:#008f4b;--green:#00A859;
+  --ok:#00A859;--warn:#f59e0b;--crit:#ef4444;--purple:#3b82f6;
+  --grad:linear-gradient(135deg,#003B71 0%,#005aaa 100%);
+  --navy:#003B71;--leumi-green:#00A859;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;min-height:100vh;direction:rtl;}
@@ -19,7 +20,7 @@ button{cursor:pointer;font-family:inherit;}
 
 /* ─── LOGIN ─── */
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
-  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(37,99,235,.18) 0%,transparent 70%),var(--bg);}
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,168,89,.12) 0%,transparent 70%),var(--bg);}
 .login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 32px;width:100%;max-width:380px;box-shadow:0 32px 80px rgba(0,0,0,.6);}
 .login-logo{text-align:center;margin-bottom:20px;}
 .login-logo .icon{font-size:44px;}
@@ -34,7 +35,7 @@ button{cursor:pointer;font-family:inherit;}
 
 /* ─── TOP NAV ─── */
 #app{display:none;min-height:100vh;}
-.topnav{background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.topnav{background:var(--navy);border-bottom:3px solid var(--leumi-green);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
 .tn-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px;}
 .tn-badge{background:var(--grad);color:#fff;font-size:9px;font-weight:700;border-radius:5px;padding:2px 6px;letter-spacing:.5px;}
 .tn-right{display:flex;align-items:center;gap:8px;}
@@ -43,10 +44,10 @@ button{cursor:pointer;font-family:inherit;}
 
 /* ─── LAYOUT ─── */
 .layout{display:flex;min-height:calc(100vh - 56px);}
-.sidebar{width:220px;flex-shrink:0;background:var(--card);border-left:1px solid var(--border);padding:16px 0;}
+.sidebar{width:220px;flex-shrink:0;background:#001e45;border-left:1px solid var(--border);padding:16px 0;}
 .sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:14px;color:var(--muted);cursor:pointer;border-right:3px solid transparent;transition:all .15s;}
 .sidebar-item:hover{color:var(--text);background:var(--card2);}
-.sidebar-item.active{color:var(--accent);background:rgba(37,99,235,.08);border-right-color:var(--accent);font-weight:700;}
+.sidebar-item.active{color:var(--accent);background:rgba(0,168,89,.08);border-right-color:var(--accent);font-weight:700;}
 .main{flex:1;padding:20px;overflow-x:hidden;max-width:calc(100vw - 220px);}
 
 /* ─── STATS ─── */
@@ -77,7 +78,7 @@ button{cursor:pointer;font-family:inherit;}
 .biz-pills{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
 .pill{font-size:10px;border-radius:6px;padding:2px 7px;font-weight:600;}
 .pill.g{background:rgba(34,197,94,.12);color:var(--ok);}
-.pill.b{background:rgba(37,99,235,.12);color:#60a5fa;}
+.pill.b{background:rgba(0,168,89,.12);color:#4dc8a0;}
 .pill.o{background:rgba(245,158,11,.12);color:var(--warn);}
 .pill.p{background:rgba(139,92,246,.12);color:#a78bfa;}
 .pill.r{background:rgba(239,68,68,.12);color:var(--crit);}
@@ -107,7 +108,7 @@ button{cursor:pointer;font-family:inherit;}
 .btn-action{border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px;}
 .btn-action.red{background:rgba(239,68,68,.12);color:var(--crit);border:1px solid rgba(239,68,68,.25);}
 .btn-action.orange{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.25);}
-.btn-action.blue{background:rgba(37,99,235,.12);color:#60a5fa;border:1px solid rgba(37,99,235,.25);}
+.btn-action.blue{background:rgba(0,168,89,.12);color:#4dc8a0;border:1px solid rgba(0,168,89,.25);}
 .btn-action.green{background:rgba(34,197,94,.12);color:var(--ok);border:1px solid rgba(34,197,94,.25);}
 
 /* Employees table */
@@ -115,24 +116,24 @@ button{cursor:pointer;font-family:inherit;}
 .etable th{text-align:right;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;padding:6px 10px;border-bottom:1px solid var(--border);}
 .etable td{font-size:13px;padding:10px;border-bottom:1px solid rgba(36,48,80,.5);vertical-align:middle;}
 .etable tr:last-child td{border-bottom:none;}
-.etable tr:hover td{background:rgba(37,99,235,.04);}
+.etable tr:hover td{background:rgba(0,168,89,.04);}
 
 /* Activity log */
 .alog{max-height:320px;overflow-y:auto;}
 .arow{display:grid;grid-template-columns:90px 90px 1fr 60px;gap:8px;padding:8px 0;border-bottom:1px solid rgba(36,48,80,.4);font-size:12px;align-items:center;}
 .arow:last-child{border-bottom:none;}
 .atime{color:var(--muted);}
-.awho{color:#60a5fa;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.awho{color:#4dc8a0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .awhat{color:var(--text);}
 .atype{font-size:10px;border-radius:5px;padding:2px 6px;text-align:center;font-weight:700;}
 .atype.login{background:rgba(34,197,94,.12);color:var(--ok);}
-.atype.item{background:rgba(37,99,235,.12);color:#60a5fa;}
+.atype.item{background:rgba(0,168,89,.12);color:#4dc8a0;}
 .atype.qty{background:rgba(245,158,11,.12);color:var(--warn);}
 .atype.other{background:rgba(139,92,246,.12);color:#a78bfa;}
 
 /* Notes */
 .note-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
-.note-item{background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.15);border-radius:9px;padding:10px 12px;}
+.note-item{background:rgba(0,168,89,.06);border:1px solid rgba(0,168,89,.15);border-radius:9px;padding:10px 12px;}
 .note-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
 .note-time{font-size:11px;color:var(--muted);}
 .note-del{background:none;border:none;color:var(--crit);font-size:13px;padding:0;}
@@ -216,7 +217,7 @@ button{cursor:pointer;font-family:inherit;}
       <div style="height:1px;background:var(--border);margin:12px 0;"></div>
       <div style="padding:10px 16px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;">סטטיסטיקות</div>
       <div class="stats-row" style="display:flex;flex-direction:column;gap:8px;padding:0 10px;">
-        <div class="stat-card" style="padding:10px 12px;"><div class="stat-label">עסקים</div><div class="stat-val" id="s-biz" style="font-size:20px;color:#60a5fa;">0</div></div>
+        <div class="stat-card" style="padding:10px 12px;"><div class="stat-label">עסקים</div><div class="stat-val" id="s-biz" style="font-size:20px;color:#4dc8a0;">0</div></div>
         <div class="stat-card" style="padding:10px 12px;"><div class="stat-label">עובדים</div><div class="stat-val" id="s-emp" style="font-size:20px;color:var(--ok);">0</div></div>
         <div class="stat-card" style="padding:10px 12px;"><div class="stat-label">כניסות היום</div><div class="stat-val" id="s-log" style="font-size:20px;color:var(--warn);">0</div></div>
       </div>
@@ -413,7 +414,7 @@ function renderBizInfo(t){
     +di('מייל עסק',s.bizEmail)+di('כתובת',[s.bizStreet,s.bizCity].filter(Boolean).join(' '))
     +di('אתר',s.bizWeb)+di('מטבע',s.currency)
   +'</div>'
-  +'<div style="font-size:12px;font-weight:700;color:#60a5fa;margin:4px 0 8px;">👤 בעל עסק / מנהל</div>'
+  +'<div style="font-size:12px;font-weight:700;color:#4dc8a0;margin:4px 0 8px;">👤 בעל עסק / מנהל</div>'
   +'<div class="dg">'
     +di('שם מלא',a.fullname||m.name)+di('שם פרטי',a.firstname)+di('שם משפחה',a.lastname)
     +di('ת.ז',a.idnum)+di('טלפון',a.phone)+di('מייל',a.email||m.email)
@@ -700,7 +701,7 @@ window.showPane=showPane;
 /* ── TOAST ── */
 function showToast(msg){
   var t=document.createElement('div');
-  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e3a8a;color:#fff;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,.4);';
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#003B71;color:#fff;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,.4);';
   t.textContent=msg;document.body.appendChild(t);
   setTimeout(function(){t.remove();},2800);
 }
