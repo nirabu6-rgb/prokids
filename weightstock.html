@@ -1179,10 +1179,13 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <div id="um-pin-section" style="display:none;margin-top:16px;">
       <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;">הכנס קוד כניסה (6 ספרות)</div>
       <div id="um-pin-entry">
-        <div class="um-pin-row" id="um-pin-row"></div>
+        <div class="um-pin-row" id="um-pin-row" dir="ltr"></div>
       </div>
       <div id="um-pin-err" style="display:none;color:var(--crit);font-size:13px;text-align:center;margin-top:8px;"></div>
       <button class="btn sec" style="width:100%;margin-top:12px;" onclick="umCancelPin()">← חזור</button>
+      <div style="text-align:center;margin-top:10px;">
+        <button onclick="umForgotPin()" style="background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;">שכחתי קוד כניסה</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2196,6 +2199,13 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
         </div>
       </div>
 
+      <!-- מחק משתמשים -->
+      <div class="card" style="margin:0 0 8px;padding:0;overflow:hidden;">
+        <button onclick="resetUsers()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--warn);">
+          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">👥 מחק משתמשים והתחל מחדש</div>
+          <span>›</span>
+        </button>
+      </div>
       <!-- התנתק -->
       <div class="card" style="margin:0;padding:0;overflow:hidden;">
         <button onclick="logoutApp()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--crit);">
@@ -3400,21 +3410,41 @@ function umSelectUser(id){
   _umSelectingId=id;
   /* build 6-box PIN */
   var row=document.getElementById('um-pin-row');
-  row.innerHTML=[0,1,2,3,4,5].map(function(i){return '<input class="um-pin-box" maxlength="1" type="tel" inputmode="numeric" id="up'+i+'" dir="ltr">';}).join('');
+  row.innerHTML=[0,1,2,3,4,5].map(function(i){return '<input class="um-pin-box" maxlength="1" type="tel" inputmode="numeric" id="up'+i+'" dir="ltr" autocomplete="off">';}).join('');
   document.getElementById('um-user-list').style.display='none';
   document.getElementById('um-pin-section').style.display='block';
   document.getElementById('um-pin-err').style.display='none';
   document.getElementById('up0').focus();
-  /* auto-advance */
+  /* auto-advance — LTR */
   [0,1,2,3,4,5].forEach(function(i){
     var el=document.getElementById('up'+i);
+    el.addEventListener('focus',function(){el.select();});
+    el.addEventListener('keydown',function(e){
+      if(e.key==='Backspace'){
+        if(el.value){el.value='';}
+        else if(i>0){var p=document.getElementById('up'+(i-1));p.value='';p.focus();}
+        e.preventDefault();
+      } else if(/^\d$/.test(e.key)){
+        el.value=e.key;
+        if(i<5){document.getElementById('up'+(i+1)).focus();}
+        else{setTimeout(umSubmitPin,80);}
+        e.preventDefault();
+      }
+    });
     el.addEventListener('input',function(){
       el.value=el.value.replace(/\D/g,'').slice(-1);
       if(el.value&&i<5)document.getElementById('up'+(i+1)).focus();
-      if(i===5&&el.value)umSubmitPin();
+      else if(el.value&&i===5)setTimeout(umSubmitPin,80);
     });
   });
 }
+
+function umForgotPin(){
+  if(confirm('לאפס את קוד הכניסה?\nפנה למנהל המערכת לקבלת קוד חדש.')){
+    alert('יש לפנות למנהל האפליקציה לאיפוס הקוד.');
+  }
+}
+window.umForgotPin=umForgotPin;
 window.umSelectUser=umSelectUser;
 
 function umCancelPin(){
@@ -5262,9 +5292,15 @@ function processSerialWeight(raw){
 
 function toggleDemo(){var s=getSettings();s.demo=!(s.demo!==false);LS.set('settings',s);document.getElementById('demo-tog').classList.toggle('on',s.demo!==false);}
 window.toggleDemo=toggleDemo;
+function resetUsers(){
+  if(!confirm('למחוק את כל המשתמשים (מנהל ועובדים)?\nהנתונים יישמרו — רק המשתמשים יימחקו.'))return;
+  ['um_manager','um_employees','um_session','um_actlog'].forEach(function(k){LS.del(k);});
+  _umUser=null; closeModal('modal-settings'); location.reload();
+}
+window.resetUsers=resetUsers;
 function resetAll(){
   if(!confirm('לאפס הכל?'))return;
-  ['mode','shelves','items','cats','readings','alerts','settings','tmpl','orders'].forEach(function(k){LS.del(k);});
+  ['mode','shelves','items','cats','readings','alerts','settings','tmpl','orders','um_manager','um_employees','um_session','um_actlog'].forEach(function(k){LS.del(k);});
   _DR=null; closeModal('modal-settings'); location.reload();
 }
 window.resetAll=resetAll;
