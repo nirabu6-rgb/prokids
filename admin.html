@@ -374,7 +374,7 @@ function loadData(){
   }
   _bizList=tenants;
   _glog=[];
-  tenants.forEach(function(t){(t.actlog||[]).forEach(function(a){_glog.push(Object.assign({},a,{bizName:(t.settings||{}).bizName||'?'});});});
+  tenants.forEach(function(t){(t.actlog||[]).forEach(function(a){_glog.push(Object.assign({},a,{bizName:(t.settings||{}).bizName||'?'}));});});
   _glog.sort(function(a,b){return b.ts-a.ts;});
   renderStats(); renderBizList(_bizList); renderGlobalLog('all');
   document.getElementById('biz-count').textContent=tenants.length;
