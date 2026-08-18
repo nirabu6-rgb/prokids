@@ -857,7 +857,16 @@ function saveEmpFromAdmin(){
     if(emp){emp.name=name;emp.code=code;emp.permissions=perms;}
   } else if(empId==='__manager__'){
     if(!t.manager)t.manager={};
-    t.manager.name=name;t.manager.pin=code;
+    if(!t.account)t.account={};
+    if(!t.settings)t.settings={};
+    t.manager.name=name; t.manager.pin=code;
+    t.manager.email=document.getElementById('me-mgr-email').value.trim();
+    t.account.phone=document.getElementById('me-mgr-phone').value.trim();
+    t.account.email=t.manager.email;
+    t.settings.bizStreet=document.getElementById('me-mgr-street').value.trim();
+    t.settings.bizCity=document.getElementById('me-mgr-city').value.trim();
+    t.settings.bizPhone=document.getElementById('me-mgr-bizphone').value.trim();
+    t.settings.bizEmail=document.getElementById('me-mgr-bizemail').value.trim();
   } else {
     emps.push({id:'e'+Date.now(),name:name,code:code,permissions:perms,loginCount:0,lastLogin:null});
   }
@@ -865,17 +874,26 @@ function saveEmpFromAdmin(){
   saveTenantBack(t);
   closeModal('modal-emp');
   loadData();
+  showToast(empId==='__manager__'?'פרטי מנהל עודכנו ✓':empId?'עובד עודכן ✓':'עובד נוסף ✓');
 }
 
 function openMgrEdit(tenantId){
   var t=_bizList.find(function(x){return x.id===tenantId;});if(!t)return;
-  var m=t.manager||{};
+  var m=t.manager||{}, a=t.account||{}, s=t.settings||{};
   document.getElementById('modal-emp-title').textContent='✏️ עריכת מנהל';
   document.getElementById('me-tenant-id').value=tenantId;
   document.getElementById('me-emp-id').value='__manager__';
-  document.getElementById('me-name').value=m.name||'';
+  document.getElementById('me-name').value=m.name||a.fullname||'';
   document.getElementById('me-code').value=m.pin||'';
-  document.getElementById('me-perms').innerHTML='<div style="font-size:12px;color:var(--muted);">למנהל יש גישה מלאה לכל דבר</div>';
+  document.getElementById('me-perms').innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">'
+    +'<div class="mfl"><label>מייל מנהל</label><input id="me-mgr-email" value="'+esc(m.email||a.email||'')+'"></div>'
+    +'<div class="mfl"><label>טלפון נייד</label><input id="me-mgr-phone" value="'+esc(a.phone||'')+'"></div>'
+    +'<div class="mfl"><label>טלפון עסק</label><input id="me-mgr-bizphone" value="'+esc(s.bizPhone||'')+'"></div>'
+    +'<div class="mfl"><label>מייל עסק</label><input id="me-mgr-bizemail" value="'+esc(s.bizEmail||'')+'"></div>'
+    +'<div class="mfl"><label>רחוב</label><input id="me-mgr-street" value="'+esc(s.bizStreet||'')+'"></div>'
+    +'<div class="mfl"><label>עיר</label><input id="me-mgr-city" value="'+esc(s.bizCity||'')+'"></div>'
+    +'</div>';
   document.getElementById('modal-emp').classList.add('show');
 }
 
