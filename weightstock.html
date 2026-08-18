@@ -342,6 +342,8 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   border-radius:0 0 4px 4px;
 }
 .navbtn .ic{font-size:22px;line-height:1;display:block;margin-bottom:2px;}
+.navbtn .sic{width:22px;height:22px;display:block;margin:0 auto 2px;display:flex;align-items:center;justify-content:center;}
+.navbtn .sic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
 
 /* ── FAB ── */
 .fab{
@@ -1701,10 +1703,10 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 
 </div><!-- /main-content -->
 <nav class="bottomnav">
-  <button class="navbtn active" id="nav-screen-dashboard" onclick="navTo('screen-dashboard')"><span class="ic">📊</span>דשבורד</button>
-  <button class="navbtn" id="nav-screen-items" onclick="navTo('screen-items')"><span class="ic">📦</span>פריטים</button>
-  <button class="navbtn" id="nav-screen-categories" onclick="navTo('screen-categories')"><span class="ic">🏷️</span>קטגוריות</button>
-  <button class="navbtn" id="nav-screen-reports" onclick="openReports()"><span class="ic">📈</span>דוחות</button>
+  <button class="navbtn active" id="nav-screen-dashboard" onclick="navTo('screen-dashboard')"><span class="sic"><svg viewBox="0 0 24 24"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg></span>דשבורד</button>
+  <button class="navbtn" id="nav-screen-items" onclick="navTo('screen-items')"><span class="sic"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>פריטים</button>
+  <button class="navbtn" id="nav-screen-categories" onclick="navTo('screen-categories')"><span class="sic"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>קטגוריות</button>
+  <button class="navbtn" id="nav-screen-reports" onclick="openReports()"><span class="sic"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><polyline points="22 20 2 20"/></svg></span>דוחות</button>
 </nav>
 <div id="fab-menu" style="display:none;position:fixed;bottom:140px;left:50%;transform:translateX(-50%);z-index:60;background:var(--card);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.22);overflow:hidden;border:1px solid var(--border);min-width:260px;max-width:340px;width:90%;max-height:72vh;overflow-y:auto;">
 
@@ -4043,6 +4045,7 @@ function obFinish(){
   LS.set('settings',{bizName:biz,bizType:td.bizType||td.name||'',currency:cur,defaultAlert:20,demo:true,bizNotes:'',bizPhone:bizPhone,bizEmail:bizEmail,bizStreet:bizStreet,bizCity:bizCity,bizWeb:bizWeb});
   LS.set('account',{fullname:fullname,firstname:firstname,lastname:lastname,idnum:idnum,phone:phone,email:mgrEmail,registeredAt:Date.now()});
   LS.set('plan',{key:_selectedPlan,name:PLANS[_selectedPlan].name,since:Date.now(),contractEnd:Date.now()+365*86400000});
+  LS.set('mode','user');
   /* save manager credentials */
   setupManagerUser(fullname||'מנהל', pin||'123456', mgrEmail, null);
   /* auto-login as manager */
