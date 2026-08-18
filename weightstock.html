@@ -105,17 +105,26 @@ body::before{
   content:'';
   position:fixed;
   inset:0;
-  background:url('https://i.imgur.com/Jt7vL9E.jpg') center/cover no-repeat;
   z-index:-2;
+  /* Warehouse floor perspective grid */
+  background-color:#0d1520;
+  background-image:
+    linear-gradient(rgba(40,90,180,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(40,90,180,.07) 1px, transparent 1px),
+    radial-gradient(ellipse 120% 60% at 50% 100%, rgba(30,60,120,.45) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 50% at 20% 30%, rgba(20,40,100,.3) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(10,30,80,.25) 0%, transparent 60%),
+    linear-gradient(180deg,#0a1020 0%,#0d1828 40%,#111e30 100%);
+  background-size:40px 40px,40px 40px,100% 100%,100% 100%,100% 100%,100% 100%;
 }
 body::after{
   content:'';
   position:fixed;
   inset:0;
-  background:rgba(10,18,35,0.55);
+  background:linear-gradient(180deg,rgba(8,14,28,0.3) 0%,rgba(8,14,28,0.1) 40%,rgba(8,14,28,0.4) 100%);
   z-index:-1;
 }
-#app{max-width:600px;margin:0 auto;min-height:100vh;background:rgba(240,244,250,0.88);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);padding-bottom:72px;}
+#app{max-width:600px;margin:0 auto;min-height:100vh;background:rgba(15,22,40,0.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding-bottom:72px;box-shadow:0 0 60px rgba(0,0,0,.5);}
 #main-content{width:100%;}
 .screen{display:none;padding:14px;}
 .screen.active{display:block;}
@@ -1175,31 +1184,11 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <div class="um-title" id="um-biz-name">WeightStock</div>
     <div class="um-sub" id="um-sub-text">בחר משתמש להתחברות</div>
     <div class="um-user-list" id="um-user-list"></div>
-    <!-- PIN section (employees + manager PIN) -->
+    <!-- PIN section -->
     <div id="um-pin-section" style="display:none;margin-top:16px;">
-      <!-- Manager auth tabs -->
-      <div id="um-mgr-tabs" style="display:none;margin-bottom:14px;">
-        <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
-          <button id="um-tab-pin" onclick="umSwitchTab('pin')" style="flex:1;padding:9px;font-size:13px;font-weight:700;background:var(--accent);color:#fff;border:none;cursor:pointer;">🔢 PIN</button>
-          <button id="um-tab-email" onclick="umSwitchTab('email')" style="flex:1;padding:9px;font-size:13px;font-weight:700;background:var(--card2);color:var(--text);border:none;cursor:pointer;">✉️ מייל</button>
-        </div>
-      </div>
-      <!-- PIN entry -->
+      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;">הכנס קוד כניסה (6 ספרות)</div>
       <div id="um-pin-entry">
-        <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:8px;">הכנס קוד PIN</div>
         <div class="um-pin-row" id="um-pin-row"></div>
-      </div>
-      <!-- Email+password entry -->
-      <div id="um-email-entry" style="display:none;">
-        <div class="ob-field" style="margin-bottom:10px;">
-          <label>אימייל</label>
-          <input id="um-email-inp" type="email" placeholder="manager@example.com" autocomplete="email">
-        </div>
-        <div class="ob-field">
-          <label>סיסמה</label>
-          <input id="um-pw-inp" type="password" placeholder="••••••" autocomplete="current-password">
-        </div>
-        <button class="btn ok" style="width:100%;margin-top:10px;" onclick="umSubmitEmail()">כניסה</button>
       </div>
       <div id="um-pin-err" style="display:none;color:var(--crit);font-size:13px;text-align:center;margin-top:8px;"></div>
       <button class="btn sec" style="width:100%;margin-top:12px;" onclick="umCancelPin()">← חזור</button>
@@ -1357,29 +1346,18 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <input id="ob-mgr-email" type="email" placeholder="manager@example.com" autocomplete="email">
         </div>
         <div style="background:var(--card2);border-radius:10px;padding:12px 14px;margin-top:6px;">
-          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">🔐 פרטי התחברות</div>
-          <div class="ob-field">
-            <label>סיסמה * (מינימום 6 תווים)</label>
-            <input id="ob-mgr-pw" type="password" placeholder="••••••" autocomplete="new-password">
-          </div>
-          <div class="ob-field">
-            <label>אימות סיסמה *</label>
-            <input id="ob-mgr-pw2" type="password" placeholder="••••••" autocomplete="new-password">
-          </div>
-          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
-            <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;">🔢 PIN — כניסה מהירה (4 ספרות)</div>
-            <div style="display:flex;gap:8px;">
-              <div style="flex:1;">
-                <label style="font-size:11px;color:var(--muted);">PIN</label>
-                <input id="ob-pin" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:6px;font-size:20px;font-weight:800;text-align:center;">
-              </div>
-              <div style="flex:1;">
-                <label style="font-size:11px;color:var(--muted);">אימות PIN</label>
-                <input id="ob-pin2" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:6px;font-size:20px;font-weight:800;text-align:center;">
-              </div>
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;">🔢 קוד כניסה — 6 ספרות</div>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;">
+              <label style="font-size:11px;color:var(--muted);">קוד כניסה</label>
+              <input id="ob-pin" type="tel" inputmode="numeric" maxlength="6" placeholder="• • • • • •" dir="ltr" style="letter-spacing:5px;font-size:20px;font-weight:800;text-align:center;">
             </div>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;">ה-PIN משמש לכניסה מהירה במקום סיסמה</div>
+            <div style="flex:1;">
+              <label style="font-size:11px;color:var(--muted);">אימות קוד</label>
+              <input id="ob-pin2" type="tel" inputmode="numeric" maxlength="6" placeholder="• • • • • •" dir="ltr" style="letter-spacing:5px;font-size:20px;font-weight:800;text-align:center;">
+            </div>
           </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;">הקוד הזה ישמש לכניסה מהירה לאפליקציה</div>
         </div>
         <div class="row" style="margin-top:18px;">
           <button class="btn sec" onclick="obBack2()">← חזור</button>
@@ -1695,7 +1673,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
         <input id="emp-name" placeholder="דוד לוי">
 
         <label style="margin-top:12px;">קוד כניסה (4 ספרות)</label>
-        <input id="emp-code" type="tel" inputmode="numeric" maxlength="4" placeholder="0000" dir="ltr"
+        <input id="emp-code" type="tel" inputmode="numeric" maxlength="6" placeholder="000000" dir="ltr"
           style="letter-spacing:8px;font-size:22px;font-weight:800;text-align:center;padding:10px;">
         <div style="font-size:11px;color:var(--muted);margin-top:3px;text-align:center;">העובד יזין קוד זה בכניסה</div>
 
@@ -3413,47 +3391,23 @@ window.showUMLogin=showUMLogin;
 var _umSelectingId=null;
 function umSelectUser(id){
   _umSelectingId=id;
-  /* build 4-box PIN */
+  /* build 6-box PIN */
   var row=document.getElementById('um-pin-row');
-  row.innerHTML='<input class="um-pin-box" maxlength="1" type="tel" inputmode="numeric" id="up0" dir="ltr"><input class="um-pin-box" maxlength="1" type="tel" inputmode="numeric" id="up1" dir="ltr"><input class="um-pin-box" maxlength="1" type="tel" inputmode="numeric" id="up2" dir="ltr"><input class="um-pin-box" maxlength="1" type="tel" inputmode="numeric" id="up3" dir="ltr">';
+  row.innerHTML=[0,1,2,3,4,5].map(function(i){return '<input class="um-pin-box" maxlength="1" type="tel" inputmode="numeric" id="up'+i+'" dir="ltr">';}).join('');
   document.getElementById('um-user-list').style.display='none';
   document.getElementById('um-pin-section').style.display='block';
   document.getElementById('um-pin-err').style.display='none';
-  /* show manager tabs only for manager */
-  var mgrTabs=document.getElementById('um-mgr-tabs');
-  if(id==='manager'){
-    mgrTabs.style.display='block';
-    umSwitchTab('pin');
-  } else {
-    mgrTabs.style.display='none';
-    document.getElementById('um-pin-entry').style.display='block';
-    document.getElementById('um-email-entry').style.display='none';
-  }
   document.getElementById('up0').focus();
   /* auto-advance */
-  [0,1,2,3].forEach(function(i){
+  [0,1,2,3,4,5].forEach(function(i){
     var el=document.getElementById('up'+i);
     el.addEventListener('input',function(){
       el.value=el.value.replace(/\D/g,'').slice(-1);
-      if(el.value&&i<3)document.getElementById('up'+(i+1)).focus();
-      if(i===3&&el.value)umSubmitPin();
+      if(el.value&&i<5)document.getElementById('up'+(i+1)).focus();
+      if(i===5&&el.value)umSubmitPin();
     });
   });
 }
-
-function umSwitchTab(tab){
-  var isPIN=tab==='pin';
-  document.getElementById('um-tab-pin').style.background=isPIN?'var(--accent)':'var(--card2)';
-  document.getElementById('um-tab-pin').style.color=isPIN?'#fff':'var(--text)';
-  document.getElementById('um-tab-email').style.background=isPIN?'var(--card2)':'var(--accent)';
-  document.getElementById('um-tab-email').style.color=isPIN?'var(--text)':'#fff';
-  document.getElementById('um-pin-entry').style.display=isPIN?'block':'none';
-  document.getElementById('um-email-entry').style.display=isPIN?'none':'block';
-  document.getElementById('um-pin-err').style.display='none';
-  if(!isPIN)setTimeout(function(){document.getElementById('um-email-inp').focus();},50);
-  else document.getElementById('up0').focus();
-}
-window.umSwitchTab=umSwitchTab;
 window.umSelectUser=umSelectUser;
 
 function umCancelPin(){
@@ -3465,13 +3419,13 @@ function umCancelPin(){
 window.umCancelPin=umCancelPin;
 
 function umSubmitPin(){
-  var pin=[0,1,2,3].map(function(i){return (document.getElementById('up'+i)||{}).value||'';}).join('');
+  var pin=[0,1,2,3,4,5].map(function(i){return (document.getElementById('up'+i)||{}).value||'';}).join('');
   var errEl=document.getElementById('um-pin-err');
-  if(pin.length<4){errEl.textContent='הכנס 4 ספרות';errEl.style.display='block';return;}
+  if(pin.length<6){errEl.textContent='הכנס 6 ספרות';errEl.style.display='block';return;}
   if(_umSelectingId==='manager'){
     var mgr=LS.get('um_manager',null);
     if(!mgr){errEl.textContent='מנהל לא מוגדר';errEl.style.display='block';return;}
-    if(mgr.pin!==pin){errEl.textContent='קוד שגוי';errEl.style.display='block';[0,1,2,3].forEach(function(i){document.getElementById('up'+i).value='';});document.getElementById('up0').focus();return;}
+    if(mgr.pin!==pin){errEl.textContent='קוד שגוי';errEl.style.display='block';[0,1,2,3,4,5].forEach(function(i){document.getElementById('up'+i).value='';});document.getElementById('up0').focus();return;}
     mgr.loginCount=(mgr.loginCount||0)+1; mgr.lastLogin=Date.now();
     LS.set('um_manager',mgr);
     _umUser={isManager:true,empId:'manager',name:mgr.name,perms:null,loginTime:Date.now()};
@@ -3481,7 +3435,7 @@ function umSubmitPin(){
   } else {
     var emps=getEmployees();
     var emp=emps.find(function(e){return e.id===_umSelectingId;});
-    if(!emp||emp.code!==pin){errEl.textContent='קוד שגוי';errEl.style.display='block';[0,1,2,3].forEach(function(i){document.getElementById('up'+i).value='';});document.getElementById('up0').focus();return;}
+    if(!emp||emp.code!==pin){errEl.textContent='קוד שגוי';errEl.style.display='block';[0,1,2,3,4,5].forEach(function(i){document.getElementById('up'+i).value='';});document.getElementById('up0').focus();return;}
     emp.loginCount=(emp.loginCount||0)+1; emp.lastLogin=Date.now();
     setEmployees(emps);
     _umUser={isManager:false,empId:emp.id,name:emp.name,perms:emp.permissions,loginTime:Date.now()};
@@ -3949,8 +3903,6 @@ function obToPlans(){
   var lastname=(document.getElementById('ob-lastname')||{value:''}).value.trim();
   var idnum=(document.getElementById('ob-idnum')||{value:''}).value.trim();
   var email=document.getElementById('ob-mgr-email').value.trim();
-  var pw=document.getElementById('ob-mgr-pw').value;
-  var pw2=document.getElementById('ob-mgr-pw2').value;
   var pin=document.getElementById('ob-pin').value.trim();
   var pin2=document.getElementById('ob-pin2').value.trim();
   var errEl=document.getElementById('reg-err');
@@ -3959,10 +3911,8 @@ function obToPlans(){
   if(!lastname){errEl.textContent='הכנס שם משפחה';errEl.style.display='block';return;}
   if(!idnum||idnum.length<7){errEl.textContent='הכנס מספר תעודת זהות תקין';errEl.style.display='block';return;}
   if(!email||!email.includes('@')){errEl.textContent='הכנס כתובת מייל תקינה';errEl.style.display='block';return;}
-  if(!pw||pw.length<6){errEl.textContent='הסיסמה חייבת להכיל לפחות 6 תווים';errEl.style.display='block';return;}
-  if(pw!==pw2){errEl.textContent='הסיסמאות לא תואמות';errEl.style.display='block';return;}
-  if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){errEl.textContent='ה-PIN חייב להיות 4 ספרות';errEl.style.display='block';return;}
-  if(pin!==pin2){errEl.textContent='קודי PIN לא תואמים';errEl.style.display='block';return;}
+  if(!pin||pin.length!==6||!/^\d{6}$/.test(pin)){errEl.textContent='קוד הכניסה חייב להיות 6 ספרות';errEl.style.display='block';return;}
+  if(pin!==pin2){errEl.textContent='קודי הכניסה לא תואמים';errEl.style.display='block';return;}
   document.getElementById('ob-s3').classList.remove('active');
   document.getElementById('ob-s4').classList.add('active');
   obSetProgress(4);
@@ -4028,7 +3978,6 @@ function obFinish(){
   var phone=document.getElementById('ob-phone').value.trim();
   var pin=document.getElementById('ob-pin').value.trim();
   var mgrEmail=document.getElementById('ob-mgr-email').value.trim();
-  var mgrPw=document.getElementById('ob-mgr-pw').value;
   LS.set('tmpl',_obTmpl);
   _DR=null;
   var biz=document.getElementById('ob-bizname').value.trim();
@@ -4043,7 +3992,7 @@ function obFinish(){
   LS.set('account',{fullname:fullname,firstname:firstname,lastname:lastname,idnum:idnum,phone:phone,email:mgrEmail,registeredAt:Date.now()});
   LS.set('plan',{key:_selectedPlan,name:PLANS[_selectedPlan].name,since:Date.now(),trialEnd:Date.now()+14*86400000});
   /* save manager credentials */
-  setupManagerUser(fullname||'מנהל', pin||'1234', mgrEmail, mgrPw);
+  setupManagerUser(fullname||'מנהל', pin||'123456', mgrEmail, null);
   /* auto-login as manager */
   _umUser={isManager:true,empId:'manager',name:fullname||'מנהל',perms:null,loginTime:Date.now()};
   LS.set('um_session',_umUser);
