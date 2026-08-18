@@ -32,6 +32,11 @@ button{cursor:pointer;font-family:inherit;}
 .fl input:focus{border-color:var(--accent);}
 .err{color:var(--crit);font-size:13px;margin-bottom:10px;display:none;}
 .btn-login{width:100%;background:var(--grad);border:none;border-radius:12px;padding:13px;font-size:16px;font-weight:700;color:#fff;margin-top:4px;}
+.ap-box{width:58px;height:66px;border-radius:14px;border:2px solid var(--border);background:var(--card2);font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:text;transition:border-color .15s,transform .1s;}
+.ap-box.filled{border-color:var(--accent);}
+.ap-box.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,168,89,.2);transform:scale(1.05);}
+.ap-box.error{border-color:var(--crit);animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 
 /* ─── TOP NAV ─── */
 #app{display:none;min-height:100vh;}
@@ -191,11 +196,15 @@ button{cursor:pointer;font-family:inherit;}
       <div class="sub">כניסה לממשק בעלים</div>
     </div>
     <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px;">הכנס קוד כניסה 4 ספרות</div>
-    <div id="adm-pin-row" dir="ltr" style="display:flex;justify-content:center;gap:12px;margin-bottom:14px;">
-      <input id="ap0" type="tel" inputmode="numeric" maxlength="1" autocomplete="off" style="width:58px;height:66px;border-radius:14px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-size:28px;font-weight:800;text-align:center;outline:none;transition:border-color .15s;" dir="ltr">
-      <input id="ap1" type="tel" inputmode="numeric" maxlength="1" autocomplete="off" style="width:58px;height:66px;border-radius:14px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-size:28px;font-weight:800;text-align:center;outline:none;transition:border-color .15s;" dir="ltr">
-      <input id="ap2" type="tel" inputmode="numeric" maxlength="1" autocomplete="off" style="width:58px;height:66px;border-radius:14px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-size:28px;font-weight:800;text-align:center;outline:none;transition:border-color .15s;" dir="ltr">
-      <input id="ap3" type="tel" inputmode="numeric" maxlength="1" autocomplete="off" style="width:58px;height:66px;border-radius:14px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-size:28px;font-weight:800;text-align:center;outline:none;transition:border-color .15s;" dir="ltr">
+    <!-- תיבות תצוגה בלבד -->
+    <div dir="ltr" style="display:flex;justify-content:center;gap:12px;margin-bottom:14px;position:relative;" onclick="document.getElementById('adm-hidden').focus()">
+      <div class="ap-box" id="apb0"></div>
+      <div class="ap-box" id="apb1"></div>
+      <div class="ap-box" id="apb2"></div>
+      <div class="ap-box" id="apb3"></div>
+      <!-- input נסתר שמקבל את כל הקלט -->
+      <input id="adm-hidden" type="tel" inputmode="numeric" maxlength="4" autocomplete="off"
+        style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;" aria-label="קוד כניסה">
     </div>
     <div class="err" id="login-err">קוד שגוי — נסה שוב</div>
     <button class="btn-login" onclick="doAdminLogin()" style="margin-top:4px;">כניסה →</button>
@@ -313,7 +322,7 @@ function lsDel(k){localStorage.removeItem(LS_PFX+k);}
 
 /* ── AUTH ── */
 function doAdminLogin(){
-  var pin=[0,1,2,3].map(function(i){return (document.getElementById('ap'+i)||{value:''}).value;}).join('');
+  var pin=_admPin;
   var err=document.getElementById('login-err');
   err.style.display='none';
   if(pin===ADMIN_PIN){
@@ -323,46 +332,51 @@ function doAdminLogin(){
     loadData(); startClock();
   } else {
     err.style.display='block';
-    [0,1,2,3].forEach(function(i){
-      var el=document.getElementById('ap'+i);
-      el.value='';
-      el.style.borderColor='var(--crit)';
-    });
-    setTimeout(function(){
-      [0,1,2,3].forEach(function(i){document.getElementById('ap'+i).style.borderColor='var(--border)';});
-      document.getElementById('ap0').focus();
-    },800);
+    _admError();
   }
 }
-// PIN boxes auto-advance
-function initAdminPin(){
+var _admPin='';
+function _admRender(){
   [0,1,2,3].forEach(function(i){
-    var el=document.getElementById('ap'+i);
-    if(!el)return;
-    el.addEventListener('focus',function(){setTimeout(function(){el.select();},0);});
-    el.addEventListener('keydown',function(e){
-      if(e.key==='Backspace'){
-        e.preventDefault();
-        el.value='';
-        el.style.borderColor='var(--border)';
-        if(i>0){var prev=document.getElementById('ap'+(i-1));prev.focus();}
-      } else if(e.key==='Enter'){
-        e.preventDefault();
-        doAdminLogin();
-      } else if(/^\d$/.test(e.key)){
-        e.preventDefault();
-        el.value=e.key;
-        el.style.borderColor='var(--accent)';
-        if(i<3){document.getElementById('ap'+(i+1)).focus();}
-        else{setTimeout(doAdminLogin,80);}
-      } else if(!/^(Tab|Shift|Control|Alt|Meta|Arrow)/.test(e.key)){
-        e.preventDefault();
-      }
-    });
+    var b=document.getElementById('apb'+i);
+    if(!b)return;
+    b.textContent=_admPin[i]?'•':'';
+    b.className='ap-box'+(i<_admPin.length?' filled':'')+(i===_admPin.length?' active':'');
   });
-  function focusFirst(){var f=document.getElementById('ap0');if(f){f.focus();}}
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){setTimeout(focusFirst,100);});}
-  else{setTimeout(focusFirst,100);}
+}
+function _admError(){
+  _admPin='';_admRender();
+  [0,1,2,3].forEach(function(i){var b=document.getElementById('apb'+i);if(b)b.classList.add('error');});
+  setTimeout(function(){[0,1,2,3].forEach(function(i){var b=document.getElementById('apb'+i);if(b)b.classList.remove('error');});},400);
+  document.getElementById('adm-hidden').focus();
+}
+function initAdminPin(){
+  var inp=document.getElementById('adm-hidden');
+  if(!inp)return;
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='Backspace'){
+      e.preventDefault();
+      if(_admPin.length>0){_admPin=_admPin.slice(0,-1);_admRender();}
+    } else if(e.key==='Enter'){
+      e.preventDefault();
+      doAdminLogin();
+    } else if(/^\d$/.test(e.key)&&_admPin.length<4){
+      e.preventDefault();
+      _admPin+=e.key;_admRender();
+      if(_admPin.length===4)setTimeout(doAdminLogin,80);
+    }
+  });
+  inp.addEventListener('input',function(){
+    var v=inp.value.replace(/\D/g,'');
+    inp.value='';
+    for(var j=0;j<v.length&&_admPin.length<4;j++){_admPin+=v[j];}
+    _admRender();
+    if(_admPin.length===4)setTimeout(doAdminLogin,80);
+  });
+  function focusHidden(){inp.focus();}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){setTimeout(focusHidden,120);});}
+  else{setTimeout(focusHidden,120);}
+  _admRender();
 }
 initAdminPin();
 function doLogout(){ sessionStorage.removeItem(ADMIN_SESSION_KEY); location.reload(); }
