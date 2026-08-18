@@ -32,11 +32,10 @@ button{cursor:pointer;font-family:inherit;}
 .fl input:focus{border-color:var(--accent);}
 .err{color:var(--crit);font-size:13px;margin-bottom:10px;display:none;}
 .btn-login{width:100%;background:var(--grad);border:none;border-radius:12px;padding:13px;font-size:16px;font-weight:700;color:#fff;margin-top:4px;}
-.ap-box{width:58px;height:66px;border-radius:14px;border:2px solid var(--border);background:var(--card2);font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:text;transition:border-color .15s,transform .1s;}
-.ap-box.filled{border-color:var(--accent);}
-.ap-box.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,168,89,.2);transform:scale(1.05);}
-.ap-box.error{border-color:var(--crit);animation:shake .3s ease;}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.ap-box{width:58px;height:66px;border-radius:14px;border:2px solid var(--border);background:var(--card2);font-size:28px;font-weight:800;text-align:center;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;caret-color:transparent;}
+.ap-box:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,168,89,.2);}
+.ap-box.error{border-color:var(--crit)!important;animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 
 /* ─── TOP NAV ─── */
 #app{display:none;min-height:100vh;}
@@ -197,10 +196,10 @@ button{cursor:pointer;font-family:inherit;}
     </div>
     <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px;">הכנס קוד כניסה 4 ספרות</div>
     <div dir="ltr" style="display:flex;justify-content:center;gap:12px;margin-bottom:14px;">
-      <div class="ap-box" id="apb0"></div>
-      <div class="ap-box" id="apb1"></div>
-      <div class="ap-box" id="apb2"></div>
-      <div class="ap-box" id="apb3"></div>
+      <input class="ap-box" id="ap0" type="password" inputmode="numeric" maxlength="1" autocomplete="off" placeholder=" ">
+      <input class="ap-box" id="ap1" type="password" inputmode="numeric" maxlength="1" autocomplete="off" placeholder=" ">
+      <input class="ap-box" id="ap2" type="password" inputmode="numeric" maxlength="1" autocomplete="off" placeholder=" ">
+      <input class="ap-box" id="ap3" type="password" inputmode="numeric" maxlength="1" autocomplete="off" placeholder=" ">
     </div>
     <div class="err" id="login-err">קוד שגוי — נסה שוב</div>
     <button class="btn-login" onclick="doAdminLogin()" style="margin-top:4px;">כניסה →</button>
@@ -318,7 +317,7 @@ function lsDel(k){localStorage.removeItem(LS_PFX+k);}
 
 /* ── AUTH ── */
 function doAdminLogin(){
-  var pin=_admPin;
+  var pin=[0,1,2,3].map(function(i){var e=document.getElementById('ap'+i);return e?e.value:'';}).join('');
   var err=document.getElementById('login-err');
   err.style.display='none';
   if(pin===ADMIN_PIN){
@@ -328,34 +327,33 @@ function doAdminLogin(){
     loadData(); startClock();
   } else {
     err.style.display='block';
-    _admPin='';_admRender();
-    for(var i=0;i<4;i++){var b=document.getElementById('apb'+i);if(b){b.classList.add('error');}}
-    setTimeout(function(){for(var i=0;i<4;i++){var b=document.getElementById('apb'+i);if(b)b.classList.remove('error');}},400);
+    [0,1,2,3].forEach(function(i){var e=document.getElementById('ap'+i);if(e){e.value='';e.classList.add('error');}});
+    setTimeout(function(){[0,1,2,3].forEach(function(i){var e=document.getElementById('ap'+i);if(e)e.classList.remove('error');});document.getElementById('ap0').focus();},400);
   }
 }
-var _admPin='';
-function _admRender(){
+function _apSetup(){
   for(var i=0;i<4;i++){
-    var b=document.getElementById('apb'+i);
-    if(!b)return;
-    b.textContent=_admPin.length>i?'•':'';
-    b.className='ap-box'+(_admPin.length>i?' filled':'')+(_admPin.length===i?' active':'');
+    (function(idx){
+      var el=document.getElementById('ap'+idx);
+      if(!el)return;
+      el.addEventListener('input',function(){
+        el.value=el.value.replace(/\D/g,'').slice(-1);
+        if(el.value&&idx<3)document.getElementById('ap'+(idx+1)).focus();
+        if(el.value&&idx===3)setTimeout(doAdminLogin,60);
+      });
+      el.addEventListener('keydown',function(e){
+        if(e.key==='Backspace'&&!el.value&&idx>0){
+          document.getElementById('ap'+(idx-1)).value='';
+          document.getElementById('ap'+(idx-1)).focus();
+        }
+        if(e.key==='Enter')doAdminLogin();
+      });
+    })(i);
   }
+  setTimeout(function(){var f=document.getElementById('ap0');if(f)f.focus();},80);
 }
-document.addEventListener('keydown',function(e){
-  if(document.getElementById('app').style.display==='block')return;
-  if(e.key==='Backspace'){
-    e.preventDefault();
-    if(_admPin.length>0){_admPin=_admPin.slice(0,-1);_admRender();}
-  } else if(e.key==='Enter'){
-    e.preventDefault();
-    if(_admPin.length===4)doAdminLogin();
-  } else if(/^\d$/.test(e.key)&&_admPin.length<4){
-    e.preventDefault();
-    _admPin+=e.key;_admRender();
-    if(_admPin.length===4)setTimeout(doAdminLogin,80);
-  }
-});
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_apSetup);}
+else{_apSetup();}
 function doLogout(){ sessionStorage.removeItem(ADMIN_SESSION_KEY); location.reload(); }
 function startClock(){
   (function tick(){document.getElementById('adm-clock').textContent=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});})();
