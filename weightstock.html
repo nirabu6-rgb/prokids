@@ -1376,12 +1376,12 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
         <div class="plan-card" id="plan-basic" onclick="selectPlan('basic')">
           <div class="plan-top"><span class="plan-name">מצומצם</span><span class="plan-price">₪349 / חודש</span></div>
-          <ul class="plan-list"><li>עד 5 משטחי שקילה</li><li>עד 20 פריטים</li><li>עד 3 ספקים</li><li>דוח בסיסי</li></ul>
+          <ul class="plan-list"><li>עד 5 משטחי שקילה</li><li>עד 5 פריטים</li><li>עד 3 ספקים</li><li>דוח בסיסי</li></ul>
         </div>
         <div class="plan-card selected" id="plan-pro" onclick="selectPlan('pro')">
           <div class="plan-badge">הכי פופולרי</div>
           <div class="plan-top"><span class="plan-name">גדול</span><span class="plan-price">₪499 / חודש</span></div>
-          <ul class="plan-list"><li>עד 25 משטחי שקילה</li><li>עד 100 פריטים</li><li>עד 20 ספקים</li><li>כל הדוחות + ייצוא</li></ul>
+          <ul class="plan-list"><li>עד 10 משטחי שקילה</li><li>עד 10 פריטים</li><li>עד 7 ספקים</li><li>כל הדוחות + ייצוא</li></ul>
         </div>
         <div class="plan-card" id="plan-enterprise" onclick="selectPlan('enterprise')">
           <div class="plan-top"><span class="plan-name">ענק</span><span class="plan-price">₪999 / חודש</span></div>
@@ -1452,9 +1452,9 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
             </tr>
           </thead>
           <tbody>
-            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">משטחי שקילה</td><td style="text-align:center;">5</td><td style="text-align:center;font-weight:700;color:var(--accent);">25</td><td style="text-align:center;">∞</td></tr>
-            <tr style="border-bottom:1px solid var(--border);background:var(--card2);"><td style="padding:8px 6px;">פריטים</td><td style="text-align:center;">20</td><td style="text-align:center;font-weight:700;color:var(--accent);">100</td><td style="text-align:center;">∞</td></tr>
-            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">ספקים</td><td style="text-align:center;">3</td><td style="text-align:center;font-weight:700;color:var(--accent);">20</td><td style="text-align:center;">∞</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">משטחי שקילה</td><td style="text-align:center;">5</td><td style="text-align:center;font-weight:700;color:var(--accent);">10</td><td style="text-align:center;">∞</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:var(--card2);"><td style="padding:8px 6px;">פריטים</td><td style="text-align:center;">5</td><td style="text-align:center;font-weight:700;color:var(--accent);">10</td><td style="text-align:center;">∞</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">ספקים</td><td style="text-align:center;">3</td><td style="text-align:center;font-weight:700;color:var(--accent);">7</td><td style="text-align:center;">∞</td></tr>
             <tr style="border-bottom:1px solid var(--border);background:var(--card2);"><td style="padding:8px 6px;">ייצוא CSV</td><td style="text-align:center;">—</td><td style="text-align:center;color:var(--ok);">✓</td><td style="text-align:center;color:var(--ok);">✓</td></tr>
             <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">דוח מלאי</td><td style="text-align:center;">בסיסי</td><td style="text-align:center;font-weight:700;color:var(--accent);">מלא</td><td style="text-align:center;color:var(--ok);">מלא+</td></tr>
             <tr style="border-bottom:1px solid var(--border);background:var(--card2);"><td style="padding:8px 6px;">מסך TV</td><td style="text-align:center;">—</td><td style="text-align:center;color:var(--ok);">✓</td><td style="text-align:center;color:var(--ok);">✓</td></tr>
@@ -3815,8 +3815,8 @@ window.setupManagerUser=setupManagerUser;
 
 /* ── PLANS ── */
 var PLANS={
-  basic:{name:'מצומצם',price:349,shelves:5,items:20,suppliers:3,reports:'basic'},
-  pro:{name:'גדול',price:499,shelves:25,items:100,suppliers:20,reports:'full'},
+  basic:{name:'מצומצם',price:349,shelves:5,items:5,suppliers:3,reports:'basic'},
+  pro:{name:'גדול',price:499,shelves:10,items:10,suppliers:7,reports:'full'},
   enterprise:{name:'ענק',price:999,shelves:9999,items:9999,suppliers:9999,reports:'full'}
 };
 var SETUP_FEE=490;
