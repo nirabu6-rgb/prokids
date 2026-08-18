@@ -3,544 +3,742 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WeightStock — לוח בקרה לבעלים</title>
+<title>WeightStock — Owner Control Panel</title>
 <style>
 :root{
-  --bg:#0f1117;--card:#1a1d27;--card2:#222535;--border:#2d3148;
-  --text:#f0f2ff;--muted:#8890b5;--accent:#4f7cff;--accent2:#6c3cff;
-  --ok:#22c55e;--warn:#f59e0b;--crit:#ef4444;
-  --grad:linear-gradient(135deg,#4f7cff 0%,#6c3cff 100%);
+  --bg:#0b1120;--card:#111827;--card2:#1a2236;--card3:#1e2a42;
+  --border:#243050;--text:#e8eeff;--muted:#6b7db3;
+  --accent:#2563eb;--accent2:#1d4ed8;--green:#16a34a;
+  --ok:#22c55e;--warn:#f59e0b;--crit:#ef4444;--purple:#8b5cf6;
+  --grad:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;direction:rtl;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;min-height:100vh;direction:rtl;}
+a{color:var(--accent);text-decoration:none;}
+button{cursor:pointer;font-family:inherit;}
 
-/* LOGIN */
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:radial-gradient(ellipse at 30% 20%,rgba(79,124,255,.15) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(108,60,255,.12) 0%,transparent 60%),var(--bg);}
-.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 24px 80px rgba(0,0,0,.5);}
-.login-logo{text-align:center;font-size:40px;margin-bottom:6px;}
-.login-title{text-align:center;font-size:22px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
-.login-sub{text-align:center;font-size:13px;color:var(--muted);margin-bottom:28px;}
-.login-box label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px;}
-.login-box input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:14px;}
-.login-box input:focus{border-color:var(--accent);}
-.login-err{color:var(--crit);font-size:13px;margin-bottom:10px;display:none;}
-.btn-login{width:100%;background:var(--grad);border:none;border-radius:12px;padding:13px;font-size:16px;font-weight:700;color:#fff;cursor:pointer;margin-top:4px;}
+/* ─── LOGIN ─── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(37,99,235,.18) 0%,transparent 70%),var(--bg);}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 32px;width:100%;max-width:380px;box-shadow:0 32px 80px rgba(0,0,0,.6);}
+.login-logo{text-align:center;margin-bottom:20px;}
+.login-logo .icon{font-size:44px;}
+.login-logo .title{font-size:20px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-top:6px;}
+.login-logo .sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.fl{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
+.fl label{font-size:12px;color:var(--muted);font-weight:600;}
+.fl input{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;color:var(--text);outline:none;}
+.fl input:focus{border-color:var(--accent);}
+.err{color:var(--crit);font-size:13px;margin-bottom:10px;display:none;}
+.btn-login{width:100%;background:var(--grad);border:none;border-radius:12px;padding:13px;font-size:16px;font-weight:700;color:#fff;margin-top:4px;}
 
-/* MAIN APP */
+/* ─── TOP NAV ─── */
 #app{display:none;min-height:100vh;}
-.topnav{background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;}
-.topnav-brand{display:flex;align-items:center;gap:10px;}
-.topnav-brand .logo{font-size:22px;}
-.topnav-brand .name{font-size:16px;font-weight:800;}
-.topnav-brand .badge{background:var(--grad);color:#fff;font-size:10px;font-weight:700;border-radius:6px;padding:2px 7px;letter-spacing:.5px;}
-.topnav-right{display:flex;align-items:center;gap:12px;}
-.btn-sm{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;color:var(--text);cursor:pointer;}
-.btn-sm.danger{color:var(--crit);border-color:var(--crit);}
+.topnav{background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.tn-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px;}
+.tn-badge{background:var(--grad);color:#fff;font-size:9px;font-weight:700;border-radius:5px;padding:2px 6px;letter-spacing:.5px;}
+.tn-right{display:flex;align-items:center;gap:8px;}
+.btn-xs{background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:5px 12px;font-size:12px;color:var(--text);}
+.btn-xs.red{color:var(--crit);border-color:rgba(239,68,68,.3);}
 
-/* CONTENT */
-.content{padding:24px;max-width:1200px;margin:0 auto;}
+/* ─── LAYOUT ─── */
+.layout{display:flex;min-height:calc(100vh - 56px);}
+.sidebar{width:220px;flex-shrink:0;background:var(--card);border-left:1px solid var(--border);padding:16px 0;}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:14px;color:var(--muted);cursor:pointer;border-right:3px solid transparent;transition:all .15s;}
+.sidebar-item:hover{color:var(--text);background:var(--card2);}
+.sidebar-item.active{color:var(--accent);background:rgba(37,99,235,.08);border-right-color:var(--accent);font-weight:700;}
+.main{flex:1;padding:20px;overflow-x:hidden;max-width:calc(100vw - 220px);}
 
-/* STATS ROW */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px;}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px;}
-.stat-label{font-size:12px;color:var(--muted);margin-bottom:6px;}
-.stat-val{font-size:28px;font-weight:800;}
-.stat-val.blue{color:var(--accent);}
-.stat-val.green{color:var(--ok);}
-.stat-val.orange{color:var(--warn);}
-.stat-val.purple{color:#a78bfa;}
+/* ─── STATS ─── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:22px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
+.stat-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.stat-val{font-size:26px;font-weight:800;}
 
-/* SECTION */
-.section-title{font-size:18px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-.section-title .badge-count{background:var(--accent);color:#fff;font-size:11px;border-radius:20px;padding:2px 8px;}
+/* ─── SECTION HEADER ─── */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sec-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.cnt{background:var(--accent);color:#fff;font-size:10px;border-radius:20px;padding:2px 8px;font-weight:700;}
 
-/* BUSINESS CARDS */
-.biz-card{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:14px;overflow:hidden;}
-.biz-header{padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none;}
-.biz-avatar{width:46px;height:46px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+/* ─── SEARCH ─── */
+.search-wrap{position:relative;margin-bottom:14px;}
+.search-wrap input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 36px 9px 14px;font-size:14px;color:var(--text);outline:none;}
+.search-wrap input:focus{border-color:var(--accent);}
+.search-wrap .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;}
+
+/* ─── BIZ CARD ─── */
+.biz-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden;}
+.biz-header{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;transition:background .15s;}
+.biz-header:hover{background:var(--card2);}
+.biz-avatar{width:42px;height:42px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;font-weight:700;color:#fff;}
 .biz-info{flex:1;min-width:0;}
-.biz-name{font-size:16px;font-weight:700;}
-.biz-meta{font-size:12px;color:var(--muted);margin-top:2px;}
-.biz-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-.badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;border-radius:8px;padding:3px 8px;font-weight:600;}
-.badge.green{background:rgba(34,197,94,.15);color:var(--ok);}
-.badge.blue{background:rgba(79,124,255,.15);color:var(--accent);}
-.badge.orange{background:rgba(245,158,11,.15);color:var(--warn);}
-.badge.purple{background:rgba(167,139,250,.15);color:#a78bfa;}
-.biz-expand{font-size:18px;color:var(--muted);transition:transform .2s;}
-.biz-expand.open{transform:rotate(90deg);}
+.biz-name{font-size:15px;font-weight:700;}
+.biz-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.biz-pills{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
+.pill{font-size:10px;border-radius:6px;padding:2px 7px;font-weight:600;}
+.pill.g{background:rgba(34,197,94,.12);color:var(--ok);}
+.pill.b{background:rgba(37,99,235,.12);color:#60a5fa;}
+.pill.o{background:rgba(245,158,11,.12);color:var(--warn);}
+.pill.p{background:rgba(139,92,246,.12);color:#a78bfa;}
+.pill.r{background:rgba(239,68,68,.12);color:var(--crit);}
+.biz-chevron{font-size:16px;color:var(--muted);transition:transform .2s;flex-shrink:0;}
+.biz-chevron.open{transform:rotate(90deg);}
 
-/* BIZ DETAIL */
-.biz-detail{display:none;padding:0 20px 20px;border-top:1px solid var(--border);}
+/* ─── BIZ DETAIL ─── */
+.biz-detail{display:none;border-top:1px solid var(--border);}
 .biz-detail.open{display:block;}
-.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:16px;margin-top:14px;}
-.detail-item{background:var(--card2);border-radius:10px;padding:10px 14px;}
-.detail-item .dl{font-size:11px;color:var(--muted);margin-bottom:3px;}
-.detail-item .dv{font-size:14px;font-weight:600;word-break:break-all;}
 
-/* EMPLOYEES TABLE */
-.emp-table{width:100%;border-collapse:collapse;margin-top:8px;}
-.emp-table th{text-align:right;font-size:11px;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--border);font-weight:600;}
-.emp-table td{font-size:13px;padding:9px 10px;border-bottom:1px solid rgba(45,49,72,.5);}
+/* Detail tabs */
+.dtabs{display:flex;gap:2px;padding:12px 16px 0;background:var(--card2);}
+.dtab{padding:8px 14px;font-size:13px;font-weight:600;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
+.dtab.active{color:var(--accent);border-bottom-color:var(--accent);}
 
-/* ACTIVITY LOG */
-.act-log{max-height:240px;overflow-y:auto;margin-top:10px;}
-.act-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(45,49,72,.4);font-size:12px;}
-.act-time{color:var(--muted);flex-shrink:0;min-width:70px;}
-.act-who{font-weight:600;color:var(--accent);flex-shrink:0;min-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.act-what{color:var(--text);}
+.dpane{padding:16px;}
+.dpane.hide{display:none;}
 
-/* HELP BOX */
-.help-box{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px;}
-.help-box textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;color:var(--text);resize:vertical;min-height:80px;font-family:inherit;}
-.help-box textarea:focus{outline:none;border-color:var(--accent);}
-.help-note-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
-.help-note{background:rgba(79,124,255,.08);border:1px solid rgba(79,124,255,.2);border-radius:8px;padding:9px 12px;font-size:12px;}
-.help-note .hn-time{color:var(--muted);font-size:11px;}
-.help-note .hn-text{margin-top:3px;color:var(--text);}
-.help-note .btn-del{float:left;background:none;border:none;color:var(--crit);cursor:pointer;font-size:14px;}
+/* Detail grid */
+.dg{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:16px;}
+.di{background:var(--card2);border-radius:9px;padding:9px 12px;}
+.di .dl{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:3px;text-transform:uppercase;}
+.di .dv{font-size:13px;font-weight:600;word-break:break-all;}
 
-/* TABS */
-.tabs{display:flex;gap:2px;margin-bottom:14px;background:var(--card2);border-radius:10px;padding:3px;}
-.tab-btn{flex:1;padding:8px;font-size:13px;font-weight:600;border:none;border-radius:8px;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s;}
-.tab-btn.active{background:var(--accent);color:#fff;}
+/* Action bar */
+.action-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:rgba(239,68,68,.04);border-bottom:1px solid var(--border);}
+.btn-action{border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px;}
+.btn-action.red{background:rgba(239,68,68,.12);color:var(--crit);border:1px solid rgba(239,68,68,.25);}
+.btn-action.orange{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.25);}
+.btn-action.blue{background:rgba(37,99,235,.12);color:#60a5fa;border:1px solid rgba(37,99,235,.25);}
+.btn-action.green{background:rgba(34,197,94,.12);color:var(--ok);border:1px solid rgba(34,197,94,.25);}
 
-/* SEARCH */
-.search-bar{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-size:14px;color:var(--text);width:100%;margin-bottom:16px;outline:none;}
-.search-bar:focus{border-color:var(--accent);}
+/* Employees table */
+.etable{width:100%;border-collapse:collapse;}
+.etable th{text-align:right;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;padding:6px 10px;border-bottom:1px solid var(--border);}
+.etable td{font-size:13px;padding:10px;border-bottom:1px solid rgba(36,48,80,.5);vertical-align:middle;}
+.etable tr:last-child td{border-bottom:none;}
+.etable tr:hover td{background:rgba(37,99,235,.04);}
 
-/* EMPTY */
-.empty-state{text-align:center;padding:40px;color:var(--muted);}
-.empty-state .ei{font-size:40px;margin-bottom:10px;}
+/* Activity log */
+.alog{max-height:320px;overflow-y:auto;}
+.arow{display:grid;grid-template-columns:90px 90px 1fr 60px;gap:8px;padding:8px 0;border-bottom:1px solid rgba(36,48,80,.4);font-size:12px;align-items:center;}
+.arow:last-child{border-bottom:none;}
+.atime{color:var(--muted);}
+.awho{color:#60a5fa;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.awhat{color:var(--text);}
+.atype{font-size:10px;border-radius:5px;padding:2px 6px;text-align:center;font-weight:700;}
+.atype.login{background:rgba(34,197,94,.12);color:var(--ok);}
+.atype.item{background:rgba(37,99,235,.12);color:#60a5fa;}
+.atype.qty{background:rgba(245,158,11,.12);color:var(--warn);}
+.atype.other{background:rgba(139,92,246,.12);color:#a78bfa;}
 
-/* SCROLLBAR */
+/* Notes */
+.note-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.note-item{background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.15);border-radius:9px;padding:10px 12px;}
+.note-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.note-time{font-size:11px;color:var(--muted);}
+.note-del{background:none;border:none;color:var(--crit);font-size:13px;padding:0;}
+.note-text{font-size:13px;color:var(--text);line-height:1.5;}
+.note-inp{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);resize:vertical;min-height:70px;font-family:inherit;outline:none;}
+.note-inp:focus{border-color:var(--accent);}
+.btn-note{background:var(--accent);border:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;color:#fff;margin-top:6px;}
+
+/* ─── MODAL ─── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:440px;padding:24px;max-height:90vh;overflow-y:auto;}
+.modal h3{font-size:16px;font-weight:800;margin-bottom:18px;}
+.mfl{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.mfl label{font-size:12px;color:var(--muted);font-weight:600;}
+.mfl input,.mfl select{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:14px;color:var(--text);outline:none;width:100%;}
+.mfl input:focus,.mfl select:focus{border-color:var(--accent);}
+.modal-btns{display:flex;gap:8px;margin-top:18px;}
+.btn-modal{flex:1;border:none;border-radius:9px;padding:10px;font-size:14px;font-weight:700;}
+.btn-modal.pri{background:var(--accent);color:#fff;}
+.btn-modal.sec{background:var(--card2);color:var(--text);border:1px solid var(--border);}
+.btn-modal.red{background:var(--crit);color:#fff;}
+.perm-check{display:flex;align-items:center;justify-content:space-between;background:var(--card2);border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:6px;}
+.perm-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);}
+
+/* ─── GLOBAL ACTIVITY ─── */
+.alog-filters{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.af-btn{background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:5px 12px;font-size:12px;color:var(--muted);}
+.af-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* ─── EMPTY ─── */
+.empty{text-align:center;padding:32px;color:var(--muted);}
+.empty .ei{font-size:36px;margin-bottom:8px;}
+
+/* ─── SCROLLBAR ─── */
 ::-webkit-scrollbar{width:4px;height:4px;}
-::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 
-@media(max-width:600px){
-  .content{padding:14px;}
-  .biz-header{flex-wrap:wrap;}
-  .stats-row{grid-template-columns:1fr 1fr;}
-  .topnav{padding:0 14px;}
+@media(max-width:700px){
+  .sidebar{display:none;}
+  .main{max-width:100vw;padding:14px;}
+  .arow{grid-template-columns:70px 70px 1fr;}
+  .arow .atype{display:none;}
 }
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- ══ LOGIN ══ -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">⚖️</div>
-    <div class="login-title">WeightStock Admin</div>
-    <div class="login-sub">לוח בקרה מרכזי לבעלים</div>
-    <label>שם משתמש</label>
-    <input id="adm-user" type="text" placeholder="admin" autocomplete="username">
-    <label>סיסמה</label>
-    <input id="adm-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAdminLogin()">
-    <div class="login-err" id="login-err">שם משתמש או סיסמה שגויים</div>
-    <button class="btn-login" onclick="doAdminLogin()">כניסה לממשק הניהול</button>
+    <div class="login-logo">
+      <div class="icon">⚖️</div>
+      <div class="title">WeightStock Control</div>
+      <div class="sub">כניסה לממשק בעלים</div>
+    </div>
+    <div class="fl"><label>שם משתמש</label><input id="adm-user" type="text" placeholder="admin" autocomplete="username"></div>
+    <div class="fl"><label>סיסמה</label><input id="adm-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAdminLogin()"></div>
+    <div class="err" id="login-err">שם משתמש או סיסמה שגויים</div>
+    <button class="btn-login" onclick="doAdminLogin()">כניסה →</button>
   </div>
 </div>
 
-<!-- MAIN APP -->
+<!-- ══ APP ══ -->
 <div id="app">
   <nav class="topnav">
-    <div class="topnav-brand">
-      <div class="logo">⚖️</div>
-      <div class="name">WeightStock</div>
-      <div class="badge">OWNER PANEL</div>
-    </div>
-    <div class="topnav-right">
-      <span id="adm-clock" style="font-size:12px;color:var(--muted);"></span>
-      <button class="btn-sm" onclick="loadData()">🔄 רענן</button>
-      <button class="btn-sm danger" onclick="doLogout()">יציאה</button>
+    <div class="tn-brand">⚖️ WeightStock <span class="tn-badge">OWNER</span></div>
+    <div class="tn-right">
+      <span id="adm-clock" style="font-size:11px;color:var(--muted);"></span>
+      <button class="btn-xs" onclick="loadData()">↻ רענן</button>
+      <button class="btn-xs red" onclick="doLogout()">יציאה</button>
     </div>
   </nav>
 
-  <div class="content">
-
-    <!-- STATS ROW -->
-    <div class="stats-row" id="stats-row">
-      <div class="stat-card"><div class="stat-label">עסקים רשומים</div><div class="stat-val blue" id="s-biz">0</div></div>
-      <div class="stat-card"><div class="stat-label">מנהלים פעילים</div><div class="stat-val green" id="s-mgr">0</div></div>
-      <div class="stat-card"><div class="stat-label">סה"כ עובדים</div><div class="stat-val purple" id="s-emp">0</div></div>
-      <div class="stat-card"><div class="stat-label">כניסות היום</div><div class="stat-val orange" id="s-log">0</div></div>
-    </div>
-
-    <!-- TABS -->
-    <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('businesses')" id="tab-businesses">🏢 עסקים</button>
-      <button class="tab-btn" onclick="showTab('activity')" id="tab-activity">📋 פעילות</button>
-      <button class="tab-btn" onclick="showTab('demo')" id="tab-demo">🎮 דמו מהיר</button>
-    </div>
-
-    <!-- BUSINESSES TAB -->
-    <div id="pane-businesses">
-      <div class="section-title">רשימת עסקים <span class="badge-count" id="biz-count">0</span></div>
-      <input class="search-bar" id="biz-search" placeholder="🔍 חפש עסק, מנהל, מייל..." oninput="filterBiz()">
-      <div id="biz-list"></div>
-    </div>
-
-    <!-- ACTIVITY TAB -->
-    <div id="pane-activity" style="display:none;">
-      <div class="section-title">יומן פעילות מלא</div>
-      <div id="global-actlog"></div>
-    </div>
-
-    <!-- DEMO TAB -->
-    <div id="pane-demo" style="display:none;">
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;">
-        <div style="font-size:48px;margin-bottom:12px;">🎮</div>
-        <div style="font-size:18px;font-weight:800;margin-bottom:8px;">הוסף נתוני דמו</div>
-        <div style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">
-          מאחר שהאפליקציה עובדת על localStorage בכל מכשיר בנפרד,<br>
-          זה הפאנל הנוכחי מראה את הנתונים שקיימים <u>במכשיר הזה</u>.<br>
-          בגרסה עם שרת מרכזי תוכל לראות את כל המשתמשים מכל מקום.
-        </div>
-        <button onclick="loadDemoData()" style="background:var(--grad);border:none;border-radius:12px;padding:12px 28px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;margin-bottom:10px;display:block;width:100%;">📥 טען 3 עסקי דמו</button>
-        <button onclick="clearDemoData()" style="background:none;border:1px solid var(--crit);border-radius:12px;padding:10px 28px;font-size:14px;color:var(--crit);cursor:pointer;width:100%;">🗑️ נקה נתוני דמו</button>
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-item active" onclick="showPane('businesses')" id="si-businesses">🏢 עסקים</div>
+      <div class="sidebar-item" onclick="showPane('activity')" id="si-activity">📋 פעילות מלאה</div>
+      <div class="sidebar-item" onclick="showPane('demo')" id="si-demo">🎮 נתוני דמו</div>
+      <div style="height:1px;background:var(--border);margin:12px 0;"></div>
+      <div style="padding:10px 16px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;">סטטיסטיקות</div>
+      <div class="stats-row" style="display:flex;flex-direction:column;gap:8px;padding:0 10px;">
+        <div class="stat-card" style="padding:10px 12px;"><div class="stat-label">עסקים</div><div class="stat-val" id="s-biz" style="font-size:20px;color:#60a5fa;">0</div></div>
+        <div class="stat-card" style="padding:10px 12px;"><div class="stat-label">עובדים</div><div class="stat-val" id="s-emp" style="font-size:20px;color:var(--ok);">0</div></div>
+        <div class="stat-card" style="padding:10px 12px;"><div class="stat-label">כניסות היום</div><div class="stat-val" id="s-log" style="font-size:20px;color:var(--warn);">0</div></div>
       </div>
     </div>
 
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- BUSINESSES PANE -->
+      <div id="pane-businesses">
+        <div class="sec-head">
+          <div class="sec-title">🏢 עסקים <span class="cnt" id="biz-count">0</span></div>
+        </div>
+        <div class="search-wrap">
+          <input id="biz-search" placeholder="חיפוש לפי שם, מייל, עיר..." oninput="filterBiz()">
+          <span class="si">🔍</span>
+        </div>
+        <div id="biz-list"></div>
+      </div>
+
+      <!-- ACTIVITY PANE -->
+      <div id="pane-activity" style="display:none;">
+        <div class="sec-head"><div class="sec-title">📋 יומן פעילות מלא</div></div>
+        <div class="alog-filters">
+          <button class="af-btn active" onclick="filterGlog('all',this)">הכל</button>
+          <button class="af-btn" onclick="filterGlog('login',this)">כניסות</button>
+          <button class="af-btn" onclick="filterGlog('item',this)">פריטים</button>
+          <button class="af-btn" onclick="filterGlog('qty',this)">כמויות</button>
+        </div>
+        <div id="global-actlog"></div>
+      </div>
+
+      <!-- DEMO PANE -->
+      <div id="pane-demo" style="display:none;">
+        <div class="sec-head"><div class="sec-title">🎮 נתוני דמו</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:480px;">
+          <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:18px;">
+            הפאנל הזה קורא נתונים מה-localStorage של הדפדפן הנוכחי.<br>
+            כשהאפליקציה הראשית ופאנל הבעלים פועלים באותו דומיין — הנתונים משותפים ישירות.<br>
+            לצורך הדגמה, טען עסקי דמו:
+          </p>
+          <button onclick="loadDemoData()" style="background:var(--grad);border:none;border-radius:10px;padding:11px 24px;font-size:14px;font-weight:700;color:#fff;width:100%;margin-bottom:8px;">📥 טען 3 עסקי דמו</button>
+          <button onclick="clearDemoData()" style="background:none;border:1px solid var(--crit);border-radius:10px;padding:10px 24px;font-size:13px;color:var(--crit);width:100%;">🗑️ נקה נתוני דמו</button>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /layout -->
+</div><!-- /app -->
+
+<!-- ══ EMPLOYEE EDIT MODAL ══ -->
+<div class="modal-bg" id="modal-emp">
+  <div class="modal">
+    <h3 id="modal-emp-title">✏️ עריכת עובד</h3>
+    <input type="hidden" id="me-tenant-id">
+    <input type="hidden" id="me-emp-id">
+    <div class="mfl"><label>שם מלא</label><input id="me-name" placeholder="דוד לוי"></div>
+    <div class="mfl"><label>קוד כניסה (6 ספרות)</label><input id="me-code" type="tel" inputmode="numeric" maxlength="6" placeholder="000000" dir="ltr" style="letter-spacing:4px;font-size:18px;font-weight:800;text-align:center;"></div>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">הרשאות:</div>
+    <div id="me-perms"></div>
+    <div class="modal-btns">
+      <button class="btn-modal sec" onclick="closeModal('modal-emp')">ביטול</button>
+      <button class="btn-modal pri" onclick="saveEmpFromAdmin()">שמור ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM MODAL ══ -->
+<div class="modal-bg" id="modal-confirm">
+  <div class="modal" style="max-width:360px;">
+    <h3 id="mc-title">אישור פעולה</h3>
+    <p id="mc-msg" style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;"></p>
+    <div class="modal-btns">
+      <button class="btn-modal sec" onclick="closeModal('modal-confirm')">ביטול</button>
+      <button class="btn-modal red" id="mc-confirm-btn">אשר</button>
+    </div>
   </div>
 </div>
 
 <script>
-/* ── ADMIN CREDENTIALS (change these!) ── */
-var ADMIN_USER='nirabu';
-var ADMIN_PASS='WeightStock2025!';
-
-/* ── STORAGE KEY PREFIX (must match the main app) ── */
+var ADMIN_USER='nirabu', ADMIN_PASS='WeightStock2025!';
+var ADMIN_SESSION_KEY='ws3_admin_session';
 var LS_PFX='ws3_';
+
 function lsGet(k,def){try{var v=localStorage.getItem(LS_PFX+k);return v!=null?JSON.parse(v):def;}catch(e){return def;}}
 function lsSet(k,v){try{localStorage.setItem(LS_PFX+k,JSON.stringify(v));}catch(e){}}
+function lsDel(k){localStorage.removeItem(LS_PFX+k);}
 
-/* ── SESSION ── */
-var ADMIN_SESSION_KEY='ws3_admin_session';
-
+/* ── AUTH ── */
 function doAdminLogin(){
   var u=document.getElementById('adm-user').value.trim();
   var p=document.getElementById('adm-pw').value;
-  var errEl=document.getElementById('login-err');
-  errEl.style.display='none';
+  var err=document.getElementById('login-err');
+  err.style.display='none';
   if(u===ADMIN_USER&&p===ADMIN_PASS){
     sessionStorage.setItem(ADMIN_SESSION_KEY,'1');
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
-    loadData();
-    startClock();
-  } else {
-    errEl.style.display='block';
-    document.getElementById('adm-pw').value='';
-  }
+    loadData(); startClock();
+  } else { err.style.display='block'; document.getElementById('adm-pw').value=''; }
 }
-
-function doLogout(){
-  sessionStorage.removeItem(ADMIN_SESSION_KEY);
-  location.reload();
-}
-
+function doLogout(){ sessionStorage.removeItem(ADMIN_SESSION_KEY); location.reload(); }
 function startClock(){
-  function tick(){
-    var now=new Date();
-    document.getElementById('adm-clock').textContent=now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
-  }
-  tick(); setInterval(tick,30000);
+  (function tick(){document.getElementById('adm-clock').textContent=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});})();
+  setInterval(function(){document.getElementById('adm-clock').textContent=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});},30000);
 }
 
-/* ── LOAD DATA FROM LOCALSTORAGE ── */
-var _bizList=[];
-
+/* ── DATA ── */
+var _bizList=[], _glog=[];
 function loadData(){
-  /* Collect all tenants stored in this browser */
   var tenants=lsGet('admin_tenants',[]);
-
-  /* Always include the "current" tenant (main app on this device) */
-  var currentSettings=lsGet('settings',null);
-  if(currentSettings&&currentSettings.bizName){
-    var currentAcct=lsGet('account',{});
-    var currentMgr=lsGet('um_manager',null);
-    var currentEmps=lsGet('um_employees',[]);
-    var currentLog=lsGet('um_actlog',[]);
-    var found=tenants.find(function(t){return t.id==='_current_';});
-    if(!found){
-      tenants.push({
-        id:'_current_',
-        settings:currentSettings,
-        account:currentAcct,
-        manager:currentMgr,
-        employees:currentEmps,
-        actlog:currentLog,
-        registeredAt:currentAcct.registeredAt||Date.now()
-      });
-    } else {
-      found.settings=currentSettings;
-      found.account=currentAcct;
-      found.manager=currentMgr;
-      found.employees=currentEmps;
-      found.actlog=currentLog;
-    }
+  var cs=lsGet('settings',null);
+  if(cs&&cs.bizName){
+    var ca=lsGet('account',{}), cm=lsGet('um_manager',null), ce=lsGet('um_employees',[]), cl=lsGet('um_actlog',[]);
+    var f=tenants.find(function(t){return t.id==='_current_';});
+    if(!f) tenants.push({id:'_current_',settings:cs,account:ca,manager:cm,employees:ce,actlog:cl,registeredAt:ca.registeredAt||Date.now()});
+    else { f.settings=cs; f.account=ca; f.manager=cm; f.employees=ce; f.actlog=cl; }
     lsSet('admin_tenants',tenants);
   }
-
   _bizList=tenants;
-  renderStats(tenants);
-  renderBizList(tenants);
-  renderGlobalLog(tenants);
-}
-
-function renderStats(tenants){
-  var totalEmp=tenants.reduce(function(s,t){return s+(t.employees?t.employees.length:0);},0);
-  var today=new Date(); today.setHours(0,0,0,0);
-  var todayLogins=tenants.reduce(function(s,t){
-    return s+(t.actlog?t.actlog.filter(function(a){return a.action==='login'&&a.ts>=today.getTime();}).length:0);
-  },0);
-  document.getElementById('s-biz').textContent=tenants.length;
-  document.getElementById('s-mgr').textContent=tenants.filter(function(t){return t.manager;}).length;
-  document.getElementById('s-emp').textContent=totalEmp;
-  document.getElementById('s-log').textContent=todayLogins;
+  _glog=[];
+  tenants.forEach(function(t){(t.actlog||[]).forEach(function(a){_glog.push(Object.assign({},a,{bizName:(t.settings||{}).bizName||'?'});});});
+  _glog.sort(function(a,b){return b.ts-a.ts;});
+  renderStats(); renderBizList(_bizList); renderGlobalLog('all');
   document.getElementById('biz-count').textContent=tenants.length;
+  document.getElementById('s-biz').textContent=tenants.length;
 }
 
-function fmtDate(ts){
-  if(!ts)return '—';
-  return new Date(ts).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
-}
-function fmtDateShort(ts){
-  if(!ts)return '—';
-  return new Date(ts).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'});
+function renderStats(){
+  var totalEmp=_bizList.reduce(function(s,t){return s+(t.employees?t.employees.length:0);},0);
+  var today=new Date(); today.setHours(0,0,0,0);
+  var todayL=_glog.filter(function(a){return a.action==='login'&&a.ts>=today.getTime();}).length;
+  document.getElementById('s-emp').textContent=totalEmp;
+  document.getElementById('s-log').textContent=todayL;
 }
 
-function renderBizList(tenants){
-  var list=document.getElementById('biz-list');
-  if(!tenants.length){
-    list.innerHTML='<div class="empty-state"><div class="ei">🏢</div><b>אין עסקים רשומים עדיין</b><div>כאשר עסק ירשם באפליקציה הוא יופיע כאן</div></div>';
-    return;
-  }
-  list.innerHTML=tenants.map(function(t,i){
-    var s=t.settings||{};
-    var a=t.account||{};
-    var m=t.manager||{};
-    var emps=t.employees||[];
-    var log=t.actlog||[];
-    var notes=getHelpNotes(t.id);
-    var lastActivity=log[0]?log[0].ts:null;
-    var connected=emps.filter(function(e){return e.lastLogin&&(Date.now()-e.lastLogin)<30*60*1000;}).length;
-    var mgrConnected=m.lastLogin&&(Date.now()-m.lastLogin)<30*60*1000;
+/* ── FORMAT ── */
+function fmtDt(ts){if(!ts)return '—';return new Date(ts).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function ago(ts){if(!ts)return '—';var d=Math.round((Date.now()-ts)/60000);if(d<60)return 'לפני '+d+'ד\'';if(d<1440)return 'לפני '+Math.round(d/60)+'ש\'';return 'לפני '+Math.round(d/1440)+' ימים';}
 
-    return '<div class="biz-card" id="biz-card-'+t.id+'">'
+/* ── RENDER BIZ LIST ── */
+function renderBizList(list){
+  var el=document.getElementById('biz-list');
+  if(!list.length){el.innerHTML='<div class="empty"><div class="ei">🏢</div><b>אין עסקים רשומים</b></div>';return;}
+  el.innerHTML=list.map(function(t){
+    var s=t.settings||{},a=t.account||{},m=t.manager||{},emps=t.employees||[],log=t.actlog||[];
+    var now=Date.now();
+    var mConn=m.lastLogin&&(now-m.lastLogin)<30*60*1000;
+    var eConn=emps.filter(function(e){return e.lastLogin&&(now-e.lastLogin)<30*60*1000;}).length;
+    return '<div class="biz-card" id="bc-'+t.id+'">'
       +'<div class="biz-header" onclick="toggleBiz(\''+t.id+'\')">'
-        +'<div class="biz-avatar">'+( s.bizType?s.bizType[0]:'🏢')+'</div>'
+        +'<div class="biz-avatar">'+(m.name?m.name[0]:'?')+'</div>'
         +'<div class="biz-info">'
-          +'<div class="biz-name">'+escH(s.bizName||'ללא שם')+'</div>'
-          +'<div class="biz-meta">'+(s.bizType||'')+(s.bizCity?' • '+s.bizCity:'')+(s.bizEmail?' • '+s.bizEmail:'')+'</div>'
-          +'<div class="biz-badges">'
-            +(mgrConnected?'<span class="badge green">🟢 מנהל מחובר</span>':'')
-            +(connected?'<span class="badge green">'+connected+' עובדים מחוברים</span>':'')
-            +'<span class="badge blue">'+emps.length+' עובדים</span>'
-            +'<span class="badge purple">'+log.length+' פעולות</span>'
-            +(lastActivity?'<span class="badge orange">פעיל: '+fmtDate(lastActivity)+'</span>':'')
-            +(notes.length?'<span class="badge orange">'+notes.length+' הערות</span>':'')
+          +'<div class="biz-name">'+esc(s.bizName||'ללא שם')+'</div>'
+          +'<div class="biz-meta">'+esc(s.bizType||'')+(s.bizCity?' · '+esc(s.bizCity):'')+(a.email?' · '+esc(a.email):'')+'</div>'
+          +'<div class="biz-pills">'
+            +(mConn?'<span class="pill g">🟢 מנהל מחובר</span>':'')
+            +(eConn?'<span class="pill g">'+eConn+' עובד מחובר</span>':'')
+            +'<span class="pill b">'+emps.length+' עובדים</span>'
+            +'<span class="pill p">'+log.length+' פעולות</span>'
+            +(log[0]?'<span class="pill o">'+ago(log[0].ts)+'</span>':'')
           +'</div>'
         +'</div>'
-        +'<div class="biz-expand" id="exp-'+t.id+'">›</div>'
+        +'<div class="biz-chevron" id="chv-'+t.id+'">›</div>'
       +'</div>'
-      +'<div class="biz-detail" id="det-'+t.id+'">'
-        +'<div class="detail-grid">'
-          +detailItem('שם עסק',s.bizName)
-          +detailItem('סוג עסק',s.bizType)
-          +detailItem('טלפון עסק',s.bizPhone)
-          +detailItem('מייל עסק',s.bizEmail)
-          +detailItem('כתובת',[(s.bizStreet||''),(s.bizCity||'')].filter(Boolean).join(' '))
-          +detailItem('אתר',s.bizWeb)
-          +detailItem('מטבע',s.currency)
+      +'<div class="biz-detail" id="bd-'+t.id+'">'
+        +'<div class="action-bar">'
+          +'<button class="btn-action blue" onclick="openMgrEdit(\''+t.id+'\')">✏️ ערוך מנהל</button>'
+          +'<button class="btn-action green" onclick="openAddEmpModal(\''+t.id+'\')">➕ הוסף עובד</button>'
+          +'<button class="btn-action orange" onclick="confirmReset(\''+t.id+'\')">🔄 אפס PIN מנהל</button>'
+          +'<button class="btn-action red" onclick="confirmDelete(\''+t.id+'\')">🗑️ מחק עסק</button>'
         +'</div>'
-        +'<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px;margin-top:4px;">👤 פרטי בעל עסק / מנהל</div>'
-        +'<div class="detail-grid">'
-          +detailItem('שם מלא',a.fullname||m.name)
-          +detailItem('שם פרטי',a.firstname)
-          +detailItem('שם משפחה',a.lastname)
-          +detailItem('ת.ז',a.idnum)
-          +detailItem('טלפון',a.phone)
-          +detailItem('מייל',a.email||m.email)
-          +detailItem('נרשם',fmtDate(a.registeredAt||t.registeredAt))
-          +detailItem('כניסות',m.loginCount||0)
-          +detailItem('כניסה אחרונה',fmtDate(m.lastLogin))
+        +'<div class="dtabs">'
+          +'<button class="dtab active" onclick="switchDTab(\''+t.id+'\',\'info\',this)">פרטים</button>'
+          +'<button class="dtab" onclick="switchDTab(\''+t.id+'\',\'emps\',this)">עובדים ('+emps.length+')</button>'
+          +'<button class="dtab" onclick="switchDTab(\''+t.id+'\',\'log\',this)">פעילות ('+log.length+')</button>'
+          +'<button class="dtab" onclick="switchDTab(\''+t.id+'\',\'notes\',this)">הערות</button>'
         +'</div>'
-        +(emps.length?'<div style="font-size:13px;font-weight:700;color:var(--accent);margin:12px 0 8px;">👥 עובדים ('+emps.length+')</div>'
-          +'<div style="overflow-x:auto;">'
-          +'<table class="emp-table"><thead><tr><th>שם</th><th>כניסות</th><th>כניסה אחרונה</th><th>סטטוס</th></tr></thead><tbody>'
-          +emps.map(function(e){
-            var conn=e.lastLogin&&(Date.now()-e.lastLogin)<30*60*1000;
-            return '<tr><td><b>'+escH(e.name)+'</b></td><td>'+(e.loginCount||0)+'</td><td>'+fmtDate(e.lastLogin)+'</td><td>'+(conn?'<span style="color:var(--ok);font-weight:700;">🟢 מחובר</span>':'<span style="color:var(--muted);">לא מחובר</span>')+'</td></tr>';
-          }).join('')
-          +'</tbody></table></div>'
-        :'<div style="font-size:13px;color:var(--muted);margin:10px 0;">אין עובדים רשומים</div>')
-        +(log.length?'<div style="font-size:13px;font-weight:700;color:var(--accent);margin:12px 0 6px;">📋 פעילות אחרונה</div>'
-          +'<div class="act-log">'
-          +log.slice(0,30).map(function(a){
-            return '<div class="act-row"><div class="act-time">'+fmtDate(a.ts)+'</div><div class="act-who">'+escH(a.userName||'')+'</div><div class="act-what">'+escH(a.action)+(a.details?' — '+escH(a.details):'')+'</div></div>';
-          }).join('')
-          +'</div>'
-        :'')
-        +'<div style="font-size:13px;font-weight:700;color:var(--accent);margin:14px 0 8px;">💬 הערות ועזרה מרחוק</div>'
-        +'<div class="help-box" id="help-box-'+t.id+'">'
-          +'<div id="help-notes-'+t.id+'"></div>'
-          +'<textarea id="help-inp-'+t.id+'" placeholder="כתוב הסבר, הוראה, או הערה לעסק זה..."></textarea>'
-          +'<button onclick="addHelpNote(\''+t.id+'\')" style="margin-top:8px;background:var(--accent);border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;">+ הוסף הערה</button>'
-        +'</div>'
+        +'<div class="dpane" id="dp-'+t.id+'-info">'+renderBizInfo(t)+'</div>'
+        +'<div class="dpane hide" id="dp-'+t.id+'-emps">'+renderEmpsPane(t)+'</div>'
+        +'<div class="dpane hide" id="dp-'+t.id+'-log">'+renderLogPane(t)+'</div>'
+        +'<div class="dpane hide" id="dp-'+t.id+'-notes">'+renderNotesPane(t)+'</div>'
       +'</div>'
     +'</div>';
   }).join('');
-
-  /* render notes */
-  tenants.forEach(function(t){renderHelpNotes(t.id);});
+  _bizList.forEach(function(t){renderNotesList(t.id);});
 }
 
-function detailItem(label,val){
-  if(!val&&val!==0)return '';
-  return '<div class="detail-item"><div class="dl">'+escH(label)+'</div><div class="dv">'+escH(String(val))+'</div></div>';
+function renderBizInfo(t){
+  var s=t.settings||{},a=t.account||{},m=t.manager||{};
+  return '<div class="dg">'
+    +di('שם עסק',s.bizName)+di('סוג עסק',s.bizType)+di('טלפון עסק',s.bizPhone)
+    +di('מייל עסק',s.bizEmail)+di('כתובת',[s.bizStreet,s.bizCity].filter(Boolean).join(' '))
+    +di('אתר',s.bizWeb)+di('מטבע',s.currency)
+  +'</div>'
+  +'<div style="font-size:12px;font-weight:700;color:#60a5fa;margin:4px 0 8px;">👤 בעל עסק / מנהל</div>'
+  +'<div class="dg">'
+    +di('שם מלא',a.fullname||m.name)+di('שם פרטי',a.firstname)+di('שם משפחה',a.lastname)
+    +di('ת.ז',a.idnum)+di('טלפון',a.phone)+di('מייל',a.email||m.email)
+    +di('נרשם',fmtDt(a.registeredAt||t.registeredAt))
+    +di('PIN נוכחי',m.pin||'לא הוגדר')+di('כניסות',m.loginCount||0)+di('כניסה אחרונה',fmtDt(m.lastLogin))
+  +'</div>';
 }
-function escH(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+function renderEmpsPane(t){
+  var emps=t.employees||[];
+  if(!emps.length)return '<div class="empty"><div class="ei">👤</div><b>אין עובדים</b></div>';
+  var now=Date.now();
+  return '<table class="etable"><thead><tr><th>שם</th><th>קוד</th><th>כניסות</th><th>כניסה אחרונה</th><th>סטטוס</th><th>פעולות</th></tr></thead><tbody>'
+    +emps.map(function(e){
+      var conn=e.lastLogin&&(now-e.lastLogin)<30*60*1000;
+      return '<tr>'
+        +'<td><b>'+esc(e.name)+'</b></td>'
+        +'<td><code style="background:var(--card2);border-radius:5px;padding:2px 7px;font-size:13px;">'+esc(e.code)+'</code></td>'
+        +'<td>'+(e.loginCount||0)+'</td>'
+        +'<td style="font-size:11px;color:var(--muted);">'+fmtDt(e.lastLogin)+'</td>'
+        +'<td>'+(conn?'<span style="color:var(--ok);font-weight:700;font-size:11px;">🟢 מחובר</span>':'<span style="color:var(--muted);font-size:11px;">לא מחובר</span>')+'</td>'
+        +'<td><div style="display:flex;gap:5px;">'
+          +'<button class="btn-action blue" style="padding:4px 8px;font-size:11px;" onclick="openEmpEdit(\''+t.id+'\',\''+e.id+'\')">✏️</button>'
+          +'<button class="btn-action red" style="padding:4px 8px;font-size:11px;" onclick="confirmDelEmp(\''+t.id+'\',\''+e.id+'\')">🗑️</button>'
+        +'</div></td>'
+      +'</tr>';
+    }).join('')
+  +'</tbody></table>';
+}
+
+function renderLogPane(t){
+  var log=(t.actlog||[]).slice(0,100);
+  if(!log.length)return '<div class="empty"><div class="ei">📋</div><b>אין פעילות</b></div>';
+  return '<div class="alog">'
+    +log.map(function(a){
+      var type=a.action==='login'?'login':a.action&&a.action.includes('item')?'item':a.action&&(a.action.includes('qty')||a.action.includes('weight'))?'qty':'other';
+      return '<div class="arow"><div class="atime">'+fmtDt(a.ts)+'</div><div class="awho">'+esc(a.userName)+'</div><div class="awhat">'+esc(a.action)+(a.details?' — '+esc(a.details):'')+'</div><div class="atype '+type+'">'+({login:'כניסה',item:'פריט',qty:'כמות',other:'אחר'}[type])+'</div></div>';
+    }).join('')
+  +'</div>';
+}
+
+function renderNotesPane(t){
+  return '<div id="notes-wrap-'+t.id+'"></div>'
+    +'<textarea class="note-inp" id="note-inp-'+t.id+'" placeholder="כתוב הוראה, הסבר, או הערה..."></textarea>'
+    +'<button class="btn-note" onclick="addNote(\''+t.id+'\')">+ הוסף הערה</button>';
+}
+
+function di(label,val){if(!val&&val!==0)return '';return '<div class="di"><div class="dl">'+esc(label)+'</div><div class="dv">'+esc(String(val))+'</div></div>';}
+
+/* ── BIZ TOGGLE ── */
 function toggleBiz(id){
-  var det=document.getElementById('det-'+id);
-  var exp=document.getElementById('exp-'+id);
-  var open=det.classList.contains('open');
-  det.classList.toggle('open',!open);
-  exp.classList.toggle('open',!open);
+  var bd=document.getElementById('bd-'+id), chv=document.getElementById('chv-'+id);
+  var open=bd.classList.contains('open');
+  bd.classList.toggle('open',!open); chv.classList.toggle('open',!open);
+}
+
+/* ── DETAIL TABS ── */
+function switchDTab(tid,pane,btn){
+  ['info','emps','log','notes'].forEach(function(p){
+    document.getElementById('dp-'+tid+'-'+p).classList.toggle('hide',p!==pane);
+  });
+  btn.closest('.dtabs').querySelectorAll('.dtab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
 }
 
 /* ── SEARCH ── */
 function filterBiz(){
   var q=(document.getElementById('biz-search').value||'').toLowerCase();
   _bizList.forEach(function(t){
-    var card=document.getElementById('biz-card-'+t.id);
-    if(!card)return;
-    var s=t.settings||{}, a=t.account||{}, m=t.manager||{};
-    var text=[(s.bizName||''),(s.bizType||''),(s.bizEmail||''),(a.fullname||''),(a.email||''),(m.name||'')].join(' ').toLowerCase();
-    card.style.display=text.includes(q)?'':'none';
+    var c=document.getElementById('bc-'+t.id); if(!c)return;
+    var s=t.settings||{},a=t.account||{},m=t.manager||{};
+    var txt=[s.bizName,s.bizType,s.bizEmail,s.bizCity,a.fullname,a.email,m.name].join(' ').toLowerCase();
+    c.style.display=txt.includes(q)?'':'none';
   });
 }
 
-/* ── GLOBAL ACTIVITY LOG ── */
-function renderGlobalLog(tenants){
-  var allLogs=[];
-  tenants.forEach(function(t){
-    var s=t.settings||{};
-    (t.actlog||[]).forEach(function(a){
-      allLogs.push(Object.assign({},a,{bizName:s.bizName||'?'}));
-    });
+/* ── GLOBAL LOG ── */
+var _glogFilter='all';
+function renderGlobalLog(filter){
+  _glogFilter=filter;
+  var filtered=filter==='all'?_glog:_glog.filter(function(a){
+    if(filter==='login')return a.action==='login';
+    if(filter==='item')return a.action&&a.action.includes('item');
+    if(filter==='qty')return a.action&&(a.action.includes('qty')||a.action.includes('weight'));
+    return true;
   });
-  allLogs.sort(function(a,b){return b.ts-a.ts;});
   var el=document.getElementById('global-actlog');
-  if(!allLogs.length){el.innerHTML='<div class="empty-state"><div class="ei">📋</div><b>אין פעילות עדיין</b></div>';return;}
-  el.innerHTML='<div class="act-log" style="max-height:600px;">'
-    +allLogs.slice(0,200).map(function(a){
-      return '<div class="act-row">'
-        +'<div class="act-time">'+fmtDate(a.ts)+'</div>'
-        +'<div class="act-who" title="'+escH(a.bizName||'')+'">'+escH(a.bizName||'')+'</div>'
-        +'<div class="act-what"><b>'+escH(a.userName||'')+'</b>: '+escH(a.action)+(a.details?' — '+escH(a.details):'')+'</div>'
-        +'</div>';
+  if(!filtered.length){el.innerHTML='<div class="empty"><div class="ei">📋</div><b>אין פעילות</b></div>';return;}
+  el.innerHTML='<div class="alog" style="max-height:70vh;">'
+    +filtered.slice(0,300).map(function(a){
+      var type=a.action==='login'?'login':a.action&&a.action.includes('item')?'item':a.action&&(a.action.includes('qty')||a.action.includes('weight'))?'qty':'other';
+      return '<div class="arow"><div class="atime">'+fmtDt(a.ts)+'</div><div class="awho" title="'+esc(a.bizName||'')+'">'+esc(a.bizName||'')+'</div><div class="awhat"><b>'+esc(a.userName||'')+'</b>: '+esc(a.action)+(a.details?' — '+esc(a.details):'')+'</div><div class="atype '+type+'">'+({login:'כניסה',item:'פריט',qty:'כמות',other:'אחר'}[type])+'</div></div>';
     }).join('')
   +'</div>';
 }
-
-/* ── HELP NOTES ── */
-function getHelpNotes(tenantId){return JSON.parse(localStorage.getItem('ws3_admin_notes_'+tenantId)||'[]');}
-function setHelpNotes(tenantId,notes){localStorage.setItem('ws3_admin_notes_'+tenantId,JSON.stringify(notes));}
-
-function addHelpNote(tenantId){
-  var inp=document.getElementById('help-inp-'+tenantId);
-  var txt=(inp.value||'').trim();
-  if(!txt)return;
-  var notes=getHelpNotes(tenantId);
-  notes.unshift({ts:Date.now(),text:txt});
-  setHelpNotes(tenantId,notes);
-  inp.value='';
-  renderHelpNotes(tenantId);
+function filterGlog(f,btn){
+  document.querySelectorAll('.af-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderGlobalLog(f);
 }
-window.addHelpNote=addHelpNote;
+window.filterGlog=filterGlog;
 
-function delHelpNote(tenantId,idx){
-  var notes=getHelpNotes(tenantId);
-  notes.splice(idx,1);
-  setHelpNotes(tenantId,notes);
-  renderHelpNotes(tenantId);
+/* ── EMPLOYEE EDIT MODAL ── */
+var PERMS_LIST=[
+  {key:'editQty',label:'עדכון כמויות'},
+  {key:'addItems',label:'הוספת פריטים'},
+  {key:'editItems',label:'עריכת פריטים'},
+  {key:'deleteItems',label:'מחיקת פריטים'},
+  {key:'seePrices',label:'צפייה במחירים'},
+  {key:'seeProfit',label:'צפייה ברווח'},
+  {key:'seeReports',label:'דוחות'},
+  {key:'seeCategories',label:'קטגוריות'}
+];
+
+function openEmpEdit(tenantId,empId){
+  var t=_bizList.find(function(x){return x.id===tenantId;});
+  if(!t)return;
+  var emp=(t.employees||[]).find(function(e){return e.id===empId;});
+  if(!emp)return;
+  document.getElementById('modal-emp-title').textContent='✏️ עריכת '+emp.name;
+  document.getElementById('me-tenant-id').value=tenantId;
+  document.getElementById('me-emp-id').value=empId;
+  document.getElementById('me-name').value=emp.name;
+  document.getElementById('me-code').value=emp.code;
+  buildPermGrid(emp.permissions||{});
+  document.getElementById('modal-emp').classList.add('show');
 }
-window.delHelpNote=delHelpNote;
+window.openEmpEdit=openEmpEdit;
 
-function renderHelpNotes(tenantId){
-  var el=document.getElementById('help-notes-'+tenantId);
-  if(!el)return;
-  var notes=getHelpNotes(tenantId);
-  if(!notes.length){el.innerHTML='';return;}
-  el.innerHTML='<div class="help-note-list">'
-    +notes.map(function(n,i){
-      return '<div class="help-note"><div style="display:flex;justify-content:space-between;align-items:flex-start;">'
-        +'<span class="hn-time">'+fmtDate(n.ts)+'</span>'
-        +'<button class="btn-del" onclick="delHelpNote(\''+tenantId+'\','+i+')">✕</button>'
-        +'</div><div class="hn-text">'+escH(n.text)+'</div></div>';
-    }).join('')
-  +'</div>';
+function openAddEmpModal(tenantId){
+  document.getElementById('modal-emp-title').textContent='➕ הוספת עובד';
+  document.getElementById('me-tenant-id').value=tenantId;
+  document.getElementById('me-emp-id').value='';
+  document.getElementById('me-name').value='';
+  document.getElementById('me-code').value='';
+  buildPermGrid({editQty:true});
+  document.getElementById('modal-emp').classList.add('show');
+}
+window.openAddEmpModal=openAddEmpModal;
+
+function buildPermGrid(perms){
+  document.getElementById('me-perms').innerHTML=PERMS_LIST.map(function(p){
+    return '<div class="perm-check"><span>'+p.label+'</span><input type="checkbox" id="mp-'+p.key+'"'+(perms[p.key]?' checked':'')+'></div>';
+  }).join('');
 }
 
-/* ── TABS ── */
-function showTab(tab){
-  ['businesses','activity','demo'].forEach(function(t){
-    document.getElementById('pane-'+t).style.display=t===tab?'block':'none';
-    var btn=document.getElementById('tab-'+t);
-    btn.classList.toggle('active',t===tab);
+function saveEmpFromAdmin(){
+  var tenantId=document.getElementById('me-tenant-id').value;
+  var empId=document.getElementById('me-emp-id').value;
+  var name=document.getElementById('me-name').value.trim();
+  var code=document.getElementById('me-code').value.trim();
+  if(!name||!code){alert('שם וקוד הם שדות חובה');return;}
+  var perms={};
+  PERMS_LIST.forEach(function(p){perms[p.key]=document.getElementById('mp-'+p.key).checked;});
+  var t=_bizList.find(function(x){return x.id===tenantId;});
+  if(!t)return;
+  var emps=t.employees||[];
+  if(empId){
+    var emp=emps.find(function(e){return e.id===empId;});
+    if(emp){emp.name=name;emp.code=code;emp.permissions=perms;}
+  } else {
+    emps.push({id:'e'+Date.now(),name:name,code:code,permissions:perms,loginCount:0,lastLogin:null});
+  }
+  t.employees=emps;
+  saveTenantBack(t);
+  closeModal('modal-emp');
+  loadData();
+}
+window.saveEmpFromAdmin=saveEmpFromAdmin;
+
+/* ── MANAGER EDIT ── */
+function openMgrEdit(tenantId){
+  var t=_bizList.find(function(x){return x.id===tenantId;});
+  if(!t)return;
+  var m=t.manager||{};
+  document.getElementById('modal-emp-title').textContent='✏️ עריכת מנהל';
+  document.getElementById('me-tenant-id').value=tenantId;
+  document.getElementById('me-emp-id').value='__manager__';
+  document.getElementById('me-name').value=m.name||'';
+  document.getElementById('me-code').value=m.pin||'';
+  document.getElementById('me-perms').innerHTML='<div style="font-size:12px;color:var(--muted);">למנהל יש גישה מלאה לכל דבר</div>';
+  document.getElementById('modal-emp').classList.add('show');
+}
+window.openMgrEdit=openMgrEdit;
+
+/* ── SAVE BACK TO LOCALSTORAGE ── */
+function saveTenantBack(t){
+  var tenants=lsGet('admin_tenants',[]);
+  var idx=tenants.findIndex(function(x){return x.id===t.id;});
+  if(idx>=0)tenants[idx]=t; else tenants.push(t);
+  lsSet('admin_tenants',tenants);
+  /* if current tenant, update live localStorage keys */
+  if(t.id==='_current_'){
+    if(t.employees!==undefined)lsSet('um_employees',t.employees);
+    if(t.manager!==undefined)lsSet('um_manager',t.manager);
+    if(t.settings!==undefined)lsSet('settings',t.settings);
+  }
+}
+
+/* ── CONFIRM DIALOGS ── */
+function confirmReset(tenantId){
+  showConfirm('אפס PIN מנהל','האם לאפס את קוד הכניסה של המנהל ל-123456?',function(){
+    var t=_bizList.find(function(x){return x.id===tenantId;});
+    if(t&&t.manager){t.manager.pin='123456';saveTenantBack(t);loadData();showToast('PIN אופס ל-123456 ✓');}
   });
+}
+window.confirmReset=confirmReset;
+
+function confirmDelete(tenantId){
+  showConfirm('מחק עסק','האם אתה בטוח שברצונך למחוק את כל נתוני העסק? פעולה זו אינה הפיכה.',function(){
+    var tenants=lsGet('admin_tenants',[]).filter(function(t){return t.id!==tenantId;});
+    lsSet('admin_tenants',tenants);
+    if(tenantId==='_current_'){
+      ['settings','account','um_manager','um_employees','um_actlog','um_session','items','shelves','suppliers','categories'].forEach(function(k){lsDel(k);});
+    }
+    loadData();
+  });
+}
+window.confirmDelete=confirmDelete;
+
+function confirmDelEmp(tenantId,empId){
+  showConfirm('מחק עובד','האם למחוק עובד זה מהמערכת?',function(){
+    var t=_bizList.find(function(x){return x.id===tenantId;});
+    if(!t)return;
+    t.employees=(t.employees||[]).filter(function(e){return e.id!==empId;});
+    saveTenantBack(t);
+    loadData();
+  });
+}
+window.confirmDelEmp=confirmDelEmp;
+
+function showConfirm(title,msg,onConfirm){
+  document.getElementById('mc-title').textContent=title;
+  document.getElementById('mc-msg').textContent=msg;
+  var btn=document.getElementById('mc-confirm-btn');
+  btn.onclick=function(){closeModal('modal-confirm');onConfirm();};
+  document.getElementById('modal-confirm').classList.add('show');
+}
+
+/* ── NOTES ── */
+function getNotes(tid){return JSON.parse(localStorage.getItem('ws3_admin_notes_'+tid)||'[]');}
+function setNotes(tid,n){localStorage.setItem('ws3_admin_notes_'+tid,JSON.stringify(n));}
+
+function addNote(tid){
+  var inp=document.getElementById('note-inp-'+tid);
+  var txt=(inp.value||'').trim();if(!txt)return;
+  var notes=getNotes(tid);
+  notes.unshift({ts:Date.now(),text:txt});
+  setNotes(tid,notes);
+  inp.value='';
+  renderNotesList(tid);
+}
+window.addNote=addNote;
+
+function delNote(tid,idx){
+  var notes=getNotes(tid);notes.splice(idx,1);setNotes(tid,notes);renderNotesList(tid);
+}
+window.delNote=delNote;
+
+function renderNotesList(tid){
+  var el=document.getElementById('notes-wrap-'+tid);if(!el)return;
+  var notes=getNotes(tid);
+  if(!notes.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="note-list">'+notes.map(function(n,i){
+    return '<div class="note-item"><div class="note-meta"><span class="note-time">'+fmtDt(n.ts)+'</span><button class="note-del" onclick="delNote(\''+tid+'\','+i+')">✕</button></div><div class="note-text">'+esc(n.text)+'</div></div>';
+  }).join('')+'</div>';
+}
+
+/* ── MODAL ── */
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+window.closeModal=closeModal;
+document.addEventListener('click',function(e){if(e.target.classList.contains('modal-bg'))e.target.classList.remove('show');});
+
+/* ── PANES ── */
+function showPane(pane){
+  ['businesses','activity','demo'].forEach(function(p){
+    document.getElementById('pane-'+p).style.display=p===pane?'block':'none';
+    document.getElementById('si-'+p).classList.toggle('active',p===pane);
+  });
+  if(pane==='activity')renderGlobalLog(_glogFilter);
+}
+window.showPane=showPane;
+
+/* ── TOAST ── */
+function showToast(msg){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e3a8a;color:#fff;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,.4);';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(function(){t.remove();},2800);
 }
 
 /* ── DEMO DATA ── */
 function loadDemoData(){
   var demos=[
     {id:'demo1',registeredAt:Date.now()-5*86400000,
-      settings:{bizName:'מכולת כהן',bizType:'מכולת ומזון',bizPhone:'03-1234567',bizEmail:'kohen@example.com',bizStreet:'רחוב הרצל 10',bizCity:'תל אביב',currency:'₪'},
-      account:{fullname:'משה כהן',firstname:'משה',lastname:'כהן',idnum:'012345678',phone:'050-1111111',email:'moshe@example.com',registeredAt:Date.now()-5*86400000},
-      manager:{name:'משה כהן',pin:'1234',email:'moshe@example.com',loginCount:14,lastLogin:Date.now()-2*3600000},
-      employees:[{id:'e1',name:'דוד לוי',code:'5678',loginCount:8,lastLogin:Date.now()-25*60*1000,permissions:{editQty:true}},{id:'e2',name:'שרה גולד',code:'9999',loginCount:3,lastLogin:Date.now()-3*86400000,permissions:{editQty:true,seeReports:true}}],
-      actlog:[{userId:'manager',userName:'משה כהן',isManager:true,action:'login',details:'כניסת מנהל PIN',ts:Date.now()-2*3600000},{userId:'e1',userName:'דוד לוי',isManager:false,action:'login',details:'כניסת עובד: דוד לוי',ts:Date.now()-25*60*1000},{userId:'manager',userName:'משה כהן',isManager:true,action:'editQty',details:'עדכן כמות: חלב 3%',ts:Date.now()-2*3600000-5*60000}]
-    },
+     settings:{bizName:'מכולת כהן',bizType:'מכולת ומזון',bizPhone:'03-1234567',bizEmail:'kohen@example.com',bizStreet:'רחוב הרצל 10',bizCity:'תל אביב',currency:'₪'},
+     account:{fullname:'משה כהן',firstname:'משה',lastname:'כהן',idnum:'012345678',phone:'050-1111111',email:'moshe@example.com',registeredAt:Date.now()-5*86400000},
+     manager:{name:'משה כהן',pin:'112233',email:'moshe@example.com',loginCount:14,lastLogin:Date.now()-2*3600000},
+     employees:[{id:'e1',name:'דוד לוי',code:'445566',loginCount:8,lastLogin:Date.now()-25*60*1000,permissions:{editQty:true}},{id:'e2',name:'שרה גולד',code:'778899',loginCount:3,lastLogin:Date.now()-3*86400000,permissions:{editQty:true,seeReports:true}}],
+     actlog:[{userId:'manager',userName:'משה כהן',isManager:true,action:'login',details:'כניסת מנהל PIN',ts:Date.now()-2*3600000},{userId:'e1',userName:'דוד לוי',isManager:false,action:'login',details:'כניסת עובד',ts:Date.now()-25*60*1000},{userId:'manager',userName:'משה כהן',isManager:true,action:'editQty',details:'עדכן כמות: חלב 3%',ts:Date.now()-2*3600000-300000}]},
     {id:'demo2',registeredAt:Date.now()-12*86400000,
-      settings:{bizName:'בית מרקחת רמת גן',bizType:'בית מרקחת',bizPhone:'03-9876543',bizEmail:'pharmacy@example.com',bizStreet:'אבן גבירול 45',bizCity:'רמת גן',currency:'₪'},
-      account:{fullname:'רחל אברהם',firstname:'רחל',lastname:'אברהם',idnum:'987654321',phone:'052-2222222',email:'rachel@example.com',registeredAt:Date.now()-12*86400000},
-      manager:{name:'רחל אברהם',pin:'2024',email:'rachel@example.com',loginCount:31,lastLogin:Date.now()-8*3600000},
-      employees:[{id:'e3',name:'אבי מוזס',code:'1111',loginCount:22,lastLogin:Date.now()-1*86400000,permissions:{editQty:true,seeReports:true}}],
-      actlog:[{userId:'manager',userName:'רחל אברהם',isManager:true,action:'login',details:'כניסת מנהל',ts:Date.now()-8*3600000}]
-    },
-    {id:'demo3',registeredAt:Date.now()-2*86400000,
-      settings:{bizName:'מסעדת הים',bizType:'מסעדה ומזון',bizPhone:'04-5556677',bizEmail:'sea@example.com',bizCity:'חיפה',currency:'₪'},
-      account:{fullname:'יוסי ים',firstname:'יוסי',lastname:'ים',idnum:'111222333',phone:'054-3333333',email:'yossi@example.com',registeredAt:Date.now()-2*86400000},
-      manager:{name:'יוסי ים',pin:'7777',email:'yossi@example.com',loginCount:5,lastLogin:Date.now()-30*60*1000},
-      employees:[],
-      actlog:[{userId:'manager',userName:'יוסי ים',isManager:true,action:'login',details:'כניסה ראשונה',ts:Date.now()-2*86400000}]
-    }
+     settings:{bizName:'בית מרקחת רמת גן',bizType:'בית מרקחת',bizPhone:'03-9876543',bizEmail:'pharmacy@example.com',bizCity:'רמת גן',currency:'₪'},
+     account:{fullname:'רחל אברהם',firstname:'רחל',lastname:'אברהם',idnum:'987654321',phone:'052-2222222',email:'rachel@example.com',registeredAt:Date.now()-12*86400000},
+     manager:{name:'רחל אברהם',pin:'246810',email:'rachel@example.com',loginCount:31,lastLogin:Date.now()-8*3600000},
+     employees:[{id:'e3',name:'אבי מוזס',code:'135790',loginCount:22,lastLogin:Date.now()-86400000,permissions:{editQty:true,seeReports:true}}],
+     actlog:[{userId:'manager',userName:'רחל אברהם',isManager:true,action:'login',details:'כניסת מנהל',ts:Date.now()-8*3600000}]}
   ];
   var tenants=lsGet('admin_tenants',[]);
-  demos.forEach(function(d){
-    if(!tenants.find(function(t){return t.id===d.id;})){tenants.push(d);}
-  });
+  demos.forEach(function(d){if(!tenants.find(function(t){return t.id===d.id;}))tenants.push(d);});
   lsSet('admin_tenants',tenants);
   loadData();
-  alert('נטענו 3 עסקי דמו ✓');
+  showToast('נטענו עסקי דמו ✓');
 }
-
 function clearDemoData(){
   var tenants=lsGet('admin_tenants',[]).filter(function(t){return !t.id.startsWith('demo');});
   lsSet('admin_tenants',tenants);
   loadData();
+  showToast('נמחקו נתוני דמו');
 }
 
 /* ── INIT ── */
 if(sessionStorage.getItem(ADMIN_SESSION_KEY)==='1'){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  loadData();
-  startClock();
+  loadData(); startClock();
 }
 </script>
 </body>
