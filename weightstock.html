@@ -450,16 +450,18 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 }
 
 /* ── SUMMARY TILES ── */
-.summary-row{display:flex;gap:8px;margin-bottom:12px;}
+.summary-row{display:flex;gap:0;margin-bottom:12px;border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:0 2px 12px rgba(43,108,176,.07);}
 .sum-tile{
   flex:1;
   background:#FFFFFF;
-  border-radius:16px;
-  padding:14px 12px;
+  border-radius:0;
+  padding:14px 8px;
   text-align:center;
-  border:1px solid var(--border);
-  box-shadow:0 2px 12px rgba(43,108,176,.07);
+  border:none;
+  border-left:1px solid var(--border);
+  box-shadow:none;
 }
+.sum-tile:last-child{border-left:none;}
 .sum-tile .n{
   font-size:24px;
   font-weight:700;
@@ -469,17 +471,11 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 .sum-tile .l{font-size:10px;color:var(--muted);font-weight:600;margin-top:2px;letter-spacing:.3px;text-transform:uppercase;}
 
 @media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]) .sum-tile{
-    background:var(--card);
-    border-color:var(--border);
-    box-shadow:0 2px 8px rgba(0,0,0,.25);
-  }
+  :root:not([data-theme="light"]) .sum-tile{background:var(--card);}
+  :root:not([data-theme="light"]) .summary-row{box-shadow:0 2px 8px rgba(0,0,0,.25);}
 }
-:root[data-theme="dark"] .sum-tile{
-  background:var(--card);
-  border-color:var(--border);
-  box-shadow:0 2px 8px rgba(0,0,0,.25);
-}
+:root[data-theme="dark"] .sum-tile{background:var(--card);}
+:root[data-theme="dark"] .summary-row{box-shadow:0 2px 8px rgba(0,0,0,.25);}
 
 /* ── PROGRESS ── */
 .prog{height:6px;background:var(--card2);border-radius:8px;overflow:hidden;margin:6px 0;}
@@ -854,7 +850,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   .modal-overlay{align-items:center;}
   .modal-box{border-radius:20px;margin:auto;max-width:520px;}
   .modal-box::before{display:none;}
-  .summary-row{flex-wrap:nowrap;}
+  .summary-row{flex-wrap:nowrap;border-radius:12px;}
   .screen{padding:20px 24px;}
 }
 
