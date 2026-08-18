@@ -1281,7 +1281,8 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <!-- שלב 2: פרטי העסק -->
     <div class="ob-step" id="ob-s2">
       <div class="ob-title" id="ob-s2-name">פרטי העסק</div>
-      <div class="ob-sub">שלב 2 מתוך 4 — מידע כללי ויצירת קשר</div>
+      <div class="ob-sub">שלב 2 מתוך 4 — מידע עסקי ויצירת קשר</div>
+      <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:9px 13px;margin-bottom:10px;font-size:12px;color:var(--accent);font-weight:600;">🏢 כל הפרטים הבאים הם פרטי <u>העסק</u> — לא פרטים אישיים</div>
       <div class="ob-biz">
         <div style="background:var(--card2);border-radius:10px;padding:8px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
           <span style="font-size:11px;color:var(--muted);">סוג עסק:</span>
@@ -1328,36 +1329,57 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 
     <!-- שלב 3: פרטי מנהל -->
     <div class="ob-step" id="ob-s3">
-      <div class="ob-title">פרטי המנהל</div>
-      <div class="ob-sub">שלב 3 מתוך 4 — פרטי כניסה</div>
+      <div class="ob-title">פרטי בעל העסק / מנהל</div>
+      <div class="ob-sub">שלב 3 מתוך 4 — פרטים אישיים וכניסה</div>
       <div class="ob-biz">
         <div id="reg-err" style="display:none;background:rgba(185,28,28,.1);color:var(--crit);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;text-align:center;"></div>
-        <div class="ob-field">
-          <label>שם מלא *</label>
-          <input id="ob-fullname" placeholder="ישראל ישראלי" autocomplete="name">
+        <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:9px 13px;margin-bottom:12px;font-size:12px;color:var(--accent);font-weight:600;">👤 פרטים אישיים של <u>המנהל</u> — לא פרטי העסק</div>
+        <div style="display:flex;gap:10px;">
+          <div class="ob-field" style="flex:1;">
+            <label>שם פרטי *</label>
+            <input id="ob-firstname" placeholder="ישראל" autocomplete="given-name">
+          </div>
+          <div class="ob-field" style="flex:1;">
+            <label>שם משפחה *</label>
+            <input id="ob-lastname" placeholder="ישראלי" autocomplete="family-name">
+          </div>
         </div>
         <div class="ob-field">
-          <label>טלפון</label>
+          <label>תעודת זהות *</label>
+          <input id="ob-idnum" type="tel" inputmode="numeric" maxlength="9" placeholder="000000000" dir="ltr" autocomplete="off">
+        </div>
+        <div class="ob-field">
+          <label>טלפון נייד *</label>
           <input id="ob-phone" type="tel" placeholder="050-0000000" autocomplete="tel">
         </div>
         <div class="ob-field">
           <label>אימייל *</label>
           <input id="ob-mgr-email" type="email" placeholder="manager@example.com" autocomplete="email">
         </div>
-        <div class="ob-field">
-          <label>סיסמה * (מינימום 6 תווים)</label>
-          <input id="ob-mgr-pw" type="password" placeholder="••••••" autocomplete="new-password">
-        </div>
-        <div class="ob-field">
-          <label>אימות סיסמה *</label>
-          <input id="ob-mgr-pw2" type="password" placeholder="••••••" autocomplete="new-password">
-        </div>
-        <div style="background:var(--card2);border-radius:10px;padding:10px 14px;margin-top:4px;">
-          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;">קוד PIN — כניסה מהירה (4 ספרות)</div>
-          <input id="ob-pin" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:8px;font-size:22px;font-weight:800;text-align:center;background:var(--card);">
-          <label style="margin-top:8px;display:block;">אימות PIN</label>
-          <input id="ob-pin2" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:8px;font-size:22px;font-weight:800;text-align:center;background:var(--card);">
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">ניתן להשתמש ב-PIN במקום סיסמה בכניסות עתידיות</div>
+        <div style="background:var(--card2);border-radius:10px;padding:12px 14px;margin-top:6px;">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">🔐 פרטי התחברות</div>
+          <div class="ob-field">
+            <label>סיסמה * (מינימום 6 תווים)</label>
+            <input id="ob-mgr-pw" type="password" placeholder="••••••" autocomplete="new-password">
+          </div>
+          <div class="ob-field">
+            <label>אימות סיסמה *</label>
+            <input id="ob-mgr-pw2" type="password" placeholder="••••••" autocomplete="new-password">
+          </div>
+          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+            <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;">🔢 PIN — כניסה מהירה (4 ספרות)</div>
+            <div style="display:flex;gap:8px;">
+              <div style="flex:1;">
+                <label style="font-size:11px;color:var(--muted);">PIN</label>
+                <input id="ob-pin" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:6px;font-size:20px;font-weight:800;text-align:center;">
+              </div>
+              <div style="flex:1;">
+                <label style="font-size:11px;color:var(--muted);">אימות PIN</label>
+                <input id="ob-pin2" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" dir="ltr" style="letter-spacing:6px;font-size:20px;font-weight:800;text-align:center;">
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">ה-PIN משמש לכניסה מהירה במקום סיסמה</div>
+          </div>
         </div>
         <div class="row" style="margin-top:18px;">
           <button class="btn sec" onclick="obBack2()">← חזור</button>
@@ -3923,7 +3945,9 @@ function upgradeTo(key){
 window.upgradeTo=upgradeTo;
 
 function obToPlans(){
-  var fullname=document.getElementById('ob-fullname').value.trim();
+  var firstname=(document.getElementById('ob-firstname')||{value:''}).value.trim();
+  var lastname=(document.getElementById('ob-lastname')||{value:''}).value.trim();
+  var idnum=(document.getElementById('ob-idnum')||{value:''}).value.trim();
   var email=document.getElementById('ob-mgr-email').value.trim();
   var pw=document.getElementById('ob-mgr-pw').value;
   var pw2=document.getElementById('ob-mgr-pw2').value;
@@ -3931,7 +3955,9 @@ function obToPlans(){
   var pin2=document.getElementById('ob-pin2').value.trim();
   var errEl=document.getElementById('reg-err');
   errEl.style.display='none';
-  if(!fullname){errEl.textContent='הכנס שם מלא';errEl.style.display='block';return;}
+  if(!firstname){errEl.textContent='הכנס שם פרטי';errEl.style.display='block';return;}
+  if(!lastname){errEl.textContent='הכנס שם משפחה';errEl.style.display='block';return;}
+  if(!idnum||idnum.length<7){errEl.textContent='הכנס מספר תעודת זהות תקין';errEl.style.display='block';return;}
   if(!email||!email.includes('@')){errEl.textContent='הכנס כתובת מייל תקינה';errEl.style.display='block';return;}
   if(!pw||pw.length<6){errEl.textContent='הסיסמה חייבת להכיל לפחות 6 תווים';errEl.style.display='block';return;}
   if(pw!==pw2){errEl.textContent='הסיסמאות לא תואמות';errEl.style.display='block';return;}
@@ -3995,7 +4021,10 @@ window.obBack2=obBack2;
 
 function obFinish(){
   if(!_obTmpl)return;
-  var fullname=document.getElementById('ob-fullname').value.trim();
+  var firstname=(document.getElementById('ob-firstname')||{value:''}).value.trim();
+  var lastname=(document.getElementById('ob-lastname')||{value:''}).value.trim();
+  var fullname=firstname+' '+lastname;
+  var idnum=(document.getElementById('ob-idnum')||{value:''}).value.trim();
   var phone=document.getElementById('ob-phone').value.trim();
   var pin=document.getElementById('ob-pin').value.trim();
   var mgrEmail=document.getElementById('ob-mgr-email').value.trim();
@@ -4011,7 +4040,7 @@ function obFinish(){
   var bizCity=document.getElementById('ob-bizcity').value.trim();
   var bizWeb=document.getElementById('ob-bizweb').value.trim();
   LS.set('settings',{bizName:biz,bizType:td.bizType||td.name||'',currency:cur,defaultAlert:20,demo:true,bizNotes:'',bizPhone:bizPhone,bizEmail:bizEmail,bizStreet:bizStreet,bizCity:bizCity,bizWeb:bizWeb});
-  LS.set('account',{fullname:fullname,phone:phone});
+  LS.set('account',{fullname:fullname,firstname:firstname,lastname:lastname,idnum:idnum,phone:phone,email:mgrEmail,registeredAt:Date.now()});
   LS.set('plan',{key:_selectedPlan,name:PLANS[_selectedPlan].name,since:Date.now(),trialEnd:Date.now()+14*86400000});
   /* save manager credentials */
   setupManagerUser(fullname||'מנהל', pin||'1234', mgrEmail, mgrPw);
