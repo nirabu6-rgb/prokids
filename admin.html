@@ -345,6 +345,17 @@ button{cursor:pointer;font-family:inherit;}
         </div>
         <!-- תוצאות חיפוש -->
         <div id="global-search-results" style="display:none;margin-bottom:18px;"></div>
+        <!-- קישור הרשמה מהיר -->
+        <div style="background:linear-gradient(135deg,#003B71,#005aaa);border-radius:14px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="color:#fff;">
+            <div style="font-size:14px;font-weight:800;">📨 שלח קישור הרשמה לעסק חדש</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;" id="reg-link-url"></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button onclick="copyRegLink()" style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:700;font-family:inherit;">העתק קישור</button>
+            <button onclick="showPane('invites')" style="background:#00A859;border:none;color:#fff;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:700;font-family:inherit;">קישורים נוספים ›</button>
+          </div>
+        </div>
         <div class="kpi-grid" id="dash-kpi"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;" id="dash-charts-row">
           <div class="chart-wrap">
@@ -1314,6 +1325,8 @@ function savePlan(){
 
 /* ── DASHBOARD ── */
 function renderDashboard(){
+  var urlEl=document.getElementById('reg-link-url');
+  if(urlEl)urlEl.textContent=getRegLink();
   var totalBiz=_bizList.length;
   var totalEmp=_bizList.reduce(function(s,t){return s+(t.employees?t.employees.length:0)+(t.manager?1:0);},0);
   var activeContracts=_bizList.filter(function(t){return t.plan&&t.planEnd&&t.planEnd>Date.now();}).length;
@@ -1768,6 +1781,18 @@ function globalSearch(q){
   resultsEl.style.display='block';
 }
 window.globalSearch=globalSearch;
+
+/* ── REGISTRATION LINK ── */
+function getRegLink(){
+  var base=location.href.replace(/admin\.html.*/,'');
+  return base+'weightstock.html';
+}
+function copyRegLink(){
+  var url=getRegLink();
+  if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){showToast('קישור הרשמה הועתק ✓');});}
+  else{showToast('קישור: '+url);}
+}
+window.copyRegLink=copyRegLink;
 
 /* ── TOAST ── */
 function showToast(msg){

@@ -1178,7 +1178,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <!-- שלב 1: קוד עסק -->
     <div id="um-store-section">
       <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;">קוד העסק שקיבלת מהמנהל</div>
-      <input id="um-store-text" type="text" placeholder="קוד עסק (לפחות 6 תווים)" autocomplete="off"
+      <input id="um-store-text" type="text" placeholder="קוד עסק (4-6 תווים)" autocomplete="off" maxlength="6"
         style="width:100%;box-sizing:border-box;padding:14px;font-size:20px;font-weight:800;text-align:center;letter-spacing:4px;text-transform:uppercase;border:2px solid var(--border);border-radius:12px;background:var(--card2);color:var(--text);outline:none;font-family:monospace;"
         oninput="this.value=this.value.toUpperCase()"
         onkeydown="if(event.key==='Enter')umSubmitStoreCode()">
@@ -1384,10 +1384,10 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
         <!-- קוד עסק -->
         <div style="background:var(--card2);border-radius:10px;padding:12px 14px;margin-top:6px;">
           <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;">🏪 קוד עסק — לכניסה לאפליקציה</div>
-          <input id="ob-store-code" type="text" placeholder="לפחות 6 תווים (אותיות/מספרים)" autocomplete="off"
-            style="font-size:18px;font-weight:800;text-align:center;letter-spacing:3px;text-transform:uppercase;"
-            oninput="this.value=this.value.toUpperCase()">
-          <div style="font-size:11px;color:var(--muted);margin-top:5px;">קוד זה תעביר לעובדים שלך — הם יזינו אותו בכניסה לאפליקציה</div>
+          <input id="ob-store-code" type="text" placeholder="4-6 תווים (אותיות/מספרים)" autocomplete="off" maxlength="6"
+            style="font-size:22px;font-weight:800;text-align:center;letter-spacing:5px;text-transform:uppercase;"
+            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)">
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">קוד זה תעביר לעובדים שלך — 4 עד 6 תווים בלבד</div>
         </div>
         <!-- סיסמת מנהל -->
         <div style="background:var(--card2);border-radius:10px;padding:12px 14px;margin-top:8px;">
@@ -3507,7 +3507,7 @@ function umSubmitStoreCode(){
   var entered=(inp?inp.value:'').trim().toUpperCase();
   var errEl=document.getElementById('um-store-err');
   errEl.style.display='none';
-  if(entered.length<6){errEl.textContent='קוד עסק חייב להיות לפחות 6 תווים';errEl.style.display='block';return;}
+  if(entered.length<4||entered.length>6){errEl.textContent='קוד עסק חייב להיות בין 4 ל-6 תווים';errEl.style.display='block';return;}
   var code=getStoreCode();
   if(!code){errEl.textContent='קוד עסק לא הוגדר — פנה למנהל המערכת';errEl.style.display='block';return;}
   if(entered!==code){
@@ -4203,7 +4203,7 @@ function obFinish(){
   var storeCode=storeCodeRaw.toUpperCase();
   var mgrEmail=document.getElementById('ob-mgr-email').value.trim();
   /* בדיקת קוד עסק */
-  if(!storeCode||storeCode.length<6){alert('קוד העסק חייב להיות לפחות 6 תווים');return;}
+  if(!storeCode||storeCode.length<4||storeCode.length>6){alert('קוד העסק חייב להיות בין 4 ל-6 תווים');return;}
   /* בדיקת סיסמה */
   if(!pin){alert('חסרה סיסמת מנהל');return;}
   if(pin!==pin2){alert('הסיסמאות לא תואמות');return;}
