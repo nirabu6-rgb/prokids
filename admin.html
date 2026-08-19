@@ -225,6 +225,46 @@ button{cursor:pointer;font-family:inherit;}
   .arow .atype{display:none;}
   .plan-cards{grid-template-columns:1fr;}
 }
+/* ── FEATURE ADDITIONS ── */
+.tag-badge{display:inline-block;font-size:10px;border-radius:5px;padding:2px 7px;font-weight:700;margin-left:3px;}
+.tag-VIP{background:rgba(234,179,8,.18);color:#d97706;}
+.tag-חדש{background:rgba(59,130,246,.18);color:#3b82f6;}
+.tag-בסיכון{background:rgba(239,68,68,.18);color:var(--crit);}
+.tag-פעיל{background:rgba(34,197,94,.18);color:var(--ok);}
+.tag-לא-פעיל{background:rgba(148,163,184,.18);color:var(--muted);}
+.filter-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;}
+.filter-row select,.filter-row input[type=range]{background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:12px;color:var(--text);outline:none;font-family:inherit;}
+.filter-count{font-size:12px;color:var(--muted);margin-right:auto;white-space:nowrap;}
+.pay-status-שולם{color:var(--ok);font-weight:700;}
+.pay-status-חוב{color:var(--crit);font-weight:700;}
+.pay-status-ממתין{color:var(--warn);font-weight:700;}
+#float-widget{position:fixed;bottom:24px;left:24px;z-index:900;user-select:none;}
+.fw-btn{width:50px;height:50px;border-radius:50%;background:var(--navy);color:#fff;border:2px solid var(--leumi-green);font-size:15px;font-weight:800;box-shadow:0 4px 16px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.fw-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow-md);margin-bottom:8px;min-width:210px;display:none;}
+.fw-panel.open{display:block;}
+.fw-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border);}
+.fw-row:last-child{border:none;}
+#tfa-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:700;align-items:center;justify-content:center;}
+#tfa-screen.show{display:flex;}
+.goal-row{margin-bottom:16px;}
+.goal-lbl{font-size:13px;font-weight:600;margin-bottom:5px;display:flex;justify-content:space-between;}
+.goal-bar-bg{height:10px;background:var(--card2);border-radius:5px;overflow:hidden;}
+.goal-bar-fill{height:100%;border-radius:5px;background:var(--accent);transition:width .4s;}
+.invite-row{display:flex;align-items:center;gap:8px;background:var(--card2);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:12px;}
+.invite-row .ic{flex:1;word-break:break-all;color:var(--muted);}
+.city-table{width:100%;border-collapse:collapse;font-size:13px;}
+.city-table th{text-align:right;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;padding:6px 10px;border-bottom:1px solid var(--border);}
+.city-table td{padding:9px 10px;border-bottom:1px solid rgba(36,48,80,.3);}
+.city-table tr:hover td{background:var(--card2);cursor:pointer;}
+.susp-row{display:flex;align-items:center;gap:10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:8px;padding:9px 12px;margin-bottom:6px;font-size:12px;}
+.susp-time{color:var(--muted);white-space:nowrap;}
+.susp-biz{font-weight:700;}
+.survey-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+@media print{
+  body *{visibility:hidden!important;}
+  #report-print-content,#report-print-content *{visibility:visible!important;}
+  #report-print-content{position:fixed;inset:0;background:#fff;color:#000;padding:32px;z-index:9999;}
+}
 </style>
 </head>
 <body>
@@ -269,7 +309,7 @@ button{cursor:pointer;font-family:inherit;}
   <div class="layout">
     <div class="sidebar">
       <div class="sidebar-item active" onclick="showPane('dashboard')" id="si-dashboard"><span class="sic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>דשבורד</div>
-      <div class="sidebar-item" onclick="showPane('businesses')" id="si-businesses"><span class="sic"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>עסקים</div>
+      <div class="sidebar-item" onclick="showPane('businesses')" id="si-businesses"><span class="sic"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>עסקים<span class="sb-badge" id="pending-badge" style="display:none;background:var(--warn);">0</span></div>
       <div class="sidebar-item" onclick="showPane('finance')" id="si-finance"><span class="sic"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>פיננסים</div>
       <div class="sidebar-item" onclick="showPane('alerts')" id="si-alerts"><span class="sic"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>התראות<span class="sb-badge" id="alerts-badge" style="display:none;">0</span></div>
       <div class="sidebar-item" onclick="showPane('messages')" id="si-messages"><span class="sic"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>הודעות<span class="sb-badge" id="msgs-badge" style="display:none;">0</span></div>
@@ -279,6 +319,13 @@ button{cursor:pointer;font-family:inherit;}
       <div class="sidebar-sep"></div>
       <div class="sidebar-item" onclick="showPane('activity')" id="si-activity"><span class="sic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>פעילות מלאה</div>
       <div class="sidebar-item" onclick="showPane('demo')" id="si-demo"><span class="sic"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>נתוני דמו</div>
+      <div class="sidebar-sep"></div>
+      <div class="sidebar-sec">ניתוחים</div>
+      <div class="sidebar-item" onclick="showPane('compare')" id="si-compare"><span class="sic">⚖️</span>השוואה</div>
+      <div class="sidebar-item" onclick="showPane('goals')" id="si-goals"><span class="sic">🎯</span>מטרות</div>
+      <div class="sidebar-item" onclick="showPane('geo')" id="si-geo"><span class="sic">🗺️</span>גיאוגרפי</div>
+      <div class="sidebar-item" onclick="showPane('peakhours')" id="si-peakhours"><span class="sic">⏱️</span>שעות שיא</div>
+      <div class="sidebar-item" onclick="showPane('invites')" id="si-invites"><span class="sic">🔗</span>הזמנות</div>
     </div>
 
     <div class="main">
@@ -297,6 +344,20 @@ button{cursor:pointer;font-family:inherit;}
             <div class="health-list" id="dash-health-list"></div>
           </div>
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div class="chart-wrap">
+            <div class="chart-title">📈 צמיחת עסקים — 6 חודשים אחרונים</div>
+            <div id="growth-line-chart"></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-title">📊 כניסות שבועיות מצטברות</div>
+            <div id="weekly-logins-chart"></div>
+          </div>
+        </div>
+        <div style="text-align:left;margin-bottom:16px;">
+          <button class="btn-action blue" onclick="openMonthlyReport()" style="font-size:13px;">📄 הפק דו"ח חודשי</button>
+        </div>
+        <div id="suspicious-section"></div>
       </div>
 
       <!-- BUSINESSES -->
@@ -308,6 +369,14 @@ button{cursor:pointer;font-family:inherit;}
           <input id="biz-search" placeholder="חיפוש לפי שם, מייל, עיר..." oninput="filterBiz()">
           <span class="si"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
         </div>
+        <div class="filter-row" id="adv-filter-row">
+          <select id="flt-plan" onchange="filterBiz()"><option value="">כל החבילות</option><option value="basic">בסיסי</option><option value="pro">פרו</option><option value="enterprise">ארגוני</option></select>
+          <select id="flt-city" onchange="filterBiz()"><option value="">כל הערים</option></select>
+          <select id="flt-health" onchange="filterBiz()"><option value="">כל ציוני הבריאות</option><option value="red">אדום (0-3)</option><option value="yellow">צהוב (4-7)</option><option value="green">ירוק (8-10)</option></select>
+          <select id="flt-tag" onchange="filterBiz()"><option value="">כל התגיות</option><option value="VIP">VIP</option><option value="חדש">חדש</option><option value="בסיכון">בסיכון</option><option value="פעיל">פעיל</option><option value="לא פעיל">לא פעיל</option></select>
+          <span class="filter-count" id="flt-count"></span>
+        </div>
+        <div id="pending-section" style="display:none;margin-bottom:16px;"></div>
         <div id="biz-list"></div>
       </div>
 
@@ -363,6 +432,63 @@ button{cursor:pointer;font-family:inherit;}
           <button class="af-btn" onclick="filterGlog('qty',this)">כמויות</button>
         </div>
         <div id="global-actlog"></div>
+      </div>
+
+      <!-- COMPARE -->
+      <div id="pane-compare" style="display:none;">
+        <div class="sec-head"><div class="sec-title">⚖️ השוואת עסקים</div></div>
+        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+          <div class="mfl" style="flex:1;min-width:160px;"><label>עסק א'</label><select id="cmp-a" onchange="renderCompare()"><option value="">— בחר —</option></select></div>
+          <div class="mfl" style="flex:1;min-width:160px;"><label>עסק ב'</label><select id="cmp-b" onchange="renderCompare()"><option value="">— בחר —</option></select></div>
+        </div>
+        <div id="compare-chart"></div>
+      </div>
+
+      <!-- GOALS -->
+      <div id="pane-goals" style="display:none;">
+        <div class="sec-head"><div class="sec-title">🎯 מטרות חודשיות</div></div>
+        <div class="settings-sec">
+          <h4>הגדרת מטרות</h4>
+          <div class="dg">
+            <div class="mfl"><label>עסקים חדשים החודש</label><input id="goal-newbiz" type="number" min="0" placeholder="5"></div>
+            <div class="mfl"><label>סה"כ כניסות השבוע</label><input id="goal-logins" type="number" min="0" placeholder="50"></div>
+            <div class="mfl"><label>ממוצע בריאות</label><input id="goal-health" type="number" min="0" max="10" step="0.1" placeholder="7"></div>
+          </div>
+          <button class="btn-note" onclick="saveGoals()">שמור מטרות</button>
+        </div>
+        <div id="goals-progress"></div>
+      </div>
+
+      <!-- GEO -->
+      <div id="pane-geo" style="display:none;">
+        <div class="sec-head"><div class="sec-title">🗺️ ניתוח גיאוגרפי</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div id="geo-table-wrap"></div>
+          <div class="chart-wrap"><div class="chart-title">התפלגות לפי עיר</div><div id="geo-pie-chart"></div></div>
+        </div>
+      </div>
+
+      <!-- PEAK HOURS -->
+      <div id="pane-peakhours" style="display:none;">
+        <div class="sec-head"><div class="sec-title">⏱️ שעות שיא</div></div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;align-items:center;">
+          <select id="ph-biz-sel" onchange="renderPeakHours()" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:13px;color:var(--text);outline:none;font-family:inherit;">
+            <option value="">כל העסקים (מצטבר)</option>
+          </select>
+        </div>
+        <div class="chart-wrap"><div class="chart-title">פעילות לפי שעה</div><div id="peak-hours-chart"></div></div>
+      </div>
+
+      <!-- INVITES -->
+      <div id="pane-invites" style="display:none;">
+        <div class="sec-head"><div class="sec-title">🔗 קישורי הזמנה</div></div>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+          <select id="inv-plan-sel" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:13px;color:var(--text);outline:none;font-family:inherit;">
+            <option value="basic">בסיסי</option><option value="pro" selected>פרו</option><option value="enterprise">ארגוני</option>
+          </select>
+          <button class="btn-action green" onclick="genInvite()">+ צור קישור הזמנה</button>
+        </div>
+        <div id="invites-list"></div>
       </div>
 
       <!-- DEMO -->
@@ -494,6 +620,100 @@ button{cursor:pointer;font-family:inherit;}
   </div>
 </div>
 
+<!-- PAYMENT ADD MODAL -->
+<div class="modal-bg" id="modal-payment">
+  <div class="modal" style="max-width:400px;">
+    <h3>הוסף תשלום</h3>
+    <input type="hidden" id="pay-tenant-id">
+    <div class="mfl"><label>חודש (YYYY-MM)</label><input id="pay-month" placeholder="2025-01"></div>
+    <div class="mfl"><label>סכום (₪)</label><input id="pay-amount" type="number" min="0" placeholder="199"></div>
+    <div class="mfl"><label>סטטוס</label><select id="pay-status"><option value="שולם">שולם</option><option value="חוב">חוב</option><option value="ממתין">ממתין</option></select></div>
+    <div class="mfl"><label>הערה</label><input id="pay-note" placeholder="אופציונלי"></div>
+    <div class="modal-btns">
+      <button class="btn-modal sec" onclick="closeModal('modal-payment')">ביטול</button>
+      <button class="btn-modal pri" onclick="savePayment()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHORTCUTS HELP MODAL -->
+<div class="modal-bg" id="modal-shortcuts">
+  <div class="modal" style="max-width:420px;">
+    <h3>⌨️ קיצורי מקשים</h3>
+    <table class="etable" style="margin-bottom:14px;">
+      <thead><tr><th>קיצור</th><th>פעולה</th></tr></thead>
+      <tbody>
+        <tr><td><code>G → D</code></td><td>דשבורד</td></tr>
+        <tr><td><code>G → B</code></td><td>עסקים</td></tr>
+        <tr><td><code>G → S</code></td><td>הגדרות</td></tr>
+        <tr><td><code>N</code></td><td>חיפוש / עסק חדש</td></tr>
+        <tr><td><code>?</code></td><td>הצג עזרה זו</td></tr>
+      </tbody>
+    </table>
+    <div class="modal-btns"><button class="btn-modal sec" onclick="closeModal('modal-shortcuts')">סגור</button></div>
+  </div>
+</div>
+
+<!-- MONTHLY REPORT MODAL -->
+<div class="modal-bg" id="modal-report">
+  <div class="modal" style="max-width:560px;">
+    <div id="report-print-content">
+      <h3 id="rep-title" style="margin-bottom:16px;font-size:18px;">📄 דו"ח חודשי</h3>
+      <div id="rep-content"></div>
+    </div>
+    <div class="modal-btns" id="rep-btns">
+      <button class="btn-modal sec" onclick="closeModal('modal-report')">סגור</button>
+      <button class="btn-modal pri" onclick="window.print()">🖨️ הדפס</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAGS MODAL -->
+<div class="modal-bg" id="modal-tags">
+  <div class="modal" style="max-width:360px;">
+    <h3>🏷️ ניהול תגיות</h3>
+    <input type="hidden" id="tags-tenant-id">
+    <div style="margin-bottom:14px;">
+      <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">תגיות זמינות:</div>
+      <div id="tags-checkboxes"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-modal sec" onclick="closeModal('modal-tags')">ביטול</button>
+      <button class="btn-modal pri" onclick="saveTags()">שמור תגיות</button>
+    </div>
+  </div>
+</div>
+
+<!-- SURVEY MODAL -->
+<div class="modal-bg" id="modal-survey">
+  <div class="modal" style="max-width:420px;">
+    <h3>📊 יצירת סקר שביעות רצון</h3>
+    <div class="mfl"><label>שאלה</label><textarea id="survey-q" rows="3" placeholder="מה דעתך על השירות?"></textarea></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;">
+      <input type="checkbox" id="survey-active" checked style="width:16px;height:16px;accent-color:var(--accent);">
+      <label for="survey-active">פעיל</label>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-modal sec" onclick="closeModal('modal-survey')">ביטול</button>
+      <button class="btn-modal pri" onclick="saveSurvey()">פרסם סקר</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGO UPLOAD MODAL -->
+<div class="modal-bg" id="modal-logo">
+  <div class="modal" style="max-width:360px;">
+    <h3>🖼️ העלאת לוגו</h3>
+    <input type="hidden" id="logo-tenant-id">
+    <div id="logo-preview" style="text-align:center;margin-bottom:12px;"></div>
+    <div class="mfl"><label>בחר קובץ תמונה</label><input type="file" id="logo-file" accept="image/*" onchange="previewLogo(this)"></div>
+    <div class="modal-btns">
+      <button class="btn-modal sec" onclick="closeModal('modal-logo')">ביטול</button>
+      <button class="btn-modal pri" onclick="saveLogo()">שמור לוגו</button>
+    </div>
+  </div>
+</div>
+
 <!-- COUPON MODAL -->
 <div class="modal-bg" id="modal-coupon">
   <div class="modal">
@@ -506,6 +726,23 @@ button{cursor:pointer;font-family:inherit;}
       <button class="btn-modal sec" onclick="closeModal('modal-coupon')">ביטול</button>
       <button class="btn-modal pri" onclick="saveCoupon()">שמור</button>
     </div>
+  </div>
+</div>
+
+<!-- FLOATING WIDGET -->
+<div id="float-widget" style="display:none;">
+  <div class="fw-panel" id="fw-panel"></div>
+  <div class="fw-btn" id="fw-btn" onclick="toggleFWPanel()">0</div>
+</div>
+
+<!-- 2FA SCREEN -->
+<div id="tfa-screen">
+  <div class="login-box" style="max-width:340px;">
+    <div class="login-logo"><div class="icon">🔐</div><div class="title">אימות דו-שלבי</div></div>
+    <div id="tfa-code-display" style="text-align:center;background:var(--card2);border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px;color:var(--muted);"></div>
+    <div class="fl"><label>הכנס את הקוד שמוצג</label><input id="tfa-inp" type="tel" inputmode="numeric" maxlength="6" placeholder="XXXXXX" style="text-align:center;letter-spacing:6px;font-size:20px;"></div>
+    <button class="btn-login" onclick="verify2FA()">אמת קוד →</button>
+    <div class="err" id="tfa-err" style="display:none;margin-top:8px;">קוד שגוי — נסה שוב</div>
   </div>
 </div>
 
@@ -1515,11 +1752,814 @@ function clearDemoData(){
   loadData();showToast('נמחקו נתוני דמו');
 }
 
+/* ── ALL PANES LIST (EXTENDED) ── */
+var ALL_PANES=['dashboard','businesses','finance','alerts','messages','equipment','support','settings','activity','demo','compare','goals','geo','peakhours','invites'];
+
+/* ── SHOW PANE (OVERRIDE) ── */
+var _origShowPane=showPane;
+showPane=function(pane){
+  ALL_PANES.forEach(function(p){
+    var el=document.getElementById('pane-'+p);if(el)el.style.display=p===pane?'block':'none';
+    var si=document.getElementById('si-'+p);if(si)si.classList.toggle('active',p===pane);
+  });
+  if(pane==='dashboard'){renderDashboard();renderGrowthStats();renderSuspiciousSection();}
+  else if(pane==='finance')renderFinance();
+  else if(pane==='alerts')renderAlerts();
+  else if(pane==='messages'){renderMessages();renderSurveyResults();}
+  else if(pane==='equipment')renderEquipment();
+  else if(pane==='support')renderSupport();
+  else if(pane==='settings')renderSettings();
+  else if(pane==='activity')renderGlobalLog(_glogFilter);
+  else if(pane==='compare')renderComparePage();
+  else if(pane==='goals')renderGoalsPage();
+  else if(pane==='geo')renderGeoPage();
+  else if(pane==='peakhours')renderPeakHoursPage();
+  else if(pane==='invites')renderInvitesPage();
+  else if(pane==='businesses'){populateFilterSelects();renderPendingSection();}
+};
+
+/* ── 1. BUSINESS TAGS ── */
+var TAG_LIST=['VIP','חדש','בסיכון','פעיל','לא פעיל'];
+function tagClass(tag){return 'tag-'+tag.replace(/ /g,'-');}
+function renderTagBadges(t){
+  var tags=t.tags||[];
+  if(!tags.length)return '';
+  return tags.map(function(tag){return '<span class="tag-badge '+tagClass(tag)+'">'+esc(tag)+'</span>';}).join('');
+}
+function openTagsModal(tenantId){
+  var t=_bizList.find(function(x){return x.id===tenantId;});if(!t)return;
+  document.getElementById('tags-tenant-id').value=tenantId;
+  var tags=t.tags||[];
+  document.getElementById('tags-checkboxes').innerHTML=TAG_LIST.map(function(tag){
+    return '<div class="perm-check"><span>'+tag+'</span><input type="checkbox" id="tag-'+tag.replace(/ /g,'-')+'"'+(tags.indexOf(tag)>=0?' checked':'')+'></div>';
+  }).join('');
+  document.getElementById('modal-tags').classList.add('show');
+}
+function saveTags(){
+  var tenantId=document.getElementById('tags-tenant-id').value;
+  var t=_bizList.find(function(x){return x.id===tenantId;});if(!t)return;
+  var tags=[];
+  TAG_LIST.forEach(function(tag){var cb=document.getElementById('tag-'+tag.replace(/ /g,'-'));if(cb&&cb.checked)tags.push(tag);});
+  t.tags=tags;
+  saveTenantBack(t);closeModal('modal-tags');loadData();showToast('תגיות עודכנו ✓');
+}
+
+/* ── 2. ADVANCED FILTER ── */
+function populateFilterSelects(){
+  var cities=[];
+  _bizList.forEach(function(t){var c=t.settings&&t.settings.bizCity;if(c&&cities.indexOf(c)<0)cities.push(c);});
+  var sel=document.getElementById('flt-city');
+  if(!sel)return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">כל הערים</option>'+cities.map(function(c){return '<option value="'+esc(c)+'"'+(c===cur?' selected':'')+'>'+esc(c)+'</option>';}).join('');
+}
+
+/* ── FILTER BIZ (OVERRIDE) ── */
+filterBiz=function(){
+  var q=(document.getElementById('biz-search').value||'').toLowerCase();
+  var plan=document.getElementById('flt-plan')&&document.getElementById('flt-plan').value||'';
+  var city=document.getElementById('flt-city')&&document.getElementById('flt-city').value||'';
+  var health=document.getElementById('flt-health')&&document.getElementById('flt-health').value||'';
+  var tag=document.getElementById('flt-tag')&&document.getElementById('flt-tag').value||'';
+  var visible=0;
+  _bizList.forEach(function(t){
+    var c=document.getElementById('bc-'+t.id);if(!c)return;
+    var s=t.settings||{},a=t.account||{},m=t.manager||{};
+    var txt=[s.bizName,s.bizType,s.bizEmail,s.bizCity,a.fullname,a.email,m.name].join(' ').toLowerCase();
+    var score=getHealthScore(t);
+    var hOk=!health||(health==='red'&&score<=3)||(health==='yellow'&&score>=4&&score<=7)||(health==='green'&&score>=8);
+    var planOk=!plan||t.plan===plan;
+    var cityOk=!city||s.bizCity===city;
+    var tagOk=!tag||((t.tags||[]).indexOf(tag)>=0);
+    var show=txt.includes(q)&&hOk&&planOk&&cityOk&&tagOk;
+    c.style.display=show?'':'none';
+    if(show)visible++;
+  });
+  var fc=document.getElementById('flt-count');if(fc)fc.textContent='מציג '+visible+' מתוך '+_bizList.length;
+};
+
+/* ── 3. PAYMENTS ── */
+function renderPaymentsPane(t){
+  var pays=t.payments||[];
+  var totalPaid=pays.filter(function(p){return p.status==='שולם';}).reduce(function(s,p){return s+(p.amount||0);},0);
+  var totalOwed=pays.filter(function(p){return p.status==='חוב';}).reduce(function(s,p){return s+(p.amount||0);},0);
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
+    +'<div style="font-size:13px;"><b style="color:var(--ok);">שולם: ₪'+totalPaid+'</b> &nbsp;|&nbsp; <b style="color:var(--crit);">חוב: ₪'+totalOwed+'</b></div>'
+    +'<button class="btn-action green" onclick="openPaymentModal(\''+t.id+'\')">+ הוסף תשלום</button>'
+    +'</div>'
+    +(pays.length?'<table class="fin-table"><thead><tr><th>חודש</th><th>סכום</th><th>סטטוס</th><th>הערה</th><th></th></tr></thead><tbody>'
+    +pays.slice().reverse().map(function(p,i){
+      return '<tr><td>'+esc(p.month)+'</td><td>₪'+p.amount+'</td><td class="pay-status-'+esc(p.status)+'">'+esc(p.status)+'</td><td style="font-size:11px;color:var(--muted);">'+esc(p.note||'')+'</td><td><button class="btn-action red" style="padding:3px 7px;font-size:10px;" onclick="delPayment(\''+t.id+'\','+i+')">מחק</button></td></tr>';
+    }).join('')
+    +'</tbody></table>':'<div class="empty"><div class="ei">💳</div><b>אין תשלומים</b></div>');
+}
+function openPaymentModal(tenantId){
+  document.getElementById('pay-tenant-id').value=tenantId;
+  var now=new Date();
+  document.getElementById('pay-month').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('pay-amount').value='';
+  document.getElementById('pay-status').value='שולם';
+  document.getElementById('pay-note').value='';
+  document.getElementById('modal-payment').classList.add('show');
+}
+function savePayment(){
+  var tid=document.getElementById('pay-tenant-id').value;
+  var month=document.getElementById('pay-month').value.trim();
+  var amount=parseInt(document.getElementById('pay-amount').value)||0;
+  var status=document.getElementById('pay-status').value;
+  var note=document.getElementById('pay-note').value.trim();
+  if(!month){alert('הכנס חודש');return;}
+  var t=_bizList.find(function(x){return x.id===tid;});if(!t)return;
+  if(!t.payments)t.payments=[];
+  t.payments.push({month:month,amount:amount,status:status,note:note,ts:Date.now()});
+  saveTenantBack(t);closeModal('modal-payment');
+  var el=document.getElementById('dp-'+tid+'-pays');if(el)el.innerHTML=renderPaymentsPane(t);
+  showToast('תשלום נוסף ✓');
+}
+function delPayment(tid,revIdx){
+  var t=_bizList.find(function(x){return x.id===tid;});if(!t)return;
+  var pays=t.payments||[];
+  pays.splice(pays.length-1-revIdx,1);
+  t.payments=pays;saveTenantBack(t);
+  var el=document.getElementById('dp-'+tid+'-pays');if(el)el.innerHTML=renderPaymentsPane(t);
+  showToast('תשלום נמחק');
+}
+
+/* ── 4. COMPARISON ── */
+function renderComparePage(){
+  var selA=document.getElementById('cmp-a'),selB=document.getElementById('cmp-b');
+  var opts='<option value="">— בחר —</option>'+_bizList.map(function(t){return '<option value="'+t.id+'">'+esc(t.settings&&t.settings.bizName||t.id)+'</option>';}).join('');
+  selA.innerHTML=opts;selB.innerHTML=opts;
+  document.getElementById('compare-chart').innerHTML='<div class="empty"><div class="ei">⚖️</div><b>בחר שני עסקים להשוואה</b></div>';
+}
+function renderCompare(){
+  var idA=document.getElementById('cmp-a').value,idB=document.getElementById('cmp-b').value;
+  var el=document.getElementById('compare-chart');
+  if(!idA||!idB){el.innerHTML='<div class="empty"><div class="ei">⚖️</div><b>בחר שני עסקים</b></div>';return;}
+  if(idA===idB){el.innerHTML='<div class="empty"><b>בחר שני עסקים שונים</b></div>';return;}
+  var tA=_bizList.find(function(t){return t.id===idA;}),tB=_bizList.find(function(t){return t.id===idB;});
+  if(!tA||!tB)return;
+  var now=Date.now(),week=7*24*3600*1000;
+  var metrics=[
+    {label:'ציון בריאות',a:getHealthScore(tA),b:getHealthScore(tB),max:10},
+    {label:'כניסות השבוע',a:(tA.actlog||[]).filter(function(x){return x.action==='login'&&(now-x.ts)<week;}).length,b:(tB.actlog||[]).filter(function(x){return x.action==='login'&&(now-x.ts)<week;}).length,max:null},
+    {label:'מספר עובדים',a:(tA.employees||[]).length+(tA.manager?1:0),b:(tB.employees||[]).length+(tB.manager?1:0),max:null},
+    {label:'עדכוני מלאי שבועיים',a:(tA.actlog||[]).filter(function(x){return x.action&&(x.action.includes('item')||x.action.includes('qty'))&&(now-x.ts)<week;}).length,b:(tB.actlog||[]).filter(function(x){return x.action&&(x.action.includes('item')||x.action.includes('qty'))&&(now-x.ts)<week;}).length,max:null}
+  ];
+  var nameA=esc(tA.settings&&tA.settings.bizName||'עסק א');
+  var nameB=esc(tB.settings&&tB.settings.bizName||'עסק ב');
+  var W=500,barH=28,gap=14,paddingLeft=140,paddingRight=20,metricH=barH*2+gap+20;
+  var svgH=metrics.length*(metricH)+40;
+  var svgContent='<svg width="100%" viewBox="0 0 '+W+' '+svgH+'" xmlns="http://www.w3.org/2000/svg" style="font-family:inherit;max-width:100%;">';
+  svgContent+='<text x="'+(paddingLeft+20)+'" y="18" font-size="11" fill="#4dc8a0" font-weight="700">'+nameA+'</text>';
+  svgContent+='<text x="'+(paddingLeft+20)+'" y="32" font-size="11" fill="#a78bfa" font-weight="700">'+nameB+'</text>';
+  metrics.forEach(function(m,i){
+    var maxVal=m.max||Math.max(m.a,m.b,1);
+    var y=i*metricH+50;
+    var wA=Math.round(((m.a||0)/maxVal)*(W-paddingLeft-paddingRight));
+    var wB=Math.round(((m.b||0)/maxVal)*(W-paddingLeft-paddingRight));
+    svgContent+='<text x="'+(paddingLeft-8)+'" y="'+(y+barH/2+4)+'" font-size="11" text-anchor="end" fill="currentColor">'+esc(m.label)+'</text>';
+    svgContent+='<rect x="'+paddingLeft+'" y="'+y+'" width="'+wA+'" height="'+barH+'" rx="4" fill="#4dc8a0" opacity="0.8"/>';
+    svgContent+='<text x="'+(paddingLeft+wA+5)+'" y="'+(y+barH/2+4)+'" font-size="11" fill="#4dc8a0" font-weight="700">'+m.a+'</text>';
+    var y2=y+barH+6;
+    svgContent+='<rect x="'+paddingLeft+'" y="'+y2+'" width="'+wB+'" height="'+barH+'" rx="4" fill="#a78bfa" opacity="0.8"/>';
+    svgContent+='<text x="'+(paddingLeft+wB+5)+'" y="'+(y2+barH/2+4)+'" font-size="11" fill="#a78bfa" font-weight="700">'+m.b+'</text>';
+  });
+  svgContent+='</svg>';
+  el.innerHTML=svgContent;
+}
+window.renderCompare=renderCompare;
+
+/* ── 5. MONTHLY GOALS ── */
+function renderGoalsPage(){
+  var goals=lsGet('admin_goals',{newBiz:5,weekLogins:50,avgHealth:7});
+  document.getElementById('goal-newbiz').value=goals.newBiz||5;
+  document.getElementById('goal-logins').value=goals.weekLogins||50;
+  document.getElementById('goal-health').value=goals.avgHealth||7;
+  var now=Date.now(),month=30*24*3600*1000,week=7*24*3600*1000;
+  var newBizActual=_bizList.filter(function(t){return t.registeredAt&&(now-t.registeredAt)<month;}).length;
+  var loginActual=_bizList.reduce(function(s,t){return s+(t.actlog||[]).filter(function(a){return a.action==='login'&&(now-a.ts)<week;}).length;},0);
+  var avgHealth=_bizList.length?(_bizList.reduce(function(s,t){return s+getHealthScore(t);},0)/_bizList.length):0;
+  avgHealth=Math.round(avgHealth*10)/10;
+  var items=[
+    {label:'עסקים חדשים החודש',actual:newBizActual,target:goals.newBiz||5},
+    {label:'כניסות השבוע',actual:loginActual,target:goals.weekLogins||50},
+    {label:'ממוצע בריאות',actual:avgHealth,target:goals.avgHealth||7}
+  ];
+  document.getElementById('goals-progress').innerHTML='<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:8px;">'
+    +items.map(function(it){
+      var pct=it.target>0?Math.min(100,Math.round((it.actual/it.target)*100)):0;
+      var color=pct>=100?'var(--ok)':pct>=50?'var(--warn)':'var(--crit)';
+      return '<div class="goal-row"><div class="goal-lbl"><span>'+esc(it.label)+'</span><span>'+it.actual+' / '+it.target+' ('+pct+'%)</span></div>'
+        +'<div class="goal-bar-bg"><div class="goal-bar-fill" style="width:'+pct+'%;background:'+color+';"></div></div></div>';
+    }).join('')
+  +'</div>';
+}
+function saveGoals(){
+  var newBiz=parseInt(document.getElementById('goal-newbiz').value)||5;
+  var weekLogins=parseInt(document.getElementById('goal-logins').value)||50;
+  var avgHealth=parseFloat(document.getElementById('goal-health').value)||7;
+  lsSet('admin_goals',{newBiz:newBiz,weekLogins:weekLogins,avgHealth:avgHealth});
+  renderGoalsPage();showToast('מטרות נשמרו ✓');
+}
+
+/* ── 6. GEOGRAPHIC ANALYSIS ── */
+function renderGeoPage(){
+  var cities={};
+  _bizList.forEach(function(t){var c=t.settings&&t.settings.bizCity||'לא ידוע';cities[c]=(cities[c]||0)+1;});
+  var entries=Object.keys(cities).map(function(c){return {city:c,count:cities[c]};}).sort(function(a,b){return b.count-a.count;});
+  var total=_bizList.length||1;
+  var tw=document.getElementById('geo-table-wrap');
+  tw.innerHTML='<div class="chart-wrap"><div class="chart-title">עסקים לפי עיר</div>'
+    +'<table class="city-table"><thead><tr><th>עיר</th><th>עסקים</th><th>%</th></tr></thead><tbody>'
+    +entries.map(function(e){return '<tr onclick="filterByCity(\''+esc(e.city)+'\')" title="סנן לפי עיר"><td>'+esc(e.city)+'</td><td>'+e.count+'</td><td>'+Math.round(e.count/total*100)+'%</td></tr>';}).join('')
+    +'</tbody></table></div>';
+  // SVG pie chart
+  var pie=document.getElementById('geo-pie-chart');
+  if(!entries.length){pie.innerHTML='<div class="empty"><div class="ei">🗺️</div><b>אין נתונים</b></div>';return;}
+  var colors=['#4dc8a0','#3b82f6','#a78bfa','#f59e0b','#ef4444','#06b6d4','#ec4899','#84cc16'];
+  var cx=100,cy=100,r=80;
+  var startAngle=0;
+  var paths='';
+  entries.forEach(function(e,i){
+    var slice=(e.count/total)*2*Math.PI;
+    var endAngle=startAngle+slice;
+    if(entries.length===1){
+      paths+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+colors[0]+'" opacity="0.85"/>';
+    } else {
+      var x1=cx+r*Math.sin(startAngle),y1=cy-r*Math.cos(startAngle);
+      var x2=cx+r*Math.sin(endAngle),y2=cy-r*Math.cos(endAngle);
+      var lg=slice>Math.PI?1:0;
+      paths+='<path d="M '+cx+' '+cy+' L '+x1+' '+y1+' A '+r+' '+r+' 0 '+lg+' 1 '+x2+' '+y2+' Z" fill="'+colors[i%colors.length]+'" opacity="0.85" stroke="var(--card)" stroke-width="2"/>';
+    }
+    startAngle=endAngle;
+  });
+  var legendY=220;
+  var legend=entries.slice(0,8).map(function(e,i){
+    var ly=legendY+i*16;
+    return '<rect x="10" y="'+(ly-8)+'" width="10" height="10" fill="'+colors[i%colors.length]+'"/><text x="25" y="'+ly+'" font-size="10" fill="currentColor">'+esc(e.city)+' ('+e.count+')</text>';
+  }).join('');
+  pie.innerHTML='<svg width="100%" viewBox="0 0 200 '+(legendY+entries.length*16+10)+'" style="max-width:100%;">'+paths+legend+'</svg>';
+}
+function filterByCity(city){
+  showPane('businesses');
+  var sel=document.getElementById('flt-city');
+  if(sel){sel.value=city;filterBiz();}
+}
+
+/* ── 7. MONTHLY REPORT ── */
+function openMonthlyReport(){
+  var now=Date.now(),month=30*24*3600*1000,week=7*24*3600*1000;
+  var newBiz=_bizList.filter(function(t){return t.registeredAt&&(now-t.registeredAt)<month;}).length;
+  var revenue=_bizList.reduce(function(s,t){return s+(t.planPrice||0);},0);
+  var avgH=_bizList.length?(_bizList.reduce(function(s,t){return s+getHealthScore(t);},0)/_bizList.length):0;
+  var scored=_bizList.map(function(t){return {t:t,s:getHealthScore(t),logins:(t.actlog||[]).filter(function(a){return a.action==='login'&&(now-a.ts)<week;}).length};});
+  var mostActive=scored.sort(function(a,b){return b.logins-a.logins;})[0];
+  var leastActive=scored.sort(function(a,b){return a.s-b.s;})[0];
+  var d=new Date().toLocaleDateString('he-IL');
+  document.getElementById('rep-title').textContent='📄 דו"ח חודשי — '+d;
+  document.getElementById('rep-content').innerHTML='<div class="dg">'
+    +di('סה"כ עסקים',_bizList.length)+di('עסקים חדשים החודש',newBiz)
+    +di('הכנסה חודשית','₪'+revenue)+di('ממוצע בריאות',Math.round(avgH*10)/10+'/10')
+    +(mostActive&&mostActive.t?di('עסק הכי פעיל',(mostActive.t.settings&&mostActive.t.settings.bizName)||'?'):'')
+    +(leastActive&&leastActive.t?di('עסק הכי פחות פעיל',(leastActive.t.settings&&leastActive.t.settings.bizName)||'?'):'')
+    +'</div>';
+  document.getElementById('modal-report').classList.add('show');
+}
+
+/* ── 8. PLAN CHANGE HISTORY ── */
+var _origSavePlan=savePlan;
+savePlan=function(){
+  if(!_selectedPlan){alert('בחר חבילה');return;}
+  var tenantId=document.getElementById('mp-tenant-id').value;
+  var t=_bizList.find(function(x){return x.id===tenantId;});if(!t)return;
+  var fromPlan=t.plan||'none';
+  if(!t.planHistory)t.planHistory=[];
+  t.planHistory.push({ts:Date.now(),from:fromPlan,to:_selectedPlan,by:'admin'});
+  t.plan=_selectedPlan;t.planPrice=planPrice(_selectedPlan);
+  t.planStart=Date.now();t.planEnd=Date.now()+365*24*3600*1000;
+  saveTenantBack(t);closeModal('modal-plan');loadData();showToast('חבילה עודכנה ל-'+planName(_selectedPlan)+' ✓');
+};
+
+function renderHistoryPane(t){
+  var history=t.planHistory||[];
+  if(!history.length)return '<div class="empty"><div class="ei">📋</div><b>אין היסטוריית שינויים</b></div>';
+  return '<table class="fin-table"><thead><tr><th>תאריך</th><th>מ-</th><th>ל-</th><th>ע"י</th></tr></thead><tbody>'
+    +history.slice().reverse().map(function(h){
+      return '<tr><td style="font-size:11px;">'+fmtDt(h.ts)+'</td><td>'+planName(h.from)+'</td><td style="color:var(--accent);font-weight:700;">'+planName(h.to)+'</td><td style="font-size:11px;color:var(--muted);">'+esc(h.by||'admin')+'</td></tr>';
+    }).join('')
+    +'</tbody></table>';
+}
+
+/* ── 9. INVITATION LINKS ── */
+function genInvite(){
+  var plan=document.getElementById('inv-plan-sel').value||'pro';
+  var code='INV'+Math.random().toString(36).substr(2,10).toUpperCase();
+  var url=location.href.split('?')[0]+'?invite='+code+'&plan='+plan;
+  localStorage.setItem('ws3_invite_'+code,JSON.stringify({plan:plan,created:Date.now(),used:false,url:url}));
+  renderInvitesPage();showToast('קישור נוצר ✓');
+}
+function renderInvitesPage(){
+  var invites=[];
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.startsWith('ws3_invite_')){
+      try{var v=JSON.parse(localStorage.getItem(k));if(v)invites.push({code:k.replace('ws3_invite_',''),data:v});}catch(e){}
+    }
+  }
+  invites.sort(function(a,b){return b.data.created-a.data.created;});
+  var el=document.getElementById('invites-list');
+  if(!el)return;
+  if(!invites.length){el.innerHTML='<div class="empty"><div class="ei">🔗</div><b>אין קישורים</b></div>';return;}
+  el.innerHTML=invites.map(function(inv){
+    return '<div class="invite-row">'
+      +'<div class="ic">'+esc(inv.data.url||'')+'</div>'
+      +'<span class="pill '+(inv.data.used?'r':'g')+'">'+(inv.data.used?'נוצל':'פנוי')+'</span>'
+      +'<span style="font-size:10px;color:var(--muted);">'+planName(inv.data.plan)+'</span>'
+      +'<button class="btn-action blue" style="padding:4px 10px;font-size:11px;" onclick="copyInvite(\''+esc(inv.data.url||'')+'\')">העתק</button>'
+      +'<button class="btn-action red" style="padding:4px 8px;font-size:10px;" onclick="delInvite(\''+esc(inv.code)+'\')">✕</button>'
+    +'</div>';
+  }).join('');
+}
+function copyInvite(url){navigator.clipboard&&navigator.clipboard.writeText(url).then(function(){showToast('הועתק ✓');});}
+function delInvite(code){localStorage.removeItem('ws3_invite_'+code);renderInvitesPage();}
+
+/* ── 10. SUSPICIOUS LOGINS ── */
+function renderSuspiciousSection(){
+  var el=document.getElementById('suspicious-section');if(!el)return;
+  var fails=[];
+  try{fails=JSON.parse(localStorage.getItem('ws3_failed_logins')||'[]');}catch(e){}
+  if(!fails.length){el.innerHTML='';return;}
+  var now=Date.now(),hour=3600000;
+  var suspicious=fails.filter(function(f){
+    var h=new Date(f.ts).getHours();
+    var isNight=h>=0&&h<5;
+    var recentFails=fails.filter(function(g){return g.userId===f.userId&&g.bizId===f.bizId&&(now-g.ts)<hour;}).length;
+    return isNight||recentFails>=3;
+  });
+  if(!suspicious.length){el.innerHTML='';return;}
+  var unique=[];var seen={};
+  suspicious.forEach(function(f){var k=f.ts+'|'+f.userId;if(!seen[k]){seen[k]=true;unique.push(f);}});
+  el.innerHTML='<div class="chart-wrap" style="margin-bottom:16px;border-color:rgba(239,68,68,.3);">'
+    +'<div class="chart-title" style="color:var(--crit);">🚨 כניסות חשודות</div>'
+    +unique.slice(0,10).map(function(f){
+      var t=_bizList.find(function(x){return x.id===f.bizId;});
+      var bizName=t&&t.settings&&t.settings.bizName?t.settings.bizName:f.bizId||'?';
+      return '<div class="susp-row"><div class="susp-time">'+fmtDt(f.ts)+'</div><div class="susp-biz">'+esc(bizName)+'</div><div style="flex:1;color:var(--muted);">'+esc(f.userId||'?')+'</div></div>';
+    }).join('')
+  +'</div>';
+}
+
+/* ── 11. SATISFACTION SURVEY ── */
+function openSurveyModal(){
+  var existing=lsGet('survey',{});
+  document.getElementById('survey-q').value=existing.question||'';
+  document.getElementById('survey-active').checked=existing.active!==false;
+  document.getElementById('modal-survey').classList.add('show');
+}
+function saveSurvey(){
+  var q=document.getElementById('survey-q').value.trim();
+  if(!q){alert('הכנס שאלה');return;}
+  var active=document.getElementById('survey-active').checked;
+  lsSet('survey',{question:q,active:active,createdAt:Date.now()});
+  closeModal('modal-survey');showToast('סקר פורסם ✓');
+}
+function renderSurveyResults(){
+  var msgs=document.getElementById('msgs-content');if(!msgs)return;
+  var survey=lsGet('survey',null);
+  if(!survey)return;
+  var allResults=[];
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.startsWith('ws3_survey_results_')){
+      try{var arr=JSON.parse(localStorage.getItem(k)||'[]');allResults=allResults.concat(arr);}catch(e){}
+    }
+  }
+  var surveyHtml='<div class="survey-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+    +'<b style="font-size:14px;">📊 סקר: '+esc(survey.question)+'</b>'
+    +'<button class="btn-action blue" style="padding:5px 10px;font-size:11px;" onclick="openSurveyModal()">ערוך סקר</button>'
+    +'</div>';
+  if(!allResults.length){surveyHtml+='<div style="color:var(--muted);font-size:13px;">אין תגובות עדיין</div></div>';}
+  else {
+    var avg=allResults.reduce(function(s,r){return s+(r.rating||0);},0)/allResults.length;
+    surveyHtml+='<div style="font-size:13px;margin-bottom:8px;">סה"כ תגובות: <b>'+allResults.length+'</b> | ממוצע: <b>'+Math.round(avg*10)/10+'/5</b></div>';
+    surveyHtml+='<div style="display:flex;gap:4px;">';
+    for(var s=1;s<=5;s++){var cnt=allResults.filter(function(r){return r.rating===s;}).length;surveyHtml+='<div style="flex:1;text-align:center;font-size:11px;"><div style="font-size:16px;">'+s+'⭐</div><b>'+cnt+'</b></div>';}
+    surveyHtml+='</div></div>';
+  }
+  msgs.insertAdjacentHTML('afterbegin',surveyHtml);
+}
+
+/* ── 12. GROWTH STATS ── */
+function renderGrowthStats(){
+  renderGrowthLineChart();renderWeeklyLoginsChart();
+}
+function renderGrowthLineChart(){
+  var el=document.getElementById('growth-line-chart');if(!el)return;
+  var now=Date.now();
+  var months=[];
+  for(var i=5;i>=0;i--){
+    var d=new Date(now);d.setMonth(d.getMonth()-i);
+    var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    months.push({key:key,label:key.slice(5)+'/'+(key.slice(0,4).slice(2)),count:0});
+  }
+  _bizList.forEach(function(t){
+    if(!t.registeredAt)return;
+    var d=new Date(t.registeredAt);
+    var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    var m=months.find(function(x){return x.key===key;});if(m)m.count++;
+  });
+  var maxC=Math.max.apply(null,months.map(function(m){return m.count;}))||1;
+  var W=300,H=80,pad=20;
+  var pts=months.map(function(m,i){return {x:pad+i*(W-pad*2)/5,y:H-pad-Math.round((m.count/maxC)*(H-pad*2))};});
+  var d='M '+pts.map(function(p){return p.x+' '+p.y;}).join(' L ');
+  var svg='<svg width="100%" viewBox="0 0 '+W+' '+(H+20)+'" style="max-width:100%;overflow:visible;">'
+    +'<path d="'+d+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    +pts.map(function(p,i){return '<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="var(--accent)"/><text x="'+p.x+'" y="'+(H+16)+'" font-size="9" text-anchor="middle" fill="currentColor">'+months[i].label+'</text><text x="'+p.x+'" y="'+(p.y-7)+'" font-size="9" text-anchor="middle" fill="var(--accent)" font-weight="700">'+months[i].count+'</text>';}).join('')
+    +'</svg>';
+  el.innerHTML=svg;
+}
+function renderWeeklyLoginsChart(){
+  var el=document.getElementById('weekly-logins-chart');if(!el)return;
+  var now=Date.now(),week=7*24*3600*1000;
+  var weeks=[];
+  for(var i=4;i>=0;i--){weeks.push({label:'שבוע -'+i,count:0,start:now-(i+1)*week,end:now-i*week});}
+  _bizList.forEach(function(t){
+    (t.actlog||[]).forEach(function(a){
+      if(a.action!=='login')return;
+      var w=weeks.find(function(x){return a.ts>=x.start&&a.ts<x.end;});if(w)w.count++;
+    });
+  });
+  var maxC=Math.max.apply(null,weeks.map(function(w){return w.count;}))||1;
+  el.innerHTML='<div style="display:flex;align-items:flex-end;gap:8px;height:80px;padding-top:8px;">'
+    +weeks.map(function(w){
+      var h=Math.round((w.count/maxC)*70)||2;
+      return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">'
+        +'<div style="font-size:9px;color:var(--muted);">'+w.count+'</div>'
+        +'<div style="width:100%;height:'+h+'px;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;"></div>'
+        +'<div style="font-size:9px;color:var(--muted);">'+esc(w.label)+'</div>'
+      +'</div>';
+    }).join('')
+  +'</div>';
+}
+
+/* ── 13. LOGO UPLOAD ── */
+var _logoPreviewData='';
+function openLogoModal(tenantId){
+  document.getElementById('logo-tenant-id').value=tenantId;
+  var t=_bizList.find(function(x){return x.id===tenantId;});
+  _logoPreviewData='';
+  document.getElementById('logo-file').value='';
+  document.getElementById('logo-preview').innerHTML=t&&t.logo?'<img src="'+t.logo+'" style="max-width:100px;max-height:100px;border-radius:8px;" alt="לוגו">':'<div style="color:var(--muted);font-size:12px;">אין לוגו</div>';
+  document.getElementById('modal-logo').classList.add('show');
+}
+function previewLogo(input){
+  var file=input.files&&input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    _logoPreviewData=e.target.result;
+    document.getElementById('logo-preview').innerHTML='<img src="'+_logoPreviewData+'" style="max-width:100px;max-height:100px;border-radius:8px;" alt="לוגו">';
+  };
+  reader.readAsDataURL(file);
+}
+function saveLogo(){
+  if(!_logoPreviewData){alert('בחר קובץ תמונה');return;}
+  var tid=document.getElementById('logo-tenant-id').value;
+  var t=_bizList.find(function(x){return x.id===tid;});if(!t)return;
+  t.logo=_logoPreviewData;
+  saveTenantBack(t);closeModal('modal-logo');loadData();showToast('לוגו נשמר ✓');
+}
+
+/* ── 14. KEYBOARD SHORTCUTS ── */
+var _kbSeq='';
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
+  if(!sessionStorage.getItem(ADMIN_SESSION_KEY))return;
+  var k=e.key.toUpperCase();
+  if(e.key==='?'){e.preventDefault();document.getElementById('modal-shortcuts').classList.add('show');_kbSeq='';return;}
+  if(k==='G'){_kbSeq='G';setTimeout(function(){_kbSeq='';},1500);return;}
+  if(_kbSeq==='G'){
+    _kbSeq='';
+    if(k==='D'){e.preventDefault();showPane('dashboard');}
+    else if(k==='B'){e.preventDefault();showPane('businesses');}
+    else if(k==='S'){e.preventDefault();showPane('settings');}
+    return;
+  }
+  if(k==='N'){e.preventDefault();showPane('businesses');setTimeout(function(){var s=document.getElementById('biz-search');if(s)s.focus();},100);}
+});
+
+/* ── 15. FLOATING WIDGET ── */
+function initFloatWidget(){
+  var fw=document.getElementById('float-widget');if(!fw)return;
+  if(!sessionStorage.getItem(ADMIN_SESSION_KEY)){fw.style.display='none';return;}
+  fw.style.display='block';
+  var pos=lsGet('fw_pos',{left:24,bottom:24});
+  fw.style.left=pos.left+'px';fw.style.bottom=pos.bottom+'px';
+  // Drag
+  var dragging=false,ox=0,oy=0;
+  var btn=document.getElementById('fw-btn');
+  btn.addEventListener('mousedown',function(e){
+    dragging=true;ox=e.clientX-fw.getBoundingClientRect().left;oy=e.clientY-fw.getBoundingClientRect().top;e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!dragging)return;
+    var left=e.clientX-ox,top=e.clientY-oy;
+    fw.style.left=left+'px';fw.style.top=top+'px';fw.style.bottom='auto';
+  });
+  document.addEventListener('mouseup',function(){
+    if(dragging){dragging=false;lsSet('fw_pos',{left:parseInt(fw.style.left)||24,bottom:parseInt(fw.style.bottom)||24});}
+  });
+  updateFWButton();
+}
+function updateFWButton(){
+  var btn=document.getElementById('fw-btn');if(btn)btn.textContent=_bizList.length||0;
+}
+function toggleFWPanel(){
+  var p=document.getElementById('fw-panel');
+  if(!p)return;
+  var open=p.classList.toggle('open');
+  if(open){
+    var now=Date.now(),min=30*60*1000,week=7*24*3600*1000;
+    var activeToday=_bizList.filter(function(t){return (t.actlog||[]).some(function(a){return (now-a.ts)<86400000;});}).length;
+    var avgH=_bizList.length?Math.round(_bizList.reduce(function(s,t){return s+getHealthScore(t);},0)/_bizList.length*10)/10:0;
+    var alerts=getAlertCount();
+    p.innerHTML='<div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--accent);">📊 סטטיסטיקות</div>'
+      +'<div class="fw-row"><span>עסקים</span><b>'+_bizList.length+'</b></div>'
+      +'<div class="fw-row"><span>פעילים היום</span><b>'+activeToday+'</b></div>'
+      +'<div class="fw-row"><span>ממוצע בריאות</span><b>'+avgH+'</b></div>'
+      +'<div class="fw-row"><span>התראות</span><b style="color:var(--warn);">'+alerts+'</b></div>';
+  }
+}
+
+/* ── 16. PUSH NOTIFICATIONS ── */
+var _prevBizCount=0;
+var _prevHealthScores={};
+function checkPushNotifications(){
+  if(!lsGet('push_enabled',false))return;
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  var current=_bizList.length;
+  if(_prevBizCount>0&&current>_prevBizCount){
+    new Notification('WeightStock',{body:'עסק חדש נרשם! (סה"כ '+current+')',icon:''});
+  }
+  _prevBizCount=current;
+  _bizList.forEach(function(t){
+    var score=getHealthScore(t);
+    var prev=_prevHealthScores[t.id];
+    if(prev!==undefined&&prev>=3&&score<3){
+      var name=t.settings&&t.settings.bizName||t.id;
+      new Notification('WeightStock — אזהרה',{body:'ציון בריאות של '+name+' ירד מתחת ל-3'});
+    }
+    _prevHealthScores[t.id]=score;
+  });
+}
+
+/* ── 17. PEAK HOURS ── */
+function renderPeakHoursPage(){
+  var sel=document.getElementById('ph-biz-sel');
+  var opts='<option value="">כל העסקים (מצטבר)</option>'+_bizList.map(function(t){return '<option value="'+t.id+'">'+esc(t.settings&&t.settings.bizName||t.id)+'</option>';}).join('');
+  sel.innerHTML=opts;
+  renderPeakHours();
+}
+function renderPeakHours(){
+  var bizId=document.getElementById('ph-biz-sel')&&document.getElementById('ph-biz-sel').value;
+  var logs=[];
+  if(bizId){var t=_bizList.find(function(x){return x.id===bizId;});if(t)logs=t.actlog||[];}
+  else{_bizList.forEach(function(t){logs=logs.concat(t.actlog||[]);});}
+  var hours=new Array(24).fill(0);
+  logs.forEach(function(a){if(a.ts)hours[new Date(a.ts).getHours()]++;});
+  var maxH=Math.max.apply(null,hours)||1;
+  var el=document.getElementById('peak-hours-chart');if(!el)return;
+  var W=600,H=100,pad=20,barW=Math.floor((W-pad*2)/24);
+  var bars=hours.map(function(cnt,i){
+    var bh=Math.round((cnt/maxH)*(H-pad))||0;
+    var x=pad+i*barW,y=H-bh;
+    var color=cnt===Math.max.apply(null,hours)?'var(--ok)':'var(--accent)';
+    return '<rect x="'+x+'" y="'+y+'" width="'+(barW-2)+'" height="'+bh+'" rx="2" fill="'+color+'" opacity="0.85"/>'
+      +(i%4===0?'<text x="'+(x+barW/2)+'" y="'+(H+12)+'" font-size="8" text-anchor="middle" fill="currentColor">'+i+'</text>':'')
+      +(cnt?'<title>'+i+':00 — '+cnt+' פעולות</title>':'');
+  }).join('');
+  el.innerHTML='<svg width="100%" viewBox="0 0 '+W+' '+(H+20)+'" style="max-width:100%;">'+bars+'</svg>';
+}
+window.renderPeakHours=renderPeakHours;
+
+/* ── 18. 2FA MOCK ── */
+var _tfaCode='';
+function init2FA(){
+  var enabled=lsGet('admin_2fa',false);
+  if(!enabled)return;
+  _tfaCode=String(Math.floor(100000+Math.random()*900000));
+  document.getElementById('tfa-code-display').innerHTML='קוד האימות שלך: <b style="font-size:20px;letter-spacing:4px;color:var(--accent);">'+_tfaCode+'</b>';
+  document.getElementById('tfa-inp').value='';
+  document.getElementById('tfa-err').style.display='none';
+  document.getElementById('tfa-screen').classList.add('show');
+  document.getElementById('app').style.display='none';
+}
+function verify2FA(){
+  var inp=document.getElementById('tfa-inp').value.trim();
+  if(inp===_tfaCode){
+    document.getElementById('tfa-screen').classList.remove('show');
+    document.getElementById('app').style.display='block';
+    _tfaCode='';
+  } else {
+    document.getElementById('tfa-err').style.display='block';
+    document.getElementById('tfa-inp').value='';
+  }
+}
+window.verify2FA=verify2FA;
+
+/* ── 19. EXPORT/IMPORT BACKUP ── */
+function exportBackup(){
+  var data={};
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.startsWith('ws3_'))data[k]=localStorage.getItem(k);
+  }
+  var json=JSON.stringify(data,null,2);
+  var a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(json);
+  a.download='weightstock-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+  showToast('גיבוי יוצא ✓');
+}
+function importBackup(){
+  var inp=document.getElementById('backup-import-inp');if(!inp)return;
+  var file=inp.files&&inp.files[0];if(!file){alert('בחר קובץ');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      var count=0;
+      Object.keys(data).forEach(function(k){if(k.startsWith('ws3_')){localStorage.setItem(k,data[k]);count++;}});
+      loadData();showToast('ייבוא הצליח — '+count+' מפתחות ✓');
+    } catch(err){showToast('שגיאה בייבוא: '+err.message);}
+  };
+  reader.readAsText(file);
+}
+
+/* ── 20. PENDING REGISTRATIONS ── */
+function getPendingTenants(){
+  return _bizList.filter(function(t){
+    var key='ws3_pending_approval_'+t.id;
+    return localStorage.getItem(key)==='pending';
+  });
+}
+function updatePendingBadge(){
+  var count=getPendingTenants().length;
+  var badge=document.getElementById('pending-badge');
+  if(badge){badge.style.display=count>0?'inline':'none';badge.textContent=count;}
+}
+function renderPendingSection(){
+  var pending=getPendingTenants();
+  var el=document.getElementById('pending-section');if(!el)return;
+  if(!pending.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML='<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:14px;margin-bottom:8px;">'
+    +'<div style="font-size:14px;font-weight:700;color:var(--warn);margin-bottom:10px;">⏳ ממתין לאישור ('+pending.length+')</div>'
+    +pending.map(function(t){
+      var name=t.settings&&t.settings.bizName||t.id;
+      return '<div style="display:flex;align-items:center;gap:10px;background:var(--card);border-radius:8px;padding:8px 12px;margin-bottom:6px;">'
+        +'<div style="flex:1;font-size:13px;font-weight:600;">'+esc(name)+'</div>'
+        +'<button class="btn-action green" style="padding:5px 12px;" onclick="approveTenant(\''+t.id+'\')">✓ אשר</button>'
+        +'<button class="btn-action red" style="padding:5px 12px;" onclick="rejectTenant(\''+t.id+'\')">✕ דחה</button>'
+      +'</div>';
+    }).join('')
+  +'</div>';
+}
+function approveTenant(tenantId){
+  localStorage.removeItem('ws3_pending_approval_'+tenantId);
+  renderPendingSection();updatePendingBadge();showToast('עסק אושר ✓');
+}
+function rejectTenant(tenantId){
+  showConfirm('דחיית עסק','האם לדחות ולמחוק את כל נתוני העסק?',function(){
+    var tenants=lsGet('admin_tenants',[]).filter(function(t){return t.id!==tenantId;});
+    lsSet('admin_tenants',tenants);
+    localStorage.removeItem('ws3_pending_approval_'+tenantId);
+    loadData();showToast('עסק נדחה ✓');
+  });
+}
+
+/* ── UPDATED RENDER BIZ LIST — add tags, logo, extra tabs ── */
+var _origRenderBizList=renderBizList;
+renderBizList=function(list){
+  var el=document.getElementById('biz-list');
+  if(!list.length){el.innerHTML='<div class="empty"><div class="ei">🏢</div><b>אין עסקים רשומים</b></div>';return;}
+  el.innerHTML=list.map(function(t){
+    var s=t.settings||{},a=t.account||{},m=t.manager||{},emps=t.employees||[],log=t.actlog||[];
+    var now=Date.now();
+    var mConn=m.lastLogin&&(now-m.lastLogin)<30*60*1000;
+    var eConn=emps.filter(function(e){return e.lastLogin&&(now-e.lastLogin)<30*60*1000;}).length;
+    var health=calcHealth(t);var score=health.score;var hc=healthColor(score);
+    var logoHtml=t.logo?'<img src="'+t.logo+'" style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--border);" alt="לוגו">':'';
+    return '<div class="biz-card" id="bc-'+t.id+'">'
+      +'<div class="biz-header" onclick="toggleBiz(\''+t.id+'\')">'
+        +(logoHtml?'<div style="flex-shrink:0;">'+logoHtml+'</div>':'')
+        +'<div class="biz-avatar" style="'+(t.logo?'display:none;':'')+'">'+(m.name?m.name[0]:'?')+'</div>'
+        +'<div class="biz-info">'
+          +'<div class="biz-name">'+esc(s.bizName||'ללא שם')+' '+planPill(t.plan)+'&nbsp;'+renderTagBadges(t)+'</div>'
+          +'<div class="biz-meta">'+esc(s.bizType||'')+(s.bizCity?' · '+esc(s.bizCity):'')+(a.email?' · '+esc(a.email):'')+'</div>'
+          +'<div class="biz-pills">'
+            +(mConn?'<span class="pill g">🟢 מנהל מחובר</span>':'')
+            +(eConn?'<span class="pill g">'+eConn+' עובד מחובר</span>':'')
+            +'<span class="pill b">'+(emps.length+(m.name?1:0))+' עובדים</span>'
+            +'<span class="pill p">'+log.length+' פעולות</span>'
+            +(log[0]?'<span class="pill o">'+ago(log[0].ts)+'</span>':'')
+          +'</div>'
+        +'</div>'
+        +'<div class="health-circle" style="background:'+hc+'22;border-color:'+hc+';color:'+hc+';cursor:pointer;" onclick="event.stopPropagation();showHealthDetail(\''+t.id+'\')">'+score+'</div>'
+        +'<div class="biz-chevron" id="chv-'+t.id+'">›</div>'
+      +'</div>'
+      +'<div class="biz-detail" id="bd-'+t.id+'">'
+        +'<div class="action-bar">'
+          +'<button class="btn-action blue" onclick="openMgrEdit(\''+t.id+'\')">✏️ ערוך מנהל</button>'
+          +'<button class="btn-action green" onclick="openAddEmpModal(\''+t.id+'\')">➕ הוסף עובד</button>'
+          +'<button class="btn-action orange" onclick="confirmReset(\''+t.id+'\')">🔄 אפס PIN מנהל</button>'
+          +'<button class="btn-action purple" onclick="openPlanModal(\''+t.id+'\')">📦 שנה חבילה</button>'
+          +'<button class="btn-action blue" onclick="openTagsModal(\''+t.id+'\')">🏷️ תגיות</button>'
+          +'<button class="btn-action blue" onclick="openLogoModal(\''+t.id+'\')">🖼️ לוגו</button>'
+          +'<button class="btn-action red" onclick="confirmDelete(\''+t.id+'\')">🗑️ מחק עסק</button>'
+        +'</div>'
+        +'<div class="dtabs">'
+          +'<button class="dtab active" onclick="switchDTabExt(\''+t.id+'\',\'info\',this)">פרטים</button>'
+          +'<button class="dtab" onclick="switchDTabExt(\''+t.id+'\',\'emps\',this)">עובדים ('+emps.length+')</button>'
+          +'<button class="dtab" onclick="switchDTabExt(\''+t.id+'\',\'log\',this)">פעילות ('+log.length+')</button>'
+          +'<button class="dtab" onclick="switchDTabExt(\''+t.id+'\',\'notes\',this)">הערות</button>'
+          +'<button class="dtab" onclick="switchDTabExt(\''+t.id+'\',\'pays\',this)">תשלומים</button>'
+          +'<button class="dtab" onclick="switchDTabExt(\''+t.id+'\',\'hist\',this)">היסטוריה</button>'
+        +'</div>'
+        +'<div class="dpane" id="dp-'+t.id+'-info">'+renderBizInfo(t)+'</div>'
+        +'<div class="dpane hide" id="dp-'+t.id+'-emps">'+renderEmpsPane(t)+'</div>'
+        +'<div class="dpane hide" id="dp-'+t.id+'-log">'+renderLogPane(t)+'</div>'
+        +'<div class="dpane hide" id="dp-'+t.id+'-notes">'+renderNotesPane(t)+'</div>'
+        +'<div class="dpane hide" id="dp-'+t.id+'-pays">'+renderPaymentsPane(t)+'</div>'
+        +'<div class="dpane hide" id="dp-'+t.id+'-hist">'+renderHistoryPane(t)+'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+  _bizList.forEach(function(t){renderNotesList(t.id);});
+  updateFWButton();
+  updatePendingBadge();
+  populateFilterSelects();
+};
+
+/* ── EXTENDED DTAB SWITCHER ── */
+function switchDTabExt(tid,pane,btn){
+  ['info','emps','log','notes','pays','hist'].forEach(function(p){
+    var el=document.getElementById('dp-'+tid+'-'+p);if(el)el.classList.toggle('hide',p!==pane);
+  });
+  btn.closest('.dtabs').querySelectorAll('.dtab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+}
+
+/* ── SETTINGS RENDER (EXTENDED) ── */
+var _origRenderSettings=renderSettings;
+renderSettings=function(){
+  _origRenderSettings();
+  var el=document.getElementById('settings-content');if(!el)return;
+  var push_enabled=lsGet('push_enabled',false);
+  var admin2fa=lsGet('admin_2fa',false);
+  el.insertAdjacentHTML('beforeend',
+    '<div class="settings-sec"><h4>🔔 התראות Push</h4>'
+    +'<div class="perm-check"><span>התראות Push <small style="color:var(--muted);">(ידרוש שרת אמיתי בעתיד)</small></span>'
+    +'<input type="checkbox" id="push-toggle"'+(push_enabled?' checked':'')+' onchange="togglePush(this)"></div>'
+    +'</div>'
+    +'<div class="settings-sec"><h4>🔐 אבטחה מוגברת</h4>'
+    +'<div class="perm-check"><span>אימות דו-שלבי 2FA <small style="color:var(--muted);">(mock — ידרוש שרת אמיתי)</small></span>'
+    +'<input type="checkbox" id="tfa-toggle"'+(admin2fa?' checked':'')+' onchange="toggleTFA(this)"></div>'
+    +'</div>'
+    +'<div class="settings-sec"><h4>💾 גיבוי ייצוא/ייבוא</h4>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;">'
+    +'<button class="btn-action green" onclick="exportBackup()">📥 ייצוא גיבוי</button>'
+    +'<label class="btn-action blue" style="cursor:pointer;">📤 ייבוא גיבוי<input type="file" id="backup-import-inp" accept=".json" style="display:none;" onchange="importBackup()"></label>'
+    +'</div></div>'
+    +'<div class="settings-sec"><h4>📊 סקר שביעות רצון</h4>'
+    +'<button class="btn-action blue" onclick="openSurveyModal()">+ צור/ערוך סקר</button>'
+    +'</div>'
+  );
+};
+function togglePush(cb){
+  lsSet('push_enabled',cb.checked);
+  if(cb.checked&&'Notification' in window&&Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+  showToast(cb.checked?'התראות Push מופעלות':'התראות Push כבויות');
+}
+function toggleTFA(cb){lsSet('admin_2fa',cb.checked);showToast(cb.checked?'2FA מופעל':'2FA כבוי');}
+
+/* ── LOAD DATA EXTENSION ── */
+var _origLoadData=loadData;
+loadData=function(){
+  _origLoadData();
+  checkPushNotifications();
+  updatePendingBadge();
+};
+
 /* ── INIT ── */
 if(sessionStorage.getItem(ADMIN_SESSION_KEY)==='1'){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
   loadData();startClock();initAutoLock();showPane('dashboard');
+  initFloatWidget();
+  init2FA();
 }
 </script>
 </body>
