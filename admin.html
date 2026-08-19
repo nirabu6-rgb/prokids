@@ -390,7 +390,7 @@ button{cursor:pointer;font-family:inherit;}
     <input type="hidden" id="me-tenant-id">
     <input type="hidden" id="me-emp-id">
     <div class="mfl"><label>שם מלא</label><input id="me-name" placeholder="דוד לוי"></div>
-    <div class="mfl"><label>סיסמה (מספרים ואותיות)</label><input id="me-code" type="text" placeholder="סיסמה לעובד" autocomplete="new-password"></div>
+    <div class="mfl"><label>סיסמה (מספרים בלבד)</label><input id="me-code" type="tel" inputmode="numeric" placeholder="מספרים בלבד" autocomplete="new-password" oninput="this.value=this.value.replace(/\D/g,'')"></div>
     <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">הרשאות:</div>
     <div id="me-perms"></div>
     <div class="modal-btns">
