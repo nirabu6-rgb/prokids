@@ -2661,6 +2661,9 @@ function rejectTenant(tenantId){
 /* ── UPDATED RENDER BIZ LIST — add tags, logo, extra tabs ── */
 var _origRenderBizList=renderBizList;
 renderBizList=function(list){
+  /* remember which cards are currently open */
+  var openIds=[];
+  _bizList.forEach(function(t){var bd=document.getElementById('bd-'+t.id);if(bd&&bd.classList.contains('open'))openIds.push(t.id);});
   var el=document.getElementById('biz-list');
   if(!list.length){el.innerHTML='<div class="empty"><div class="ei">🏢</div><b>אין עסקים רשומים</b></div>';return;}
   el.innerHTML=list.map(function(t){
@@ -2716,6 +2719,12 @@ renderBizList=function(list){
     +'</div>';
   }).join('');
   _bizList.forEach(function(t){renderNotesList(t.id);});
+  /* restore open cards */
+  openIds.forEach(function(id){
+    var bd=document.getElementById('bd-'+id),chv=document.getElementById('chv-'+id);
+    if(bd){bd.classList.add('open');}
+    if(chv){chv.classList.add('open');}
+  });
   updateFWButton();
   updatePendingBadge();
   populateFilterSelects();
