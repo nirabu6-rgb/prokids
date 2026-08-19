@@ -1250,10 +1250,21 @@ function confirmReset(tenantId){
 
 function confirmDelete(tenantId){
   showConfirm('מחק עסק','האם אתה בטוח שברצונך למחוק את כל נתוני העסק? פעולה זו אינה הפיכה.',function(){
+    /* find store code before deleting so we can clean up reg keys */
+    var tenant=_bizList.find(function(t){return t.id===tenantId;});
+    var storeCode=tenant&&tenant.settings&&tenant.settings.storeCode||'';
     var tenants=lsGet('admin_tenants',[]).filter(function(t){return t.id!==tenantId;});
     lsSet('admin_tenants',tenants);
     if(tenantId==='_current_'){
       ['settings','account','um_manager','um_employees','um_actlog','um_session','items','shelves','suppliers','categories'].forEach(function(k){lsDel(k);});
+    }
+    /* clean up registration status and pending reg keys for this store code */
+    if(storeCode){
+      localStorage.removeItem('ws3_reg_status_'+storeCode);
+      for(var i=localStorage.length-1;i>=0;i--){
+        var k=localStorage.key(i);
+        if(k&&k.startsWith('ws3_pending_reg_'+storeCode+'_'))localStorage.removeItem(k);
+      }
     }
     loadData();
   });
