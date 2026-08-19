@@ -4033,6 +4033,21 @@ function obFinish(){
   var phone=document.getElementById('ob-phone').value.trim();
   var pin=document.getElementById('ob-pin').value.trim();
   var mgrEmail=document.getElementById('ob-mgr-email').value.trim();
+  /* בדיקת מייל ייחודי */
+  if(mgrEmail){
+    var existingTenants=[];
+    try{existingTenants=JSON.parse(localStorage.getItem('ws3_admin_tenants')||'[]');}catch(e){}
+    var emailTaken=existingTenants.some(function(t){
+      var te=(t.account&&t.account.email)||'';
+      var tm=(t.manager&&t.manager.email)||'';
+      return (te&&te.toLowerCase()===mgrEmail.toLowerCase())||(tm&&tm.toLowerCase()===mgrEmail.toLowerCase());
+    });
+    if(emailTaken){
+      var errEl=document.getElementById('ob-err')||document.createElement('div');
+      alert('כתובת המייל '+mgrEmail+' כבר רשומה במערכת.\nכל מנהל חייב להשתמש במייל ייחודי.');
+      return;
+    }
+  }
   LS.set('tmpl',_obTmpl);
   _DR=null;
   var biz=document.getElementById('ob-bizname').value.trim();

@@ -953,9 +953,12 @@ function saveTenantBack(t){
 
 /* ── CONFIRM DIALOGS ── */
 function confirmReset(tenantId){
-  showConfirm('אפס PIN מנהל','האם לאפס את קוד הכניסה של המנהל ל-123456?',function(){
-    var t=_bizList.find(function(x){return x.id===tenantId;});
-    if(t&&t.manager){t.manager.pin='123456';saveTenantBack(t);loadData();showToast('PIN אופס ל-123456 ✓');}
+  var t=_bizList.find(function(x){return x.id===tenantId;});if(!t)return;
+  var m=t.manager||{},a=t.account||{};
+  var email=m.email||a.email||'לא ידוע';
+  var name=m.name||(a.fullname)||'מנהל';
+  showConfirm('אפס PIN מנהל',name+'\n'+email+'\n\nלאפס את קוד הכניסה ל-123456?',function(){
+    if(t.manager){t.manager.pin='123456';saveTenantBack(t);loadData();showToast('PIN אופס ל-123456 ✓');}
   });
 }
 
@@ -1356,6 +1359,11 @@ function renderSettings(){
     +sessions.map(function(s){return '<tr><td>'+fmtDt(s.ts)+'</td><td style="font-size:11px;color:var(--muted);">'+esc(s.device||'—')+'</td></tr>';}).join('')
     +'</tbody></table>'
     +'</div>'
+    +'<div class="settings-sec" style="border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:16px;background:rgba(239,68,68,.04);">'
+    +'<h4 style="color:var(--crit);margin-bottom:8px;">⚠️ אפס את כל הנתונים</h4>'
+    +'<p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6;">מוחק את כל העסקים הרשומים — לשימוש בהתחלה מחדש. פעולה בלתי הפיכה.</p>'
+    +'<button class="btn-action red" onclick="confirmWipeAll()">🗑️ מחק את כל העסקים</button>'
+    +'</div>'
     +'<div class="settings-sec"><h4>קופונים</h4>'
     +'<button class="btn-action green" style="margin-bottom:10px;" onclick="openCouponModal()">+ הוסף קופון</button>'
     +(coupons.length?'<table class="fin-table"><thead><tr><th>קוד</th><th>הנחה</th><th>חבילה</th><th>תפוגה</th><th></th></tr></thead><tbody>'
@@ -1363,6 +1371,16 @@ function renderSettings(){
     +'</tbody></table>':'<div style="color:var(--muted);font-size:13px;">אין קופונים</div>')
     +'</div>';
 }
+
+function confirmWipeAll(){
+  showConfirm('מחק את כל העסקים','האם אתה בטוח? כל העסקים, העובדים והנתונים יימחקו לצמיתות.',function(){
+    lsDel('admin_tenants');
+    ['settings','account','um_manager','um_employees','um_actlog','um_session','items','shelves','suppliers','categories','mode'].forEach(function(k){lsDel(k);});
+    loadData();
+    showToast('כל הנתונים נמחקו ✓');
+  });
+}
+window.confirmWipeAll=confirmWipeAll;
 
 function savePinChange(){
   var p1=document.getElementById('new-pin').value;
