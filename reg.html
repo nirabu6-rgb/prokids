@@ -169,13 +169,14 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
       <p>הרישום שלך התקבל ועובר בדיקה ואישור על ידי מנהל המערכת.<br>לאחר האישור תקבל קישור לכניסה לאפליקציה.</p>
       <div class="info-box" id="pending-info"></div>
       <button class="btn btn-primary" onclick="checkStatus()">בדוק סטטוס</button>
+      <button class="btn btn-sec" style="margin-top:10px;font-size:13px;" onclick="clearReg()">🗑 נקה ורישום מחדש</button>
     </div>
 
   </div>
 </div>
 
 <!-- STATUS MODAL -->
-<div id="status-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;">
+<div id="status-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px;">
   <div style="background:var(--card);border-radius:18px;max-width:420px;width:100%;padding:28px 24px;box-shadow:0 12px 40px rgba(0,0,0,.2);">
     <div style="font-size:18px;font-weight:800;color:var(--accent);margin-bottom:20px;text-align:center;">סטטוס בקשת הרשמה</div>
     <div id="status-modal-body"></div>
@@ -258,7 +259,22 @@ function checkStatus(){
       +'</div></div>';
   }
 
+  if(!reg){
+    body.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px 0;">לא נמצאה בקשת רישום שמורה בדפדפן זה.</div>';
+    modal.style.display='flex';
+    return;
+  }
   body.innerHTML=statusHtml+rows;
+  modal.style.display='flex';
+}
+
+function clearReg(){
+  if(!confirm('האם למחוק את בקשת הרישום ולהתחיל מחדש?'))return;
+  for(var i=localStorage.length-1;i>=0;i--){
+    var k=localStorage.key(i);
+    if(k&&(k.startsWith('ws3_pending_reg_')||k.startsWith('ws3_reg_status_')))localStorage.removeItem(k);
+  }
+  location.reload();
 }
 
 function showErr(id,msg){var e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
