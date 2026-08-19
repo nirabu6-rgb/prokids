@@ -168,14 +168,98 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
       <h2>הבקשה נשלחה!</h2>
       <p>הרישום שלך התקבל ועובר בדיקה ואישור על ידי מנהל המערכת.<br>לאחר האישור תקבל קישור לכניסה לאפליקציה.</p>
       <div class="info-box" id="pending-info"></div>
-      <button class="btn btn-primary" onclick="location.reload()">בדוק סטטוס</button>
+      <button class="btn btn-primary" onclick="checkStatus()">בדוק סטטוס</button>
     </div>
 
   </div>
 </div>
 
+<!-- STATUS MODAL -->
+<div id="status-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--card);border-radius:18px;max-width:420px;width:100%;padding:28px 24px;box-shadow:0 12px 40px rgba(0,0,0,.2);">
+    <div style="font-size:18px;font-weight:800;color:var(--accent);margin-bottom:20px;text-align:center;">סטטוס בקשת הרשמה</div>
+    <div id="status-modal-body"></div>
+    <button onclick="document.getElementById('status-modal').style.display='none'" style="width:100%;margin-top:20px;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:none;color:var(--muted);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;">סגור</button>
+  </div>
+</div>
+
 <script>
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function fmtDate(ts){
+  if(!ts)return '—';
+  var d=new Date(ts);
+  return d.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+}
+
+function checkStatus(){
+  /* find pending reg */
+  var reg=null,regKey=null;
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.startsWith('ws3_pending_reg_')){
+      try{var v=JSON.parse(localStorage.getItem(k));if(v){reg=v;regKey=k;break;}}catch(e){}
+    }
+  }
+  /* find reg_status */
+  var sc=reg&&reg.storeCode||'';
+  var status=sc?localStorage.getItem('ws3_reg_status_'+sc):null;
+
+  var modal=document.getElementById('status-modal');
+  var body=document.getElementById('status-modal-body');
+  modal.style.display='flex';
+
+  var rows='';
+  if(reg){
+    rows+='<div style="display:grid;gap:10px;">';
+    rows+='<div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:9px;font-size:13px;">'
+      +'<span style="color:var(--muted);">תאריך הגשה</span>'
+      +'<b>'+fmtDate(reg.ts)+'</b></div>';
+    rows+='<div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:9px;font-size:13px;">'
+      +'<span style="color:var(--muted);">שם</span>'
+      +'<b>'+esc(reg.mgrName||'—')+'</b></div>';
+    rows+='<div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:9px;font-size:13px;">'
+      +'<span style="color:var(--muted);">עסק</span>'
+      +'<b>'+esc(reg.bizName||'—')+'</b></div>';
+    rows+='<div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:9px;font-size:13px;">'
+      +'<span style="color:var(--muted);">קוד עסק</span>'
+      +'<b style="color:var(--accent);">'+esc(reg.storeCode||'—')+'</b></div>';
+    rows+='<div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:9px;font-size:13px;">'
+      +'<span style="color:var(--muted);">סוג עסק</span>'
+      +'<b>'+esc(reg.bizType||'—')+'</b></div>';
+    rows+='<div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:9px;font-size:13px;">'
+      +'<span style="color:var(--muted);">עיר</span>'
+      +'<b>'+esc(reg.bizCity||'—')+'</b></div>';
+    rows+='</div>';
+  }
+
+  var statusHtml='';
+  if(status==='approved'){
+    statusHtml='<div style="background:rgba(0,168,89,.1);border:1.5px solid var(--ok);border-radius:12px;padding:14px;text-align:center;margin-bottom:16px;">'
+      +'<div style="font-size:22px;margin-bottom:4px;">✅</div>'
+      +'<div style="font-weight:800;color:var(--ok);font-size:15px;">אושר!</div>'
+      +'<div style="font-size:12px;color:var(--muted);margin-top:4px;">העסק אושר במערכת — לחץ "כניסה לאפליקציה"</div>'
+      +'</div>';
+    rows='<a href="weightstock.html" style="display:block;background:var(--ok);color:#fff;border-radius:12px;padding:14px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;margin-top:16px;">כניסה לאפליקציה ›</a>';
+  } else if(status==='rejected'){
+    statusHtml='<div style="background:rgba(220,38,38,.08);border:1.5px solid var(--crit);border-radius:12px;padding:14px;text-align:center;margin-bottom:16px;">'
+      +'<div style="font-size:22px;margin-bottom:4px;">❌</div>'
+      +'<div style="font-weight:800;color:var(--crit);font-size:15px;">הבקשה נדחתה</div>'
+      +'<div style="font-size:12px;color:var(--muted);margin-top:4px;">פנה למנהל המערכת לפרטים נוספים</div>'
+      +'</div>';
+  } else {
+    statusHtml='<div style="background:rgba(245,158,11,.08);border:1.5px solid var(--warn);border-radius:12px;padding:14px;text-align:center;margin-bottom:16px;">'
+      +'<div style="font-size:22px;margin-bottom:4px;">⏳</div>'
+      +'<div style="font-weight:800;color:var(--warn);font-size:15px;">ממתין לאישור</div>'
+      +'<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">'
+      +'הבקשה נמצאת בתהליך בדיקה.<br>'
+      +'מנהל המערכת יעיין בפרטים ויאשר בהקדם.<br>'
+      +'לאחר האישור תוכל להיכנס לאפליקציה.'
+      +'</div></div>';
+  }
+
+  body.innerHTML=statusHtml+rows;
+}
 
 function showErr(id,msg){var e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
 function hideErr(id){var e=document.getElementById(id);if(e)e.style.display='none';}
