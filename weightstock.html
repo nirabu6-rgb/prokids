@@ -3492,10 +3492,10 @@ function _buildStorePinBoxes(containerId,onComplete){
 
 /* ── Show user login screen ── */
 function showUMLogin(){
-  var settings=LS.get('settings',{});
-  var bizName=settings.bizName||'WeightStock';
-  document.getElementById('um-biz-name').textContent=bizName;
-  document.getElementById('um-sub-text').textContent='הכנס קוד חנות';
+  /* step 1 is generic — no business name until store code is entered */
+  document.getElementById('um-biz-name').textContent='WeightStock';
+  document.getElementById('um-biz-icon').textContent='⚖️';
+  document.getElementById('um-sub-text').textContent='הכנס קוד עסק';
   /* show store-code step */
   document.getElementById('um-store-section').style.display='block';
   document.getElementById('um-user-section').style.display='none';
@@ -3536,6 +3536,13 @@ function umBackToStore(){
 window.umBackToStore=umBackToStore;
 
 function _umShowUserList(){
+  /* now show business name and logo */
+  var settings=LS.get('settings',{});
+  var bizName=settings.bizName||'WeightStock';
+  document.getElementById('um-biz-name').textContent=bizName;
+  var logo=LS.get('biz_logo',null);
+  var iconEl=document.getElementById('um-biz-icon');
+  if(iconEl){if(logo){iconEl.innerHTML='<img src="'+logo+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">';}else{iconEl.textContent='⚖️';}}
   var mgr=LS.get('um_manager',null);
   var emps=getEmployees();
   document.getElementById('um-sub-text').textContent='בחר משתמש';
