@@ -895,14 +895,21 @@ function pollPendingRegs(){
   for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.startsWith('ws3_pending_reg_'))keys.push(k);}
   keys.sort();
   var keysStr=keys.join(',');
-  if(_knownRegKeys===null){_knownRegKeys=keysStr;return;} /* first run — just record */
-  if(keysStr===_knownRegKeys)return;
-  /* find new keys */
-  var prevSet=_knownRegKeys?_knownRegKeys.split(',').filter(Boolean):[];
-  keys.forEach(function(k){
-    if(prevSet.indexOf(k)===-1){
-      try{var reg=JSON.parse(localStorage.getItem(k));if(reg)showRegNotification(reg);}catch(ex){}
+  if(_knownRegKeys===null){
+    /* first run — record existing keys and show badge if any pending */
+    _knownRegKeys=keysStr;
+    if(keys.length>0){
+      checkPendingRegsBadge();
+      showToast('יש '+keys.length+' בקש'+(keys.length===1?'ת':'ות')+' רישום ממתינות — עבור לקישורים לאישור');
     }
+    return;
+  }
+  if(keysStr===_knownRegKeys)return;
+  /* find new keys since last check */
+  var prevSet=_knownRegKeys?_knownRegKeys.split(',').filter(Boolean):[];
+  var newKeys=keys.filter(function(k){return prevSet.indexOf(k)===-1;});
+  newKeys.forEach(function(k){
+    try{var reg=JSON.parse(localStorage.getItem(k));if(reg)showRegNotification(reg);}catch(ex){}
   });
   _knownRegKeys=keysStr;
   checkPendingRegsBadge();
@@ -961,6 +968,7 @@ function loadData(){
   renderBizList(_bizList);
   renderGlobalLog(_glogFilter);
   updateBadges();
+  checkPendingRegsBadge();
 }
 
 function updateBadges(){
