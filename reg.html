@@ -228,6 +228,17 @@ function submitReg(){
   if(!btype){showErr('err2','בחר סוג עסק');return;}
   if(!city){showErr('err2','הכנס עיר');return;}
   if(!sc||sc.length<4||sc.length>6){showErr('err2','קוד העסק חייב להיות 4-6 תווים');return;}
+  /* check store code uniqueness */
+  var takenCodes=[];
+  try{var tenants=JSON.parse(localStorage.getItem('ws3_admin_tenants')||'[]');
+    tenants.forEach(function(t){var c=(t.settings&&t.settings.storeCode)||'';if(c)takenCodes.push(c.toUpperCase());});}catch(e){}
+  for(var pi=0;pi<localStorage.length;pi++){
+    var pk=localStorage.key(pi);
+    if(pk&&pk.startsWith('ws3_pending_reg_')){
+      try{var pv=JSON.parse(localStorage.getItem(pk));if(pv&&pv.storeCode)takenCodes.push(pv.storeCode.toUpperCase());}catch(e2){}
+    }
+  }
+  if(takenCodes.indexOf(sc)!==-1){showErr('err2','קוד העסק "'+sc+'" כבר תפוס — בחר קוד אחר');return;}
   if(!pin||pin.length<4){showErr('err2','הסיסמה חייבת להיות לפחות 4 ספרות');return;}
   if(pin!==pin2){showErr('err2','הסיסמאות לא תואמות');return;}
 

@@ -2238,6 +2238,9 @@ function approvePendingReg(key){
     /* create tenant */
     var tenants=[];
     try{tenants=JSON.parse(localStorage.getItem('ws3_admin_tenants')||'[]');}catch(e){}
+    /* check store code uniqueness */
+    var scTaken=tenants.some(function(t){return ((t.settings&&t.settings.storeCode)||'').toUpperCase()===(d.storeCode||'').toUpperCase();});
+    if(scTaken){showToast('קוד עסק "'+d.storeCode+'" כבר תפוס — בקש מהמנהל לבחור קוד אחר');return;}
     var id='T'+Date.now();
     tenants.push({id:id,settings:{bizName:d.bizName,bizType:d.bizType,currency:'₪',storeCode:d.storeCode},account:{fullname:d.mgrName,email:d.mgrEmail,phone:d.phone,idnum:d.idnum,registeredAt:d.ts},manager:{name:d.mgrName,email:d.mgrEmail,password:d.pin,pin:d.pin,loginCount:0},employees:[],actlog:[],tags:[],payments:[],planHistory:[],plan:{key:'basic',name:'בסיסי',since:Date.now(),contractEnd:Date.now()+365*86400000},estEmpCount:d.empCount});
     localStorage.setItem('ws3_admin_tenants',JSON.stringify(tenants));
