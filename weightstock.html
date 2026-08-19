@@ -7525,12 +7525,7 @@ window.createAutoOrder=createAutoOrder;
     applyAccent();
     var vm=LS.get('tmpl',null);
     var mgr=LS.get('um_manager',null);
-    if(!vm||!mgr){
-      /* if admin has approved tenants, go to login — skip onboarding */
-      var _tenants=[];try{_tenants=JSON.parse(localStorage.getItem('ws3_admin_tenants')||'[]');}catch(e){}
-      if(_tenants.length>0){showUMLogin();}else{showOnboarding();}
-      return;
-    }
+    if(!vm||!mgr){showUMLogin();return;}
     /* check pending approval */
     if(LS.get('mode','user')==='pending'){
       var sc=LS.get('settings',{}).storeCode||'';
