@@ -549,6 +549,12 @@ function doAdminLogin(){
 window.addEventListener('load',function(){
   var f=document.getElementById('ap0');if(f)f.focus();
 });
+/* סנכרון אוטומטי — כשהאפליקציה הראשית משנה נתונים, admin מתעדכן מיד */
+window.addEventListener('storage',function(e){
+  if(e.key&&e.key.startsWith('ws3_')&&sessionStorage.getItem(ADMIN_SESSION_KEY)==='1'){
+    loadData();
+  }
+});
 function doLogout(){sessionStorage.removeItem(ADMIN_SESSION_KEY);location.reload();}
 function startClock(){
   function tick(){document.getElementById('adm-clock').textContent=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});}
@@ -580,12 +586,14 @@ function initAutoLock(){
 var _bizList=[], _glog=[];
 function loadData(){
   var tenants=lsGet('admin_tenants',[]);
+  /* תמיד מסנכרן את העסק הנוכחי מהמפתחות הבודדים */
   var cs=lsGet('settings',null);
-  if(cs&&cs.bizName){
-    var ca=lsGet('account',{}), cm=lsGet('um_manager',null), ce=lsGet('um_employees',[]), cl=lsGet('um_actlog',[]);
+  var ca=lsGet('account',{}), cm=lsGet('um_manager',null), ce=lsGet('um_employees',[]), cl=lsGet('um_actlog',[]);
+  var hasCurrent=cs||(cm&&cm.name)||(ca&&ca.fullname);
+  if(hasCurrent){
     var f=tenants.find(function(t){return t.id==='_current_';});
-    if(!f) tenants.push({id:'_current_',settings:cs,account:ca,manager:cm,employees:ce,actlog:cl,registeredAt:ca.registeredAt||Date.now()});
-    else{f.settings=cs;f.account=ca;f.manager=cm;f.employees=ce;f.actlog=cl;}
+    if(!f) tenants.push({id:'_current_',settings:cs||{},account:ca,manager:cm,employees:ce,actlog:cl,registeredAt:(ca&&ca.registeredAt)||Date.now()});
+    else{f.settings=cs||f.settings||{};f.account=ca;f.manager=cm;f.employees=ce;f.actlog=cl;}
     lsSet('admin_tenants',tenants);
   }
   _bizList=tenants;
