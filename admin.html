@@ -837,10 +837,55 @@ window.addEventListener('load',function(){
 });
 /* סנכרון אוטומטי — כשהאפליקציה הראשית משנה נתונים, admin מתעדכן מיד */
 window.addEventListener('storage',function(e){
-  if(e.key&&e.key.startsWith('ws3_')&&sessionStorage.getItem(ADMIN_SESSION_KEY)==='1'){
+  if(!e.key)return;
+  /* התראה על בקשת הרשמה חדשה */
+  if(e.key.startsWith('ws3_pending_reg_')&&e.newValue&&sessionStorage.getItem(ADMIN_SESSION_KEY)==='1'){
+    try{
+      var reg=JSON.parse(e.newValue);
+      showRegNotification(reg);
+      loadData();
+      renderPendingRegs();
+      checkPendingRegsBadge();
+    }catch(ex){}
+    return;
+  }
+  if(e.key.startsWith('ws3_')&&sessionStorage.getItem(ADMIN_SESSION_KEY)==='1'){
     loadData();
   }
 });
+
+function showRegNotification(reg){
+  /* הצג בנר התראה עם פרטי הבקשה */
+  var existing=document.getElementById('reg-notif-bar');
+  if(existing)existing.remove();
+  var bar=document.createElement('div');
+  bar.id='reg-notif-bar';
+  bar.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#003B71,#005aaa);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 20px rgba(0,0,0,.3);animation:slideDown .3s ease;';
+  bar.innerHTML='<div style="font-size:22px;">🔔</div>'
+    +'<div style="flex:1;">'
+    +'<div style="font-size:14px;font-weight:800;">בקשת הרשמה חדשה!</div>'
+    +'<div style="font-size:12px;opacity:.85;margin-top:2px;">'
+    +esc(reg.mgrName||'—')+' · '+esc(reg.bizName||'—')+' · קוד: <b>'+esc(reg.storeCode||'—')+'</b>'
+    +'</div></div>'
+    +'<button onclick="showPane(\'links\');document.getElementById(\'reg-notif-bar\').remove();" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;flex-shrink:0;">לאישור ›</button>'
+    +'<button onclick="this.parentElement.remove()" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:20px;cursor:pointer;padding:0 4px;flex-shrink:0;">×</button>';
+  document.body.prepend(bar);
+  /* נגן צליל התראה */
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [523,659,784].forEach(function(freq,i){
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=freq;g.gain.setValueAtTime(.18,ctx.currentTime+i*.12);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.12+.18);
+      o.start(ctx.currentTime+i*.12);o.stop(ctx.currentTime+i*.12+.2);
+    });
+  }catch(ex){}
+  /* סגור אוטומטית אחרי 12 שניות */
+  setTimeout(function(){var b=document.getElementById('reg-notif-bar');if(b)b.remove();},12000);
+}
+/* CSS animation */
+(function(){var s=document.createElement('style');s.textContent='@keyframes slideDown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}';document.head.appendChild(s);})();
 function doLogout(){sessionStorage.removeItem(ADMIN_SESSION_KEY);location.reload();}
 function startClock(){
   function tick(){document.getElementById('adm-clock').textContent=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});}
