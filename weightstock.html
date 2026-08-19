@@ -1173,16 +1173,21 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   <div class="um-box">
     <div class="um-logo" id="um-biz-icon">⚖️</div>
     <div class="um-title" id="um-biz-name">WeightStock</div>
-    <div class="um-sub" id="um-sub-text">הכנס קוד חנות</div>
+    <div class="um-sub" id="um-sub-text">הכנס קוד עסק</div>
 
-    <!-- שלב 1: קוד חנות -->
+    <!-- שלב 1: קוד עסק -->
     <div id="um-store-section">
-      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:12px;">קוד חנות מזהה (6 ספרות)</div>
-      <div class="um-pin-row" id="um-store-row" dir="ltr"></div>
+      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;">קוד העסק שקיבלת מהמנהל</div>
+      <input id="um-store-text" type="text" placeholder="קוד עסק (לפחות 6 תווים)" autocomplete="off"
+        style="width:100%;box-sizing:border-box;padding:14px;font-size:20px;font-weight:800;text-align:center;letter-spacing:4px;text-transform:uppercase;border:2px solid var(--border);border-radius:12px;background:var(--card2);color:var(--text);outline:none;font-family:monospace;"
+        oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter')umSubmitStoreCode()">
       <div id="um-store-err" style="display:none;color:var(--crit);font-size:13px;text-align:center;margin-top:8px;"></div>
-      <button class="btn ok" style="width:100%;margin-top:16px;" onclick="umSubmitStoreCode()">המשך ←</button>
+      <button class="btn ok" style="width:100%;margin-top:14px;" onclick="umSubmitStoreCode()">המשך ←</button>
+      <!-- נשאר ריק, הbox ישן נמחק -->
+      <div id="um-store-row" style="display:none;"></div>
       <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px;">
-        קוד החנות ניתן על ידי מנהל החנות
+        קוד העסק נקבע על ידי מנהל החנות בהרשמה
       </div>
     </div>
 
@@ -1375,19 +1380,28 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <label>אימייל *</label>
           <input id="ob-mgr-email" type="email" placeholder="manager@example.com" autocomplete="email">
         </div>
+        <!-- קוד עסק -->
         <div style="background:var(--card2);border-radius:10px;padding:12px 14px;margin-top:6px;">
-          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;">🔢 קוד כניסה — 6 ספרות</div>
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;">🏪 קוד עסק — לכניסה לאפליקציה</div>
+          <input id="ob-store-code" type="text" placeholder="לפחות 6 תווים (אותיות/מספרים)" autocomplete="off"
+            style="font-size:18px;font-weight:800;text-align:center;letter-spacing:3px;text-transform:uppercase;"
+            oninput="this.value=this.value.toUpperCase()">
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">קוד זה תעביר לעובדים שלך — הם יזינו אותו בכניסה לאפליקציה</div>
+        </div>
+        <!-- סיסמת מנהל -->
+        <div style="background:var(--card2);border-radius:10px;padding:12px 14px;margin-top:8px;">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;">🔑 סיסמת מנהל</div>
           <div style="display:flex;gap:8px;">
             <div style="flex:1;">
-              <label style="font-size:11px;color:var(--muted);">קוד כניסה</label>
-              <input id="ob-pin" type="tel" inputmode="numeric" maxlength="6" placeholder="• • • • • •" dir="ltr" style="letter-spacing:5px;font-size:20px;font-weight:800;text-align:center;">
+              <label style="font-size:11px;color:var(--muted);">סיסמה</label>
+              <input id="ob-pin" type="text" placeholder="סיסמה" autocomplete="new-password">
             </div>
             <div style="flex:1;">
-              <label style="font-size:11px;color:var(--muted);">אימות קוד</label>
-              <input id="ob-pin2" type="tel" inputmode="numeric" maxlength="6" placeholder="• • • • • •" dir="ltr" style="letter-spacing:5px;font-size:20px;font-weight:800;text-align:center;">
+              <label style="font-size:11px;color:var(--muted);">אימות סיסמה</label>
+              <input id="ob-pin2" type="text" placeholder="חזור על הסיסמה" autocomplete="new-password">
             </div>
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:6px;">הקוד הזה ישמש לכניסה מהירה לאפליקציה</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">הסיסמה שלך לכניסה כמנהל</div>
         </div>
         <div class="row" style="margin-top:18px;">
           <button class="btn sec" onclick="obBack2()">← חזור</button>
@@ -2246,6 +2260,14 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
             </label>
           </div>
         </div>
+      </div>
+
+      <!-- שינוי סיסמה אישית — לכולם -->
+      <div class="card" style="margin:0 0 8px;padding:0;overflow:hidden;">
+        <button onclick="openChangeMyPassword()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
+          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">🔑 שינוי הסיסמה שלי</div>
+          <span style="color:var(--muted);">›</span>
+        </button>
       </div>
 
       <!-- מחק משתמשים -->
@@ -3429,10 +3451,7 @@ function _genStoreCode(){
 }
 function getStoreCode(){
   var s=LS.get('settings',{});
-  if(s.storeCode)return s.storeCode;
-  var code=_genStoreCode();
-  s.storeCode=code; LS.set('settings',s);
-  return code;
+  return (s.storeCode||'').toUpperCase();
 }
 
 function _buildStorePinBoxes(containerId,onComplete){
@@ -3477,20 +3496,22 @@ function showUMLogin(){
   document.getElementById('um-pw-section').style.display='none';
   document.getElementById('um-pin-section').style.display='none';
   document.getElementById('um-store-err').style.display='none';
-  _buildStorePinBoxes('um-store-row', umSubmitStoreCode);
+  var inp=document.getElementById('um-store-text');if(inp){inp.value='';setTimeout(function(){inp.focus();},150);}
   document.getElementById('um-login-screen').classList.add('show');
 }
 window.showUMLogin=showUMLogin;
 
 function umSubmitStoreCode(){
-  var entered=[0,1,2,3,4,5].map(function(i){return (document.getElementById('sc'+i)||{value:''}).value||'';}).join('');
+  var inp=document.getElementById('um-store-text');
+  var entered=(inp?inp.value:'').trim().toUpperCase();
   var errEl=document.getElementById('um-store-err');
-  if(entered.length<6){errEl.textContent='הכנס 6 ספרות';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  if(entered.length<6){errEl.textContent='קוד עסק חייב להיות לפחות 6 תווים';errEl.style.display='block';return;}
   var code=getStoreCode();
+  if(!code){errEl.textContent='קוד עסק לא הוגדר — פנה למנהל המערכת';errEl.style.display='block';return;}
   if(entered!==code){
-    errEl.textContent='קוד חנות שגוי — פנה למנהל';errEl.style.display='block';
-    [0,1,2,3,4,5].forEach(function(i){var el=document.getElementById('sc'+i);if(el)el.value='';});
-    if(document.getElementById('sc0'))document.getElementById('sc0').focus();
+    errEl.textContent='קוד עסק שגוי';errEl.style.display='block';
+    if(inp){inp.value='';inp.focus();}
     return;
   }
   /* show user list */
@@ -3502,9 +3523,9 @@ function umBackToStore(){
   document.getElementById('um-store-section').style.display='block';
   document.getElementById('um-user-section').style.display='none';
   document.getElementById('um-pw-section').style.display='none';
-  document.getElementById('um-sub-text').textContent='הכנס קוד חנות';
+  document.getElementById('um-sub-text').textContent='הכנס קוד עסק';
   document.getElementById('um-store-err').style.display='none';
-  _buildStorePinBoxes('um-store-row', umSubmitStoreCode);
+  var inp=document.getElementById('um-store-text');if(inp){inp.value='';inp.focus();}
 }
 window.umBackToStore=umBackToStore;
 
@@ -4176,7 +4197,15 @@ function obFinish(){
   var idnum=(document.getElementById('ob-idnum')||{value:''}).value.trim();
   var phone=document.getElementById('ob-phone').value.trim();
   var pin=document.getElementById('ob-pin').value.trim();
+  var pin2=document.getElementById('ob-pin2').value.trim();
+  var storeCodeRaw=(document.getElementById('ob-store-code')||{value:''}).value.trim();
+  var storeCode=storeCodeRaw.toUpperCase();
   var mgrEmail=document.getElementById('ob-mgr-email').value.trim();
+  /* בדיקת קוד עסק */
+  if(!storeCode||storeCode.length<6){alert('קוד העסק חייב להיות לפחות 6 תווים');return;}
+  /* בדיקת סיסמה */
+  if(!pin){alert('חסרה סיסמת מנהל');return;}
+  if(pin!==pin2){alert('הסיסמאות לא תואמות');return;}
   /* בדיקת מייל ייחודי */
   if(mgrEmail){
     var existingTenants=[];
@@ -4202,7 +4231,7 @@ function obFinish(){
   var bizStreet=document.getElementById('ob-bizstreet').value.trim();
   var bizCity=document.getElementById('ob-bizcity').value.trim();
   var bizWeb=document.getElementById('ob-bizweb').value.trim();
-  LS.set('settings',{bizName:biz,bizType:td.bizType||td.name||'',currency:cur,defaultAlert:20,demo:true,bizNotes:'',bizPhone:bizPhone,bizEmail:bizEmail,bizStreet:bizStreet,bizCity:bizCity,bizWeb:bizWeb});
+  LS.set('settings',{bizName:biz,bizType:td.bizType||td.name||'',currency:cur,defaultAlert:20,demo:true,bizNotes:'',bizPhone:bizPhone,bizEmail:bizEmail,bizStreet:bizStreet,bizCity:bizCity,bizWeb:bizWeb,storeCode:storeCode});
   LS.set('account',{fullname:fullname,firstname:firstname,lastname:lastname,idnum:idnum,phone:phone,email:mgrEmail,registeredAt:Date.now()});
   LS.set('plan',{key:_selectedPlan,name:PLANS[_selectedPlan].name,since:Date.now(),contractEnd:Date.now()+365*86400000});
   LS.set('mode','user');
@@ -5238,6 +5267,40 @@ function copyStoreCode(){
   else{showToast('קוד חנות: '+code);}
 }
 window.copyStoreCode=copyStoreCode;
+
+/* ── שינוי סיסמה אישית (עובד או מנהל) ── */
+function openChangeMyPassword(){
+  if(!_umUser){showToast('לא מחובר');return;}
+  var cur=prompt('סיסמה נוכחית:');
+  if(cur===null)return;
+  if(_umUser.isManager){
+    var mgr=LS.get('um_manager',null);
+    var ok=(mgr.password&&mgr.password===cur)||(mgr.pin&&mgr.pin===cur);
+    if(!ok){showToast('סיסמה שגויה');return;}
+    var np=prompt('סיסמה חדשה (לפחות 4 תווים):');
+    if(!np||np.length<4){showToast('סיסמה קצרה מדי');return;}
+    var np2=prompt('חזור על הסיסמה החדשה:');
+    if(np!==np2){showToast('הסיסמאות לא תואמות');return;}
+    mgr.pin=np; mgr.password=np; LS.set('um_manager',mgr);
+    logAct('settings','שינוי סיסמת מנהל');
+    showToast('סיסמה עודכנה ✓');
+  } else {
+    var emps=getEmployees();
+    var emp=emps.find(function(e){return e.id===_umUser.empId;});
+    if(!emp){showToast('משתמש לא נמצא');return;}
+    var okEmp=(emp.password&&emp.password===cur)||(emp.code&&emp.code===cur);
+    if(!okEmp){showToast('סיסמה שגויה');return;}
+    var newPw=prompt('סיסמה חדשה (לפחות 4 תווים):');
+    if(!newPw||newPw.length<4){showToast('סיסמה קצרה מדי');return;}
+    var newPw2=prompt('חזור על הסיסמה החדשה:');
+    if(newPw!==newPw2){showToast('הסיסמאות לא תואמות');return;}
+    emp.code=newPw; emp.password=newPw;
+    setEmployees(emps);
+    logAct('settings','שינוי סיסמת עובד: '+emp.name);
+    showToast('סיסמה עודכנה ✓ — המנהל יוכל לראות אותה');
+  }
+}
+window.openChangeMyPassword=openChangeMyPassword;
 function saveSettings(){
   switchToUser(); var s=getSettings();
   s.bizName=document.getElementById('st-biz').value.trim();
