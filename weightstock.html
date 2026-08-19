@@ -1193,8 +1193,16 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 
     <!-- שלב 2: בחירת משתמש -->
     <div id="um-user-section" style="display:none;">
-      <div class="um-user-list" id="um-user-list"></div>
-      <button class="btn sec" style="width:100%;margin-top:10px;" onclick="umBackToStore()">← קוד חנות</button>
+      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:12px;">בחר שם משתמש</div>
+      <div style="position:relative;">
+        <button id="um-user-picker-btn" onclick="umToggleUserDropdown()"
+          style="width:100%;box-sizing:border-box;padding:13px 16px;font-size:15px;font-weight:600;text-align:right;background:var(--card2);border:2px solid var(--border);border-radius:12px;color:var(--muted);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:space-between;">
+          <span id="um-user-picker-label">— בחר —</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="um-user-dropdown" style="display:none;position:absolute;top:100%;right:0;left:0;background:var(--card);border:1.5px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:50;margin-top:4px;overflow:hidden;"></div>
+      </div>
+      <button class="btn sec" style="width:100%;margin-top:14px;" onclick="umBackToStore()">← קוד עסק</button>
     </div>
 
     <!-- שלב 3: סיסמה -->
@@ -3575,31 +3583,55 @@ function _umShowUserList(){
   if(iconEl){if(logo){iconEl.innerHTML='<img src="'+logo+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">';}else{iconEl.textContent='⚖️';}}
   var mgr=LS.get('um_manager',null);
   var emps=getEmployees();
-  document.getElementById('um-sub-text').textContent='בחר משתמש';
+  document.getElementById('um-sub-text').textContent='כניסה לחשבון';
   document.getElementById('um-store-section').style.display='none';
   document.getElementById('um-user-section').style.display='block';
   document.getElementById('um-pw-section').style.display='none';
-  var now=Date.now();
-  var html='<div class="um-user-btn" onclick="umSelectUser(\'manager\')">'
-    +'<div class="um-user-avatar mgr">'+((mgr&&mgr.name)?mgr.name[0]:'מ')+'</div>'
-    +'<div style="flex:1"><div class="um-user-name">'+(mgr?mgr.name:'מנהל')+'</div>'
-    +'<div class="um-user-role">מנהל ראשי • גישה מלאה</div>'
-    +(mgr&&mgr.lastLogin&&(now-mgr.lastLogin)<30*60*1000?'<div style="font-size:11px;color:var(--ok);margin-top:2px;">● מחובר</div>':'')
-    +'</div>'
-    +(mgr&&mgr.loginCount?'<div style="font-size:11px;color:var(--muted);margin-right:6px;">'+mgr.loginCount+'</div>':'')
-    +'</div>';
+  /* build dropdown items — names only, no roles/permissions shown */
+  var dd=document.getElementById('um-user-dropdown');
+  if(!dd)return;
+  var is='padding:13px 16px;font-size:15px;font-weight:600;cursor:pointer;border-bottom:1px solid var(--border);display:block;width:100%;text-align:right;background:none;border-left:none;border-right:none;border-top:none;color:var(--text);font-family:inherit;';
+  var mgrName=mgr?mgr.name:'מנהל';
+  var items='<button style="'+is+'" onmouseover="this.style.background=\'var(--card2)\'" onmouseout="this.style.background=\'none\'" onclick="umPickUser(\'manager\')" data-uid="manager">'+mgrName+'</button>';
   emps.forEach(function(e){
-    html+='<div class="um-user-btn" onclick="umSelectUser(\''+e.id+'\')">'
-      +'<div class="um-user-avatar">'+e.name[0]+'</div>'
-      +'<div style="flex:1"><div class="um-user-name">'+e.name+'</div>'
-      +'<div class="um-user-role">עובד'+(e.permissions&&e.permissions.editQty?' • מלאי':'')+'</div>'
-      +(e.lastLogin&&(now-e.lastLogin)<30*60*1000?'<div style="font-size:11px;color:var(--ok);margin-top:2px;">● מחובר</div>':'')
-      +'</div>'
-      +(e.loginCount?'<div style="font-size:11px;color:var(--muted);margin-right:6px;">'+e.loginCount+'</div>':'')
-      +'</div>';
+    items+='<button style="'+is+'border-bottom:none;" onmouseover="this.style.background=\'var(--card2)\'" onmouseout="this.style.background=\'none\'" onclick="umPickUser(\''+e.id+'\')" data-uid="'+e.id+'">'+(e.name||'')+'</button>';
   });
-  document.getElementById('um-user-list').innerHTML=html;
+  dd.innerHTML=items;
+  /* reset picker label */
+  var lbl=document.getElementById('um-user-picker-label');
+  if(lbl){lbl.textContent='— בחר שם משתמש —';lbl.style.color='var(--muted)';}
 }
+
+function umToggleUserDropdown(){
+  var dd=document.getElementById('um-user-dropdown');
+  if(!dd)return;
+  dd.style.display=dd.style.display==='none'?'block':'none';
+}
+window.umToggleUserDropdown=umToggleUserDropdown;
+
+function umPickUser(id){
+  var dd=document.getElementById('um-user-dropdown');
+  if(dd)dd.style.display='none';
+  var mgr=LS.get('um_manager',null);
+  var emps=getEmployees();
+  var isManager=(id==='manager');
+  var user=isManager?mgr:emps.find(function(e){return e.id===id;});
+  if(!user)return;
+  /* update picker label */
+  var lbl=document.getElementById('um-user-picker-label');
+  if(lbl){lbl.textContent=user.name||(isManager?'מנהל':'');lbl.style.color='var(--text)';}
+  umSelectUser(id);
+}
+window.umPickUser=umPickUser;
+
+/* close dropdown when clicking outside */
+document.addEventListener('click',function(e){
+  var dd=document.getElementById('um-user-dropdown');
+  var btn=document.getElementById('um-user-picker-btn');
+  if(dd&&dd.style.display==='block'&&!dd.contains(e.target)&&e.target!==btn&&!btn.contains(e.target)){
+    dd.style.display='none';
+  }
+});
 
 var _umSelectingId=null;
 function umSelectUser(id){
@@ -3616,8 +3648,8 @@ function umSelectUser(id){
   var avatar=document.getElementById('um-sel-avatar');
   avatar.textContent=user.name?user.name[0]:'מ';
   avatar.className='um-user-avatar'+(isManager?' mgr':'');
-  document.getElementById('um-sel-name').textContent=user.name||(isManager?'מנהל':'עובד');
-  document.getElementById('um-sel-role').textContent=isManager?'מנהל ראשי • גישה מלאה':'עובד';
+  document.getElementById('um-sel-name').textContent=user.name||(isManager?'מנהל':'');
+  document.getElementById('um-sel-role').textContent='';
   document.getElementById('um-pw-input').value='';
   document.getElementById('um-pw-err').style.display='none';
   setTimeout(function(){document.getElementById('um-pw-input').focus();},100);
