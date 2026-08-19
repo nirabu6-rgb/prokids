@@ -624,7 +624,7 @@ function calcHealth(t){
   var log=t.actlog||[];
   var logins=log.filter(function(a){return a.action==='login'&&(now-a.ts)<week;}).length;
   var items=log.filter(function(a){return a.action&&(a.action.includes('item')||a.action.includes('qty'))&&(now-a.ts)<week;}).length;
-  var empCount=(t.employees||[]).length;
+  var empCount=(t.employees||[]).length+(t.manager?1:0);
   var loginPts=Math.min(4,logins);
   var empPts=empCount>=5?3:empCount>=2?2:empCount>=1?1:0;
   var itemPts=items>=10?3:items>=3?2:items>=1?1:0;
@@ -667,7 +667,7 @@ function renderBizList(list){
           +'<div class="biz-pills">'
             +(mConn?'<span class="pill g">🟢 מנהל מחובר</span>':'')
             +(eConn?'<span class="pill g">'+eConn+' עובד מחובר</span>':'')
-            +'<span class="pill b">'+emps.length+' עובדים</span>'
+            +'<span class="pill b">'+(emps.length+(m.name?1:0))+' עובדים</span>'
             +'<span class="pill p">'+log.length+' פעולות</span>'
             +(log[0]?'<span class="pill o">'+ago(log[0].ts)+'</span>':'')
           +'</div>'
@@ -1010,7 +1010,7 @@ function savePlan(){
 /* ── DASHBOARD ── */
 function renderDashboard(){
   var totalBiz=_bizList.length;
-  var totalEmp=_bizList.reduce(function(s,t){return s+(t.employees?t.employees.length:0);},0);
+  var totalEmp=_bizList.reduce(function(s,t){return s+(t.employees?t.employees.length:0)+(t.manager?1:0);},0);
   var activeContracts=_bizList.filter(function(t){return t.plan&&t.planEnd&&t.planEnd>Date.now();}).length;
   var monthlyRev=_bizList.reduce(function(s,t){return s+(t.planPrice||0);},0);
   document.getElementById('dash-kpi').innerHTML=
