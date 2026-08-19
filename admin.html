@@ -620,15 +620,51 @@ function ago(ts){if(!ts)return '—';var d=Math.round((Date.now()-ts)/60000);if(
 
 /* ── HEALTH SCORE ── */
 function calcHealth(t){
-  var now=Date.now();var week=7*24*3600*1000;
+  var now=Date.now();
+  var week=7*24*3600*1000;
+  var month=30*24*3600*1000;
   var log=t.actlog||[];
-  var logins=log.filter(function(a){return a.action==='login'&&(now-a.ts)<week;}).length;
-  var items=log.filter(function(a){return a.action&&(a.action.includes('item')||a.action.includes('qty'))&&(now-a.ts)<week;}).length;
-  var empCount=(t.employees||[]).length+(t.manager?1:0);
-  var loginPts=Math.min(4,logins);
-  var empPts=empCount>=5?3:empCount>=2?2:empCount>=1?1:0;
-  var itemPts=items>=10?3:items>=3?2:items>=1?1:0;
-  return loginPts+empPts+itemPts;
+  var m=t.manager||{};
+  var emps=t.employees||[];
+  var score=0;
+
+  /* 1. חוזה/מנוי פעיל */
+  if(t.plan&&t.planEnd&&t.planEnd>now) score++;
+
+  /* 2. מנהל התחבר השבוע */
+  var mgrLoggedWeek=m.lastLogin&&(now-m.lastLogin)<week;
+  if(mgrLoggedWeek) score++;
+
+  /* 3. עובד (לא מנהל) התחבר השבוע */
+  var empLoggedWeek=emps.some(function(e){return e.lastLogin&&(now-e.lastLogin)<week;});
+  if(empLoggedWeek) score++;
+
+  /* 4. 5+ כניסות כלל השבוע */
+  var weekLogins=log.filter(function(a){return a.action==='login'&&(now-a.ts)<week;}).length;
+  if(weekLogins>=5) score++;
+
+  /* 5. יש לפחות 2 עובדים (כולל מנהל) */
+  if(emps.length+(m.name?1:0)>=2) score++;
+
+  /* 6. עדכון כמות/פריט השבוע */
+  var weekItems=log.filter(function(a){return a.action&&(a.action.includes('item')||a.action.includes('qty')||a.action.includes('weight'))&&(now-a.ts)<week;}).length;
+  if(weekItems>=1) score++;
+
+  /* 7. 10+ עדכוני מלאי השבוע */
+  if(weekItems>=10) score++;
+
+  /* 8. פעילות ב-3+ ימים שונים השבוע */
+  var days=new Set(log.filter(function(a){return (now-a.ts)<week;}).map(function(a){return new Date(a.ts).toDateString();}));
+  if(days.size>=3) score++;
+
+  /* 9. פעיל החודש האחרון */
+  var monthLogins=log.filter(function(a){return a.action==='login'&&(now-a.ts)<month;}).length;
+  if(monthLogins>=1) score++;
+
+  /* 10. מגוון פעולות — גם כניסות וגם עדכוני מלאי */
+  if(weekLogins>=1&&weekItems>=1) score++;
+
+  return Math.min(10,score);
 }
 
 function healthColor(score){
