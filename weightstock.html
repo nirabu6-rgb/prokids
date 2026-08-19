@@ -1173,19 +1173,55 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   <div class="um-box">
     <div class="um-logo" id="um-biz-icon">⚖️</div>
     <div class="um-title" id="um-biz-name">WeightStock</div>
-    <div class="um-sub" id="um-sub-text">בחר משתמש להתחברות</div>
-    <div class="um-user-list" id="um-user-list"></div>
-    <!-- PIN section -->
-    <div id="um-pin-section" style="display:none;margin-top:16px;">
-      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;">הכנס קוד כניסה (6 ספרות)</div>
-      <div id="um-pin-entry">
-        <div class="um-pin-row" id="um-pin-row" dir="ltr"></div>
+    <div class="um-sub" id="um-sub-text">הכנס קוד חנות</div>
+
+    <!-- שלב 1: קוד חנות -->
+    <div id="um-store-section">
+      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:12px;">קוד חנות מזהה (6 ספרות)</div>
+      <div class="um-pin-row" id="um-store-row" dir="ltr"></div>
+      <div id="um-store-err" style="display:none;color:var(--crit);font-size:13px;text-align:center;margin-top:8px;"></div>
+      <button class="btn ok" style="width:100%;margin-top:16px;" onclick="umSubmitStoreCode()">המשך ←</button>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px;">
+        קוד החנות ניתן על ידי מנהל החנות
       </div>
-      <div id="um-pin-err" style="display:none;color:var(--crit);font-size:13px;text-align:center;margin-top:8px;"></div>
-      <button class="btn sec" style="width:100%;margin-top:12px;" onclick="umCancelPin()">← חזור</button>
+    </div>
+
+    <!-- שלב 2: בחירת משתמש -->
+    <div id="um-user-section" style="display:none;">
+      <div class="um-user-list" id="um-user-list"></div>
+      <button class="btn sec" style="width:100%;margin-top:10px;" onclick="umBackToStore()">← קוד חנות</button>
+    </div>
+
+    <!-- שלב 3: סיסמה -->
+    <div id="um-pw-section" style="display:none;margin-top:4px;">
+      <div id="um-selected-user-banner" style="display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:12px;padding:12px 14px;margin-bottom:16px;">
+        <div id="um-sel-avatar" class="um-user-avatar" style="font-size:16px;width:36px;height:36px;">מ</div>
+        <div>
+          <div id="um-sel-name" style="font-weight:700;font-size:14px;"></div>
+          <div id="um-sel-role" style="font-size:11px;color:var(--muted);"></div>
+        </div>
+      </div>
+      <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px;">סיסמה</label>
+      <div style="position:relative;">
+        <input id="um-pw-input" type="password" placeholder="הכנס סיסמה" autocomplete="current-password"
+          style="width:100%;box-sizing:border-box;padding:12px 40px 12px 12px;font-size:16px;border:2px solid var(--border);border-radius:12px;background:var(--card2);color:var(--text);outline:none;font-family:inherit;"
+          onkeydown="if(event.key==='Enter')umSubmitPassword()">
+        <button onclick="umTogglePwVis()" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;" title="הצג/הסתר">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div id="um-pw-err" style="display:none;color:var(--crit);font-size:13px;text-align:center;margin-top:8px;"></div>
+      <button class="btn ok" style="width:100%;margin-top:14px;" onclick="umSubmitPassword()">כניסה ✓</button>
+      <button class="btn sec" style="width:100%;margin-top:8px;" onclick="umBackToUsers()">← בחירת משתמש</button>
       <div style="text-align:center;margin-top:10px;">
-        <button onclick="umForgotPin()" style="background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;">שכחתי קוד כניסה</button>
+        <button onclick="umForgotPin()" style="background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;">שכחתי סיסמה</button>
       </div>
+    </div>
+
+    <!-- שדה PIN ישן (נשמר לתאימות) -->
+    <div id="um-pin-section" style="display:none;">
+      <div class="um-pin-row" id="um-pin-row" dir="ltr"></div>
+      <div id="um-pin-err" style="display:none;color:var(--crit);font-size:13px;text-align:center;margin-top:8px;"></div>
     </div>
   </div>
 </div>
@@ -1682,10 +1718,16 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
         <label>שם מלא</label>
         <input id="emp-name" placeholder="דוד לוי">
 
-        <label style="margin-top:12px;">קוד כניסה (4 ספרות)</label>
-        <input id="emp-code" type="tel" inputmode="numeric" maxlength="6" placeholder="000000" dir="ltr"
-          style="letter-spacing:8px;font-size:22px;font-weight:800;text-align:center;padding:10px;">
-        <div style="font-size:11px;color:var(--muted);margin-top:3px;text-align:center;">העובד יזין קוד זה בכניסה</div>
+        <label style="margin-top:12px;">סיסמה לעובד</label>
+        <div style="position:relative;">
+          <input id="emp-code" type="text" placeholder="סיסמה" autocomplete="new-password"
+            style="padding:10px 36px 10px 12px;font-size:16px;width:100%;box-sizing:border-box;">
+          <button type="button" onclick="var i=document.getElementById('emp-code');i.type=i.type==='password'?'text':'password';"
+            style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;" title="הצג/הסתר">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">סיסמה שתמנהל יתן לעובד (מספרים, אותיות — כל דבר)</div>
 
         <div style="margin-top:16px;font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">הרשאות גישה</div>
         <div id="perm-grid" style="display:flex;flex-direction:column;gap:6px;"></div>
@@ -2156,12 +2198,20 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 
       <!-- ניהול עובדים — מנהל בלבד -->
       <div class="card" id="st-emp-btn" style="margin:0;padding:0;overflow:hidden;display:none;">
+        <!-- קוד חנות -->
+        <div id="st-store-code-row" style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:13px;font-weight:700;">
+            <span style="margin-left:6px;">🔢</span> קוד חנות:
+            <span id="st-store-code-val" style="font-family:monospace;font-size:18px;font-weight:800;color:var(--accent);letter-spacing:3px;margin-right:8px;"></span>
+          </div>
+          <button onclick="copyStoreCode()" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--text);">העתק</button>
+        </div>
         <button onclick="closeModal('modal-settings');openEmployees();" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
-          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">👥 ניהול עובדים</div>
+          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">👥 ניהול עובדים וסיסמאות</div>
           <span style="color:var(--muted);">›</span>
         </button>
         <button onclick="openChangeMgrPin();" style="width:100%;background:none;border:none;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);border-top:1px solid var(--border);">
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;">🔑 שינוי קוד מנהל</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;">🔑 שינוי סיסמת מנהל</div>
           <span style="color:var(--muted);">›</span>
         </button>
       </div>
@@ -3368,111 +3418,185 @@ function canDo(perm){
 }
 window.canDo=canDo;
 
-/* ── Show user login screen ── */
-function showUMLogin(){
-  var mgr=LS.get('um_manager',null);
-  var emps=getEmployees();
-  var bizName=LS.get('settings',{}).bizName||'WeightStock';
-  document.getElementById('um-biz-name').textContent=bizName;
-  document.getElementById('um-sub-text').textContent='בחר משתמש להתחברות';
-  document.getElementById('um-pin-section').style.display='none';
-  document.getElementById('um-user-list').style.display='flex';
-  document.getElementById('um-user-list').style.flexDirection='column';
-  var list=document.getElementById('um-user-list');
-  var now=Date.now();
-  var mgrConnected=mgr&&mgr.lastLogin&&(now-mgr.lastLogin)<30*60*1000;
-  var html='<div class="um-user-btn" onclick="umSelectUser(\'manager\')">'
-    +'<div class="um-user-avatar mgr">'+((mgr&&mgr.name)?mgr.name[0]:'מ')+'</div>'
-    +'<div style="flex:1"><div class="um-user-name">'+(mgr?mgr.name:'מנהל')+'</div>'
-    +'<div class="um-user-role">מנהל ראשי • גישה מלאה</div>'
-    +(mgrConnected?'<div style="font-size:11px;color:var(--ok);margin-top:2px;">🟢 מחובר</div>':'')
-    +'</div>'
-    +(mgr&&mgr.loginCount?'<div style="font-size:11px;color:var(--muted);margin-right:6px;">'+mgr.loginCount+' כניסות</div>':'')
-    +'</div>';
-  emps.forEach(function(e){
-    var empConnected=e.lastLogin&&(now-e.lastLogin)<30*60*1000;
-    html+='<div class="um-user-btn" onclick="umSelectUser(\''+e.id+'\')">'
-      +'<div class="um-user-avatar">'+e.name[0]+'</div>'
-      +'<div style="flex:1"><div class="um-user-name">'+e.name+'</div>'
-      +'<div class="um-user-role">עובד'+(e.permissions&&e.permissions.editQty?' • עדכון מלאי':'')+'</div>'
-      +(empConnected?'<div style="font-size:11px;color:var(--ok);margin-top:2px;">🟢 מחובר</div>':'')
-      +'</div>'
-      +(e.loginCount?'<div style="font-size:11px;color:var(--muted);margin-right:6px;">'+e.loginCount+' כניסות</div>':'')
-      +'</div>';
-  });
-  list.innerHTML=html;
-  document.getElementById('um-login-screen').classList.add('show');
+/* ── Store code login helpers ── */
+function _genStoreCode(){
+  /* 6-digit deterministic from bizName+registeredAt, or random */
+  var s=LS.get('settings',{});
+  var a=LS.get('account',{});
+  var seed=(s.bizName||'')+(a.registeredAt||Date.now());
+  var n=0;for(var i=0;i<seed.length;i++)n=(n*31+seed.charCodeAt(i))&0x7fffffff;
+  return String(100000+(n%900000));
 }
-window.showUMLogin=showUMLogin;
+function getStoreCode(){
+  var s=LS.get('settings',{});
+  if(s.storeCode)return s.storeCode;
+  var code=_genStoreCode();
+  s.storeCode=code; LS.set('settings',s);
+  return code;
+}
 
-var _umSelectingId=null;
-function umSelectUser(id){
-  _umSelectingId=id;
-  /* build 6-box PIN */
-  var row=document.getElementById('um-pin-row');
-  row.innerHTML=[0,1,2,3,4,5].map(function(i){return '<input class="um-pin-box" maxlength="1" type="tel" inputmode="numeric" id="up'+i+'" dir="ltr" autocomplete="off">';}).join('');
-  document.getElementById('um-user-list').style.display='none';
-  document.getElementById('um-pin-section').style.display='block';
-  document.getElementById('um-pin-err').style.display='none';
-  document.getElementById('up0').focus();
-  /* auto-advance — LTR */
+function _buildStorePinBoxes(containerId,onComplete){
+  var row=document.getElementById(containerId);
+  row.innerHTML=[0,1,2,3,4,5].map(function(i){
+    return '<input class="um-pin-box" maxlength="1" type="tel" inputmode="numeric" id="sc'+i+'" dir="ltr" autocomplete="off">';
+  }).join('');
   [0,1,2,3,4,5].forEach(function(i){
-    var el=document.getElementById('up'+i);
+    var el=document.getElementById('sc'+i);
+    if(!el)return;
     el.addEventListener('focus',function(){el.select();});
     el.addEventListener('keydown',function(e){
       if(e.key==='Backspace'){
         if(el.value){el.value='';}
-        else if(i>0){var p=document.getElementById('up'+(i-1));p.value='';p.focus();}
+        else if(i>0){var p=document.getElementById('sc'+(i-1));p.value='';p.focus();}
         e.preventDefault();
       } else if(/^\d$/.test(e.key)){
         el.value=e.key;
-        if(i<5){document.getElementById('up'+(i+1)).focus();}
-        else{setTimeout(umSubmitPin,80);}
+        if(i<5){document.getElementById('sc'+(i+1)).focus();}
+        else{setTimeout(onComplete,80);}
         e.preventDefault();
       }
     });
     el.addEventListener('input',function(){
       el.value=el.value.replace(/\D/g,'').slice(-1);
-      if(el.value&&i<5)document.getElementById('up'+(i+1)).focus();
-      else if(el.value&&i===5)setTimeout(umSubmitPin,80);
+      if(el.value&&i<5)document.getElementById('sc'+(i+1)).focus();
+      else if(el.value&&i===5)setTimeout(onComplete,80);
     });
   });
+  if(document.getElementById('sc0'))document.getElementById('sc0').focus();
 }
 
-function umForgotPin(){
-  if(confirm('לאפס את קוד הכניסה?\nפנה למנהל המערכת לקבלת קוד חדש.')){
-    alert('יש לפנות למנהל האפליקציה לאיפוס הקוד.');
-  }
+/* ── Show user login screen ── */
+function showUMLogin(){
+  var settings=LS.get('settings',{});
+  var bizName=settings.bizName||'WeightStock';
+  document.getElementById('um-biz-name').textContent=bizName;
+  document.getElementById('um-sub-text').textContent='הכנס קוד חנות';
+  /* show store-code step */
+  document.getElementById('um-store-section').style.display='block';
+  document.getElementById('um-user-section').style.display='none';
+  document.getElementById('um-pw-section').style.display='none';
+  document.getElementById('um-pin-section').style.display='none';
+  document.getElementById('um-store-err').style.display='none';
+  _buildStorePinBoxes('um-store-row', umSubmitStoreCode);
+  document.getElementById('um-login-screen').classList.add('show');
 }
-window.umForgotPin=umForgotPin;
+window.showUMLogin=showUMLogin;
+
+function umSubmitStoreCode(){
+  var entered=[0,1,2,3,4,5].map(function(i){return (document.getElementById('sc'+i)||{value:''}).value||'';}).join('');
+  var errEl=document.getElementById('um-store-err');
+  if(entered.length<6){errEl.textContent='הכנס 6 ספרות';errEl.style.display='block';return;}
+  var code=getStoreCode();
+  if(entered!==code){
+    errEl.textContent='קוד חנות שגוי — פנה למנהל';errEl.style.display='block';
+    [0,1,2,3,4,5].forEach(function(i){var el=document.getElementById('sc'+i);if(el)el.value='';});
+    if(document.getElementById('sc0'))document.getElementById('sc0').focus();
+    return;
+  }
+  /* show user list */
+  _umShowUserList();
+}
+window.umSubmitStoreCode=umSubmitStoreCode;
+
+function umBackToStore(){
+  document.getElementById('um-store-section').style.display='block';
+  document.getElementById('um-user-section').style.display='none';
+  document.getElementById('um-pw-section').style.display='none';
+  document.getElementById('um-sub-text').textContent='הכנס קוד חנות';
+  document.getElementById('um-store-err').style.display='none';
+  _buildStorePinBoxes('um-store-row', umSubmitStoreCode);
+}
+window.umBackToStore=umBackToStore;
+
+function _umShowUserList(){
+  var mgr=LS.get('um_manager',null);
+  var emps=getEmployees();
+  document.getElementById('um-sub-text').textContent='בחר משתמש';
+  document.getElementById('um-store-section').style.display='none';
+  document.getElementById('um-user-section').style.display='block';
+  document.getElementById('um-pw-section').style.display='none';
+  var now=Date.now();
+  var html='<div class="um-user-btn" onclick="umSelectUser(\'manager\')">'
+    +'<div class="um-user-avatar mgr">'+((mgr&&mgr.name)?mgr.name[0]:'מ')+'</div>'
+    +'<div style="flex:1"><div class="um-user-name">'+(mgr?mgr.name:'מנהל')+'</div>'
+    +'<div class="um-user-role">מנהל ראשי • גישה מלאה</div>'
+    +(mgr&&mgr.lastLogin&&(now-mgr.lastLogin)<30*60*1000?'<div style="font-size:11px;color:var(--ok);margin-top:2px;">● מחובר</div>':'')
+    +'</div>'
+    +(mgr&&mgr.loginCount?'<div style="font-size:11px;color:var(--muted);margin-right:6px;">'+mgr.loginCount+'</div>':'')
+    +'</div>';
+  emps.forEach(function(e){
+    html+='<div class="um-user-btn" onclick="umSelectUser(\''+e.id+'\')">'
+      +'<div class="um-user-avatar">'+e.name[0]+'</div>'
+      +'<div style="flex:1"><div class="um-user-name">'+e.name+'</div>'
+      +'<div class="um-user-role">עובד'+(e.permissions&&e.permissions.editQty?' • מלאי':'')+'</div>'
+      +(e.lastLogin&&(now-e.lastLogin)<30*60*1000?'<div style="font-size:11px;color:var(--ok);margin-top:2px;">● מחובר</div>':'')
+      +'</div>'
+      +(e.loginCount?'<div style="font-size:11px;color:var(--muted);margin-right:6px;">'+e.loginCount+'</div>':'')
+      +'</div>';
+  });
+  document.getElementById('um-user-list').innerHTML=html;
+}
+
+var _umSelectingId=null;
+function umSelectUser(id){
+  _umSelectingId=id;
+  var mgr=LS.get('um_manager',null);
+  var emps=getEmployees();
+  var isManager=(id==='manager');
+  var user=isManager?mgr:emps.find(function(e){return e.id===id;});
+  if(!user)return;
+  /* show password step */
+  document.getElementById('um-user-section').style.display='none';
+  document.getElementById('um-pw-section').style.display='block';
+  document.getElementById('um-sub-text').textContent='הכנסת סיסמה';
+  var avatar=document.getElementById('um-sel-avatar');
+  avatar.textContent=user.name?user.name[0]:'מ';
+  avatar.className='um-user-avatar'+(isManager?' mgr':'');
+  document.getElementById('um-sel-name').textContent=user.name||(isManager?'מנהל':'עובד');
+  document.getElementById('um-sel-role').textContent=isManager?'מנהל ראשי • גישה מלאה':'עובד';
+  document.getElementById('um-pw-input').value='';
+  document.getElementById('um-pw-err').style.display='none';
+  setTimeout(function(){document.getElementById('um-pw-input').focus();},100);
+}
 window.umSelectUser=umSelectUser;
 
-function umCancelPin(){
-  document.getElementById('um-user-list').style.display='flex';
-  document.getElementById('um-user-list').style.flexDirection='column';
-  document.getElementById('um-pin-section').style.display='none';
+function umTogglePwVis(){
+  var inp=document.getElementById('um-pw-input');
+  inp.type=inp.type==='password'?'text':'password';
+}
+window.umTogglePwVis=umTogglePwVis;
+
+function umBackToUsers(){
+  document.getElementById('um-pw-section').style.display='none';
+  _umShowUserList();
   _umSelectingId=null;
 }
-window.umCancelPin=umCancelPin;
+window.umBackToUsers=umBackToUsers;
 
-function umSubmitPin(){
-  var pin=[0,1,2,3,4,5].map(function(i){return (document.getElementById('up'+i)||{}).value||'';}).join('');
-  var errEl=document.getElementById('um-pin-err');
-  if(pin.length<6){errEl.textContent='הכנס 6 ספרות';errEl.style.display='block';return;}
+function umSubmitPassword(){
+  var pw=document.getElementById('um-pw-input').value||'';
+  var errEl=document.getElementById('um-pw-err');
+  errEl.style.display='none';
+  if(!pw){errEl.textContent='הכנס סיסמה';errEl.style.display='block';return;}
   if(_umSelectingId==='manager'){
     var mgr=LS.get('um_manager',null);
     if(!mgr){errEl.textContent='מנהל לא מוגדר';errEl.style.display='block';return;}
-    if(mgr.pin!==pin){errEl.textContent='קוד שגוי';errEl.style.display='block';[0,1,2,3,4,5].forEach(function(i){document.getElementById('up'+i).value='';});document.getElementById('up0').focus();return;}
+    /* support password field or fallback to PIN match */
+    var ok=(mgr.password&&mgr.password===pw)||(mgr.pin&&mgr.pin===pw)||(mgr.pwHash&&mgr.pwHash===pwHash(pw));
+    if(!ok){errEl.textContent='סיסמה שגויה';errEl.style.display='block';document.getElementById('um-pw-input').value='';document.getElementById('um-pw-input').focus();return;}
     mgr.loginCount=(mgr.loginCount||0)+1; mgr.lastLogin=Date.now();
     LS.set('um_manager',mgr);
     _umUser={isManager:true,empId:'manager',name:mgr.name,perms:null,loginTime:Date.now()};
     LS.set('um_session',_umUser);
-    logAct('login','כניסת מנהל PIN');
+    logAct('login','כניסת מנהל');
     umEnterApp();
   } else {
     var emps=getEmployees();
     var emp=emps.find(function(e){return e.id===_umSelectingId;});
-    if(!emp||emp.code!==pin){errEl.textContent='קוד שגוי';errEl.style.display='block';[0,1,2,3,4,5].forEach(function(i){document.getElementById('up'+i).value='';});document.getElementById('up0').focus();return;}
+    if(!emp){errEl.textContent='משתמש לא נמצא';errEl.style.display='block';return;}
+    /* support password field or fallback to code */
+    var okEmp=(emp.password&&emp.password===pw)||(emp.code&&emp.code===pw);
+    if(!okEmp){errEl.textContent='סיסמה שגויה';errEl.style.display='block';document.getElementById('um-pw-input').value='';document.getElementById('um-pw-input').focus();return;}
     emp.loginCount=(emp.loginCount||0)+1; emp.lastLogin=Date.now();
     setEmployees(emps);
     _umUser={isManager:false,empId:emp.id,name:emp.name,perms:emp.permissions,loginTime:Date.now()};
@@ -3480,6 +3604,22 @@ function umSubmitPin(){
     logAct('login','כניסת עובד: '+emp.name);
     umEnterApp();
   }
+}
+window.umSubmitPassword=umSubmitPassword;
+
+function umForgotPin(){
+  alert('לאיפוס סיסמה — פנה למנהל החנות.\nהמנהל יכול לראות ולשנות סיסמאות מהגדרות עובדים.');
+}
+window.umForgotPin=umForgotPin;
+
+function umCancelPin(){
+  umBackToUsers();
+}
+window.umCancelPin=umCancelPin;
+
+function umSubmitPin(){
+  /* legacy — redirect to password submit */
+  umSubmitPassword();
 }
 
 function umSubmitEmail(){
@@ -3601,7 +3741,7 @@ function renderEmpList(){
           '<div style="font-weight:700;font-size:15px;">'+e.name+'</div>'+
           (connected?'<span style="font-size:10px;background:rgba(22,163,74,.15);color:var(--ok);border-radius:20px;padding:2px 7px;font-weight:700;">🟢 מחובר</span>':'')+
         '</div>'+
-        '<div style="font-size:12px;color:var(--muted);margin-top:2px;">קוד: <b>'+e.code+'</b> &nbsp;|&nbsp; '+cnt+' מתוך '+PERMISSIONS.length+' הרשאות</div>'+
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px;">סיסמה: <b>'+(e.password||e.code)+'</b> &nbsp;|&nbsp; '+cnt+' מתוך '+PERMISSIONS.length+' הרשאות</div>'+
         '<div style="font-size:11px;color:var(--muted);margin-top:3px;">'+
           (e.loginCount?'<span>'+e.loginCount+' כניסות</span>':'')+
           (lastStr?'<span style="margin-right:8px;">כניסה אחרונה: '+lastStr+'</span>':'')+
@@ -3660,7 +3800,7 @@ function openEditEmpInline(id){
   if(!emp)return;
   document.getElementById('emp-form-title').textContent='✏️ עריכת '+emp.name;
   document.getElementById('emp-name').value=emp.name;
-  document.getElementById('emp-code').value=emp.code;
+  document.getElementById('emp-code').value=emp.password||emp.code||'';
   document.getElementById('emp-edit-id').value=emp.id;
   buildPermGrid(emp.permissions);
   showEmpForm();
@@ -3677,10 +3817,10 @@ window.cancelEmpForm=cancelEmpForm;
 
 function saveEmp(){
   var name=document.getElementById('emp-name').value.trim();
-  var code=document.getElementById('emp-code').value.trim();
+  var pw=document.getElementById('emp-code').value.trim();
   var editId=document.getElementById('emp-edit-id').value;
   if(!name){showToast('חסר שם עובד');return;}
-  if(!code||code.length<4){showToast('הקוד חייב להיות 4 ספרות');return;}
+  if(!pw){showToast('חסרה סיסמה לעובד');return;}
   var perms={};
   PERMISSIONS.forEach(function(p){
     perms[p.key]=document.getElementById('perm-'+p.key).checked;
@@ -3688,9 +3828,9 @@ function saveEmp(){
   var emps=getEmployees();
   if(editId){
     var idx=emps.findIndex(function(e){return e.id===editId;});
-    if(idx>=0){emps[idx].name=name;emps[idx].code=code;emps[idx].permissions=perms;}
+    if(idx>=0){emps[idx].name=name;emps[idx].code=pw;emps[idx].password=pw;emps[idx].permissions=perms;}
   } else {
-    emps.push({id:'emp_'+Date.now(),name:name,code:code,permissions:perms});
+    emps.push({id:'emp_'+Date.now(),name:name,code:pw,password:pw,permissions:perms});
   }
   setEmployees(emps);
   logAct('emp_save','שמירת עובד: '+name);
@@ -3823,13 +3963,16 @@ window.initAuth=initAuth;
 
 /* ── Change manager PIN from settings ── */
 function openChangeMgrPin(){
-  var cur=prompt('קוד נוכחי:');
   var mgr=LS.get('um_manager',null);
-  if(!mgr||mgr.pin!==cur){showToast('קוד שגוי');return;}
-  var np=prompt('קוד חדש (4 ספרות):');
-  if(!np||!/^\d{4}$/.test(np)){showToast('קוד חייב להיות 4 ספרות');return;}
-  mgr.pin=np; LS.set('um_manager',mgr);
-  showToast('קוד מנהל עודכן ✓');
+  if(!mgr)return;
+  var cur=prompt('סיסמה נוכחית:');
+  if(!cur)return;
+  var ok=(mgr.password&&mgr.password===cur)||(mgr.pin&&mgr.pin===cur);
+  if(!ok){showToast('סיסמה שגויה');return;}
+  var np=prompt('סיסמה חדשה:');
+  if(!np){showToast('בוטל');return;}
+  mgr.pin=np; mgr.password=np; LS.set('um_manager',mgr);
+  showToast('סיסמת מנהל עודכנה ✓');
 }
 window.openChangeMgrPin=openChangeMgrPin;
 
@@ -3839,6 +3982,7 @@ function setupManagerUser(name,pin,email,password){
   LS.set('um_manager',{
     name:name||existing.name||'מנהל',
     pin:pin||existing.pin||'1234',
+    password:pin||existing.pin||'1234', /* סיסמת מנהל (=PIN לתאימות) */
     email:email||existing.email||'',
     pwHash:password?pwHash(password):(existing.pwHash||''),
     loginCount:existing.loginCount||0,
@@ -5076,6 +5220,9 @@ function openSettings(){
     document.getElementById('logo-img').style.display='none';
     document.getElementById('logo-placeholder').style.display='';
   }
+  /* show store code */
+  var scEl=document.getElementById('st-store-code-val');
+  if(scEl)scEl.textContent=getStoreCode();
   document.getElementById('demo-tog').classList.toggle('on',s.demo!==false);
   var th=LS.get('theme','light');
   document.getElementById('theme-tog').classList.toggle('on',th==='dark');
@@ -5085,6 +5232,12 @@ function openSettings(){
   openModal('modal-settings');
 }
 window.openSettings=openSettings;
+function copyStoreCode(){
+  var code=getStoreCode();
+  if(navigator.clipboard){navigator.clipboard.writeText(code).then(function(){showToast('קוד חנות הועתק: '+code);});}
+  else{showToast('קוד חנות: '+code);}
+}
+window.copyStoreCode=copyStoreCode;
 function saveSettings(){
   switchToUser(); var s=getSettings();
   s.bizName=document.getElementById('st-biz').value.trim();

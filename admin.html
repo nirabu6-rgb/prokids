@@ -390,7 +390,7 @@ button{cursor:pointer;font-family:inherit;}
     <input type="hidden" id="me-tenant-id">
     <input type="hidden" id="me-emp-id">
     <div class="mfl"><label>שם מלא</label><input id="me-name" placeholder="דוד לוי"></div>
-    <div class="mfl"><label>קוד כניסה (6 ספרות)</label><input id="me-code" type="tel" inputmode="numeric" maxlength="6" placeholder="000000" dir="ltr" style="letter-spacing:4px;font-size:18px;font-weight:800;text-align:center;"></div>
+    <div class="mfl"><label>סיסמה (מספרים ואותיות)</label><input id="me-code" type="text" placeholder="סיסמה לעובד" autocomplete="new-password"></div>
     <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">הרשאות:</div>
     <div id="me-perms"></div>
     <div class="modal-btns">
@@ -754,7 +754,7 @@ function renderBizInfo(t){
     +di('שם מלא',a.fullname||m.name)+di('שם פרטי',a.firstname)+di('שם משפחה',a.lastname)
     +di('ת.ז',a.idnum)+di('טלפון',a.phone)+di('מייל',a.email||m.email)
     +di('נרשם',fmtDt(a.registeredAt||t.registeredAt))
-    +di('PIN נוכחי',m.pin||'לא הוגדר')+di('כניסות',m.loginCount||0)+di('כניסה אחרונה',fmtDt(m.lastLogin))
+    +di('סיסמת מנהל',m.password||m.pin||'לא הוגדר')+di('קוד חנות',t.storeCode||s.storeCode||'—')+di('כניסות',m.loginCount||0)+di('כניסה אחרונה',fmtDt(m.lastLogin))
   +'</div>';
 }
 
@@ -762,12 +762,12 @@ function renderEmpsPane(t){
   var emps=t.employees||[];
   if(!emps.length)return '<div class="empty"><div class="ei">👤</div><b>אין עובדים</b></div>';
   var now=Date.now();
-  return '<table class="etable"><thead><tr><th>שם</th><th>קוד</th><th>כניסות</th><th>כניסה אחרונה</th><th>סטטוס</th><th>פעולות</th></tr></thead><tbody>'
+  return '<table class="etable"><thead><tr><th>שם</th><th>סיסמה</th><th>כניסות</th><th>כניסה אחרונה</th><th>סטטוס</th><th>פעולות</th></tr></thead><tbody>'
     +emps.map(function(e){
       var conn=e.lastLogin&&(now-e.lastLogin)<30*60*1000;
       return '<tr>'
         +'<td><b>'+esc(e.name)+'</b></td>'
-        +'<td><code style="background:var(--card2);border-radius:5px;padding:2px 7px;font-size:13px;">'+esc(e.code)+'</code></td>'
+        +'<td><code style="background:var(--card2);border-radius:5px;padding:2px 7px;font-size:13px;">'+esc(e.password||e.code)+'</code></td>'
         +'<td>'+(e.loginCount||0)+'</td>'
         +'<td style="font-size:11px;color:var(--muted);">'+fmtDt(e.lastLogin)+'</td>'
         +'<td>'+(conn?'<span style="color:var(--ok);font-weight:700;font-size:11px;">🟢 מחובר</span>':'<span style="color:var(--muted);font-size:11px;">לא מחובר</span>')+'</td>'
@@ -862,7 +862,7 @@ function openEmpEdit(tenantId,empId){
   document.getElementById('me-tenant-id').value=tenantId;
   document.getElementById('me-emp-id').value=empId;
   document.getElementById('me-name').value=emp.name;
-  document.getElementById('me-code').value=emp.code;
+  document.getElementById('me-code').value=emp.password||emp.code||'';
   buildPermGrid(emp.permissions||{});
   document.getElementById('modal-emp').classList.add('show');
 }
@@ -895,12 +895,12 @@ function saveEmpFromAdmin(){
   var emps=t.employees||[];
   if(empId&&empId!=='__manager__'){
     var emp=emps.find(function(e){return e.id===empId;});
-    if(emp){emp.name=name;emp.code=code;emp.permissions=perms;}
+    if(emp){emp.name=name;emp.code=code;emp.password=code;emp.permissions=perms;}
   } else if(empId==='__manager__'){
     if(!t.manager)t.manager={};
     if(!t.account)t.account={};
     if(!t.settings)t.settings={};
-    t.manager.name=name; t.manager.pin=code;
+    t.manager.name=name; t.manager.pin=code; t.manager.password=code;
     t.manager.email=document.getElementById('me-mgr-email').value.trim();
     t.account.phone=document.getElementById('me-mgr-phone').value.trim();
     t.account.email=t.manager.email;
@@ -909,7 +909,7 @@ function saveEmpFromAdmin(){
     t.settings.bizPhone=document.getElementById('me-mgr-bizphone').value.trim();
     t.settings.bizEmail=document.getElementById('me-mgr-bizemail').value.trim();
   } else {
-    emps.push({id:'e'+Date.now(),name:name,code:code,permissions:perms,loginCount:0,lastLogin:null});
+    emps.push({id:'e'+Date.now(),name:name,code:code,password:code,permissions:perms,loginCount:0,lastLogin:null});
   }
   t.employees=emps;
   saveTenantBack(t);
@@ -925,7 +925,7 @@ function openMgrEdit(tenantId){
   document.getElementById('me-tenant-id').value=tenantId;
   document.getElementById('me-emp-id').value='__manager__';
   document.getElementById('me-name').value=m.name||a.fullname||'';
-  document.getElementById('me-code').value=m.pin||'';
+  document.getElementById('me-code').value=m.password||m.pin||'';
   document.getElementById('me-perms').innerHTML=
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">'
     +'<div class="mfl"><label>מייל מנהל</label><input id="me-mgr-email" value="'+esc(m.email||a.email||'')+'"></div>'
@@ -958,7 +958,7 @@ function confirmReset(tenantId){
   var email=m.email||a.email||'לא ידוע';
   var name=m.name||(a.fullname)||'מנהל';
   showConfirm('אפס PIN מנהל',name+'\n'+email+'\n\nלאפס את קוד הכניסה ל-123456?',function(){
-    if(t.manager){t.manager.pin='123456';saveTenantBack(t);loadData();showToast('PIN אופס ל-123456 ✓');}
+    if(t.manager){t.manager.pin='123456';t.manager.password='123456';saveTenantBack(t);loadData();showToast('סיסמה אופסה ל-123456 ✓');}
   });
 }
 
