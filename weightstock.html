@@ -1303,12 +1303,49 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:4px;">אפשר לשנות בכל עת מהגדרות</div>
     </div>
 
-    <!-- שלב 2: פרטי העסק -->
+    <!-- שלב 2: פרטי מנהל -->
     <div class="ob-step" id="ob-s2">
-      <div class="ob-title" id="ob-s2-name">פרטי העסק</div>
-      <div class="ob-sub">שלב 2 מתוך 4 — מידע עסקי ויצירת קשר</div>
-      <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:9px 13px;margin-bottom:10px;font-size:12px;color:var(--accent);font-weight:600;">🏢 כל הפרטים הבאים הם פרטי <u>העסק</u> — לא פרטים אישיים</div>
+      <div class="ob-title">פרטי בעל העסק / מנהל</div>
+      <div class="ob-sub">שלב 2 מתוך 4 — פרטים אישיים</div>
       <div class="ob-biz">
+        <div id="reg-err2" style="display:none;background:rgba(185,28,28,.1);color:var(--crit);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;text-align:center;"></div>
+        <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:9px 13px;margin-bottom:12px;font-size:12px;color:var(--accent);font-weight:600;">👤 פרטים אישיים של המנהל</div>
+        <div style="display:flex;gap:10px;">
+          <div class="ob-field" style="flex:1;">
+            <label>שם פרטי *</label>
+            <input id="ob-firstname" placeholder="ישראל" autocomplete="given-name">
+          </div>
+          <div class="ob-field" style="flex:1;">
+            <label>שם משפחה *</label>
+            <input id="ob-lastname" placeholder="ישראלי" autocomplete="family-name">
+          </div>
+        </div>
+        <div class="ob-field">
+          <label>תעודת זהות *</label>
+          <input id="ob-idnum" type="tel" inputmode="numeric" maxlength="9" placeholder="000000000" dir="ltr" autocomplete="off">
+        </div>
+        <div class="ob-field">
+          <label>טלפון נייד *</label>
+          <input id="ob-phone" type="tel" placeholder="050-0000000" autocomplete="tel">
+        </div>
+        <div class="ob-field">
+          <label>אימייל *</label>
+          <input id="ob-mgr-email" type="email" placeholder="manager@example.com" autocomplete="email">
+        </div>
+        <div class="row" style="margin-top:18px;">
+          <button class="btn sec" onclick="obBack()">← חזור</button>
+          <button class="btn" onclick="obToStep3()">הבא ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- שלב 3: פרטי העסק -->
+    <div class="ob-step" id="ob-s3">
+      <div class="ob-title" id="ob-s2-name">פרטי העסק</div>
+      <div class="ob-sub">שלב 3 מתוך 4 — מידע עסקי וכניסה</div>
+      <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:9px 13px;margin-bottom:10px;font-size:12px;color:var(--accent);font-weight:600;">🏢 פרטי העסק</div>
+      <div class="ob-biz">
+        <div id="reg-err" style="display:none;background:rgba(185,28,28,.1);color:var(--crit);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;text-align:center;"></div>
         <div style="background:var(--card2);border-radius:10px;padding:8px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
           <span style="font-size:11px;color:var(--muted);">סוג עסק:</span>
           <span id="ob-biztype-lbl" style="font-size:13px;font-weight:700;color:var(--accent);">—</span>
@@ -1322,7 +1359,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <input id="ob-bizphone" type="tel" placeholder="03-0000000" autocomplete="tel">
         </div>
         <div class="ob-field">
-          <label>מייל</label>
+          <label>מייל עסקי</label>
           <input id="ob-bizemail" type="email" placeholder="info@mybusiness.co.il" autocomplete="email">
         </div>
         <div class="ob-field">
@@ -1345,41 +1382,9 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
             <option value="€">€ אירו</option>
           </select>
         </div>
-        <div class="row" style="margin-top:18px;">
-          <button class="btn sec" onclick="obBack()">← חזור</button>
-          <button class="btn" onclick="obToReg()">הבא ›</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- שלב 3: פרטי מנהל -->
-    <div class="ob-step" id="ob-s3">
-      <div class="ob-title">פרטי בעל העסק / מנהל</div>
-      <div class="ob-sub">שלב 3 מתוך 4 — פרטים אישיים וכניסה</div>
-      <div class="ob-biz">
-        <div id="reg-err" style="display:none;background:rgba(185,28,28,.1);color:var(--crit);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;text-align:center;"></div>
-        <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:9px 13px;margin-bottom:12px;font-size:12px;color:var(--accent);font-weight:600;">👤 פרטים אישיים של <u>המנהל</u> — לא פרטי העסק</div>
-        <div style="display:flex;gap:10px;">
-          <div class="ob-field" style="flex:1;">
-            <label>שם פרטי *</label>
-            <input id="ob-firstname" placeholder="ישראל" autocomplete="given-name">
-          </div>
-          <div class="ob-field" style="flex:1;">
-            <label>שם משפחה *</label>
-            <input id="ob-lastname" placeholder="ישראלי" autocomplete="family-name">
-          </div>
-        </div>
         <div class="ob-field">
-          <label>תעודת זהות *</label>
-          <input id="ob-idnum" type="tel" inputmode="numeric" maxlength="9" placeholder="000000000" dir="ltr" autocomplete="off">
-        </div>
-        <div class="ob-field">
-          <label>טלפון נייד *</label>
-          <input id="ob-phone" type="tel" placeholder="050-0000000" autocomplete="tel">
-        </div>
-        <div class="ob-field">
-          <label>אימייל *</label>
-          <input id="ob-mgr-email" type="email" placeholder="manager@example.com" autocomplete="email">
+          <label>מספר עובדים משוער</label>
+          <input id="ob-emp-count" type="tel" inputmode="numeric" placeholder="5" oninput="this.value=this.value.replace(/\D/g,'')">
         </div>
         <!-- קוד עסק -->
         <div style="background:var(--card2);border-radius:10px;padding:12px 14px;margin-top:6px;">
@@ -4119,21 +4124,35 @@ function upgradeTo(key){
 }
 window.upgradeTo=upgradeTo;
 
-function obToPlans(){
+function obToStep3(){
   var firstname=(document.getElementById('ob-firstname')||{value:''}).value.trim();
   var lastname=(document.getElementById('ob-lastname')||{value:''}).value.trim();
   var idnum=(document.getElementById('ob-idnum')||{value:''}).value.trim();
   var email=document.getElementById('ob-mgr-email').value.trim();
+  var errEl=document.getElementById('reg-err2');
+  if(errEl)errEl.style.display='none';
+  if(!firstname){if(errEl){errEl.textContent='הכנס שם פרטי';errEl.style.display='block';}return;}
+  if(!lastname){if(errEl){errEl.textContent='הכנס שם משפחה';errEl.style.display='block';}return;}
+  if(!idnum||idnum.length<7){if(errEl){errEl.textContent='הכנס מספר תעודת זהות תקין';errEl.style.display='block';}return;}
+  if(!email||!email.includes('@')){if(errEl){errEl.textContent='הכנס כתובת מייל תקינה';errEl.style.display='block';}return;}
+  document.getElementById('ob-s2').classList.remove('active');
+  document.getElementById('ob-s3').classList.add('active');
+  obSetProgress(3);
+}
+window.obToStep3=obToStep3;
+
+function obToPlans(){
+  var biz=document.getElementById('ob-bizname').value.trim();
   var pin=document.getElementById('ob-pin').value.trim();
   var pin2=document.getElementById('ob-pin2').value.trim();
+  var storeCodeRaw=(document.getElementById('ob-store-code')||{value:''}).value.trim();
+  var storeCode=storeCodeRaw.toUpperCase();
   var errEl=document.getElementById('reg-err');
-  errEl.style.display='none';
-  if(!firstname){errEl.textContent='הכנס שם פרטי';errEl.style.display='block';return;}
-  if(!lastname){errEl.textContent='הכנס שם משפחה';errEl.style.display='block';return;}
-  if(!idnum||idnum.length<7){errEl.textContent='הכנס מספר תעודת זהות תקין';errEl.style.display='block';return;}
-  if(!email||!email.includes('@')){errEl.textContent='הכנס כתובת מייל תקינה';errEl.style.display='block';return;}
-  if(!pin||pin.length!==6||!/^\d{6}$/.test(pin)){errEl.textContent='קוד הכניסה חייב להיות 6 ספרות';errEl.style.display='block';return;}
-  if(pin!==pin2){errEl.textContent='קודי הכניסה לא תואמים';errEl.style.display='block';return;}
+  if(errEl)errEl.style.display='none';
+  if(!biz){if(errEl){errEl.textContent='הכנס שם עסק';errEl.style.display='block';}return;}
+  if(!storeCode||storeCode.length<4||storeCode.length>6){if(errEl){errEl.textContent='קוד העסק חייב להיות 4-6 תווים';errEl.style.display='block';}return;}
+  if(!pin||pin.length<4||!/^\d+$/.test(pin)){if(errEl){errEl.textContent='הסיסמה חייבת להיות לפחות 4 ספרות';errEl.style.display='block';}return;}
+  if(pin!==pin2){if(errEl){errEl.textContent='הסיסמאות לא תואמות';errEl.style.display='block';}return;}
   document.getElementById('ob-s3').classList.remove('active');
   document.getElementById('ob-s4').classList.add('active');
   obSetProgress(4);
@@ -4157,8 +4176,8 @@ function obSetProgress(step){
 function obSelect(key){
   _obTmpl=key;
   var t=TEMPLATES[key];
-  document.getElementById('ob-s2-name').textContent=t.name||'פרטי העסק';
-  document.getElementById('ob-bizname').value='';
+  var nameEl=document.getElementById('ob-s2-name');
+  if(nameEl)nameEl.textContent=t.name||'פרטי העסק';
   var lbl=document.getElementById('ob-biztype-lbl');
   if(lbl)lbl.textContent=t.name||'';
   document.getElementById('ob-s1').classList.remove('active');
@@ -4174,15 +4193,6 @@ function obBack(){
 }
 window.obBack=obBack;
 
-function obToReg(){
-  var biz=document.getElementById('ob-bizname').value.trim();
-  if(!biz){showToast('הכנס שם עסק');return;}
-  document.getElementById('ob-s2').classList.remove('active');
-  document.getElementById('ob-s3').classList.add('active');
-  obSetProgress(3);
-}
-window.obToReg=obToReg;
-
 function obBack2(){
   document.getElementById('ob-s3').classList.remove('active');
   document.getElementById('ob-s2').classList.add('active');
@@ -4194,7 +4204,7 @@ function obFinish(){
   if(!_obTmpl)return;
   var firstname=(document.getElementById('ob-firstname')||{value:''}).value.trim();
   var lastname=(document.getElementById('ob-lastname')||{value:''}).value.trim();
-  var fullname=firstname+' '+lastname;
+  var fullname=(firstname+' '+lastname).trim();
   var idnum=(document.getElementById('ob-idnum')||{value:''}).value.trim();
   var phone=document.getElementById('ob-phone').value.trim();
   var pin=document.getElementById('ob-pin').value.trim();
@@ -4202,28 +4212,6 @@ function obFinish(){
   var storeCodeRaw=(document.getElementById('ob-store-code')||{value:''}).value.trim();
   var storeCode=storeCodeRaw.toUpperCase();
   var mgrEmail=document.getElementById('ob-mgr-email').value.trim();
-  /* בדיקת קוד עסק */
-  if(!storeCode||storeCode.length<4||storeCode.length>6){alert('קוד העסק חייב להיות בין 4 ל-6 תווים');return;}
-  /* בדיקת סיסמה */
-  if(!pin){alert('חסרה סיסמת מנהל');return;}
-  if(pin!==pin2){alert('הסיסמאות לא תואמות');return;}
-  /* בדיקת מייל ייחודי */
-  if(mgrEmail){
-    var existingTenants=[];
-    try{existingTenants=JSON.parse(localStorage.getItem('ws3_admin_tenants')||'[]');}catch(e){}
-    var emailTaken=existingTenants.some(function(t){
-      var te=(t.account&&t.account.email)||'';
-      var tm=(t.manager&&t.manager.email)||'';
-      return (te&&te.toLowerCase()===mgrEmail.toLowerCase())||(tm&&tm.toLowerCase()===mgrEmail.toLowerCase());
-    });
-    if(emailTaken){
-      var errEl=document.getElementById('ob-err')||document.createElement('div');
-      alert('כתובת המייל '+mgrEmail+' כבר רשומה במערכת.\nכל מנהל חייב להשתמש במייל ייחודי.');
-      return;
-    }
-  }
-  LS.set('tmpl',_obTmpl);
-  _DR=null;
   var biz=document.getElementById('ob-bizname').value.trim();
   var cur=document.getElementById('ob-cur').value;
   var td=TEMPLATES[_obTmpl];
@@ -4232,19 +4220,33 @@ function obFinish(){
   var bizStreet=document.getElementById('ob-bizstreet').value.trim();
   var bizCity=document.getElementById('ob-bizcity').value.trim();
   var bizWeb=document.getElementById('ob-bizweb').value.trim();
+  var empCount=parseInt((document.getElementById('ob-emp-count')||{value:'0'}).value)||0;
+  /* save pending registration for admin approval */
+  var regKey='ws3_pending_reg_'+storeCode+'_'+Date.now();
+  localStorage.setItem(regKey,JSON.stringify({bizName:biz,bizType:td.bizType||td.name||'',storeCode:storeCode,mgrName:fullname,idnum:idnum,phone:phone,mgrEmail:mgrEmail,pin:pin,currency:cur,bizPhone:bizPhone,bizEmail:bizEmail,bizStreet:bizStreet,bizCity:bizCity,bizWeb:bizWeb,empCount:empCount,plan:_selectedPlan,ts:Date.now()}));
+  /* save local data for pending state */
+  LS.set('tmpl',_obTmpl);
   LS.set('settings',{bizName:biz,bizType:td.bizType||td.name||'',currency:cur,defaultAlert:20,demo:true,bizNotes:'',bizPhone:bizPhone,bizEmail:bizEmail,bizStreet:bizStreet,bizCity:bizCity,bizWeb:bizWeb,storeCode:storeCode});
   LS.set('account',{fullname:fullname,firstname:firstname,lastname:lastname,idnum:idnum,phone:phone,email:mgrEmail,registeredAt:Date.now()});
   LS.set('plan',{key:_selectedPlan,name:PLANS[_selectedPlan].name,since:Date.now(),contractEnd:Date.now()+365*86400000});
-  LS.set('mode','user');
-  /* save manager credentials */
-  setupManagerUser(fullname||'מנהל', pin||'123456', mgrEmail, null);
-  /* auto-login as manager */
-  _umUser={isManager:true,empId:'manager',name:fullname||'מנהל',perms:null,loginTime:Date.now()};
-  LS.set('um_session',_umUser);
-  logAct('login','כניסה ראשונה — הגדרת מנהל');
-  document.getElementById('ob-overlay').classList.remove('show');
-  applyUserPerms();
-  renderDash(); updBell(); updateDashLogo(); renderDailyTip();
+  LS.set('mode','pending');
+  setupManagerUser(fullname||'מנהל', pin, mgrEmail, null);
+  /* show pending approval screen */
+  var wrap=document.querySelector('.ob-wrap');
+  if(wrap){
+    wrap.innerHTML='<div style="text-align:center;padding:40px 20px;">'
+      +'<div style="font-size:56px;margin-bottom:18px;">⏳</div>'
+      +'<div style="font-size:22px;font-weight:800;color:var(--accent);margin-bottom:10px;">הבקשה נשלחה!</div>'
+      +'<div style="font-size:15px;color:var(--text);margin-bottom:8px;">הרישום שלך ב-<b>WeightStock</b> התקבל</div>'
+      +'<div style="font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.7;">הבקשה עוברת בדיקה ואישור על ידי מנהל המערכת.<br>תקבל הודעה ברגע שהחשבון מאושר.</div>'
+      +'<div style="background:var(--card2);border-radius:12px;padding:14px 18px;margin:0 auto 24px;max-width:320px;font-size:12px;color:var(--muted);text-align:right;">'
+      +'<div style="margin-bottom:4px;">שם: <b style="color:var(--text);">'+esc(fullname)+'</b></div>'
+      +'<div style="margin-bottom:4px;">עסק: <b style="color:var(--text);">'+esc(biz)+'</b></div>'
+      +'<div>קוד עסק: <b style="color:var(--accent);">'+esc(storeCode)+'</b></div>'
+      +'</div>'
+      +'<button onclick="location.reload()" style="background:var(--accent);border:none;color:#fff;border-radius:10px;padding:12px 30px;font-size:14px;font-weight:700;font-family:inherit;">בדוק סטטוס</button>'
+      +'</div>';
+  }
 }
 window.obFinish=obFinish;
 
@@ -7455,6 +7457,44 @@ window.createAutoOrder=createAutoOrder;
     var vm=LS.get('tmpl',null);
     var mgr=LS.get('um_manager',null);
     if(!vm||!mgr){showOnboarding();return;}
+    /* check pending approval */
+    if(LS.get('mode','user')==='pending'){
+      var sc=LS.get('settings',{}).storeCode||'';
+      var regStatus=sc?localStorage.getItem('ws3_reg_status_'+sc):null;
+      if(regStatus==='approved'){
+        LS.set('mode','user');
+      } else if(regStatus==='rejected'){
+        LS.del('mode'); LS.del('tmpl'); LS.del('um_manager');
+        localStorage.removeItem('ws3_reg_status_'+sc);
+        showOnboarding();
+        showToast('בקשת הרישום נדחתה. אנא פנה לתמיכה.');
+        return;
+      } else {
+        /* still pending — show waiting screen */
+        var overlay=document.getElementById('ob-overlay');
+        if(overlay){
+          overlay.classList.add('show');
+          var wrap=overlay.querySelector('.ob-wrap');
+          if(wrap){
+            var acc=LS.get('account',{});
+            var sett=LS.get('settings',{});
+            wrap.innerHTML='<div style="text-align:center;padding:40px 20px;">'
+              +'<div style="font-size:56px;margin-bottom:18px;">⏳</div>'
+              +'<div style="font-size:22px;font-weight:800;color:var(--accent);margin-bottom:10px;">ממתין לאישור</div>'
+              +'<div style="font-size:15px;color:var(--text);margin-bottom:8px;">הרישום שלך ב-<b>WeightStock</b> ממתין לאישור</div>'
+              +'<div style="font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.7;">מנהל המערכת יאשר את חשבונך בקרוב.<br>לחץ "בדוק סטטוס" לרענן.</div>'
+              +'<div style="background:var(--card2);border-radius:12px;padding:14px 18px;margin:0 auto 24px;max-width:320px;font-size:12px;color:var(--muted);text-align:right;">'
+              +(acc.fullname?'<div style="margin-bottom:4px;">שם: <b style="color:var(--text);">'+esc(acc.fullname)+'</b></div>':'')
+              +(sett.bizName?'<div style="margin-bottom:4px;">עסק: <b style="color:var(--text);">'+esc(sett.bizName)+'</b></div>':'')
+              +(sett.storeCode?'<div>קוד עסק: <b style="color:var(--accent);">'+esc(sett.storeCode)+'</b></div>':'')
+              +'</div>'
+              +'<button onclick="location.reload()" style="background:var(--accent);border:none;color:#fff;border-radius:10px;padding:12px 30px;font-size:14px;font-weight:700;font-family:inherit;">בדוק סטטוס</button>'
+              +'</div>';
+          }
+        }
+        return;
+      }
+    }
     var authResult=initAuth();
     if(authResult===true){
       applyUserPerms();

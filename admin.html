@@ -315,6 +315,7 @@ button{cursor:pointer;font-family:inherit;}
       <div class="sidebar-item" onclick="showPane('messages')" id="si-messages"><span class="sic"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>הודעות<span class="sb-badge" id="msgs-badge" style="display:none;">0</span></div>
       <div class="sidebar-item" onclick="showPane('equipment')" id="si-equipment"><span class="sic"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>ציוד</div>
       <div class="sidebar-item" onclick="showPane('support')" id="si-support"><span class="sic"><svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></span>תמיכה</div>
+      <div class="sidebar-item" onclick="showPane('links')" id="si-links"><span class="sic"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>קישורים</div>
       <div class="sidebar-item" onclick="showPane('settings')" id="si-settings"><span class="sic"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>הגדרות</div>
       <div class="sidebar-sep"></div>
       <div class="sidebar-item" onclick="showPane('activity')" id="si-activity"><span class="sic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>פעילות מלאה</div>
@@ -345,17 +346,6 @@ button{cursor:pointer;font-family:inherit;}
         </div>
         <!-- תוצאות חיפוש -->
         <div id="global-search-results" style="display:none;margin-bottom:18px;"></div>
-        <!-- קישור הרשמה מהיר -->
-        <div style="background:linear-gradient(135deg,#003B71,#005aaa);border-radius:14px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-          <div style="color:#fff;">
-            <div style="font-size:14px;font-weight:800;">📨 שלח קישור הרשמה לעסק חדש</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;" id="reg-link-url"></div>
-          </div>
-          <div style="display:flex;gap:8px;flex-shrink:0;">
-            <button onclick="copyRegLink()" style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:700;font-family:inherit;">העתק קישור</button>
-            <button onclick="showPane('invites')" style="background:#00A859;border:none;color:#fff;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:700;font-family:inherit;">קישורים נוספים ›</button>
-          </div>
-        </div>
         <div class="kpi-grid" id="dash-kpi"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;" id="dash-charts-row">
           <div class="chart-wrap">
@@ -515,6 +505,35 @@ button{cursor:pointer;font-family:inherit;}
       </div>
 
       <!-- INVITES -->
+      <!-- LINKS -->
+      <div id="pane-links" style="display:none;">
+        <div class="sec-head"><div class="sec-title">קישורים</div></div>
+        <div style="max-width:540px;display:flex;flex-direction:column;gap:14px;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">קישור הרשמה לעסק חדש</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">שלח קישור זה למנהל עסק חדש — ימלא פרטים ויחכה לאישורך</div>
+            <div style="background:var(--card2);border-radius:9px;padding:10px 13px;font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:12px;" id="links-reg-url"></div>
+            <button onclick="copyRegLink();showToast('קישור הרשמה הועתק ✓')" style="background:var(--accent);border:none;color:#fff;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;font-family:inherit;width:100%;">העתק קישור הרשמה</button>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">קישור לאפליקציית העובד</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">קישור ישיר לכניסה עם קוד עסק + סיסמה</div>
+            <div style="background:var(--card2);border-radius:9px;padding:10px 13px;font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:12px;" id="links-app-url"></div>
+            <button onclick="(function(){var u=(location.href.replace(/admin\.html.*/,'')+'weightstock.html');navigator.clipboard.writeText(u).catch(function(){});showToast('קישור אפליקציה הועתק ✓');})()" style="background:var(--ok);border:none;color:#fff;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;font-family:inherit;width:100%;">העתק קישור אפליקציה</button>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">קישורי הזמנה מותאמים</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">צור קישורי הזמנה עם מסלול מוגדר מראש</div>
+            <button onclick="showPane('invites')" style="background:none;border:1.5px solid var(--accent);color:var(--accent);border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;font-family:inherit;width:100%;">עבור לניהול הזמנות ›</button>
+          </div>
+          <!-- בקשות רישום ממתינות -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;">בקשות רישום ממתינות</div>
+            <div id="pending-regs-list"></div>
+          </div>
+        </div>
+      </div>
+
       <div id="pane-invites" style="display:none;">
         <div class="sec-head"><div class="sec-title">🔗 קישורי הזמנה</div></div>
         <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
@@ -1325,8 +1344,7 @@ function savePlan(){
 
 /* ── DASHBOARD ── */
 function renderDashboard(){
-  var urlEl=document.getElementById('reg-link-url');
-  if(urlEl)urlEl.textContent=getRegLink();
+  checkPendingRegsBadge();
   var totalBiz=_bizList.length;
   var totalEmp=_bizList.reduce(function(s,t){return s+(t.employees?t.employees.length:0)+(t.manager?1:0);},0);
   var activeContracts=_bizList.filter(function(t){return t.plan&&t.planEnd&&t.planEnd>Date.now();}).length;
@@ -1840,7 +1858,7 @@ function clearDemoData(){
 }
 
 /* ── ALL PANES LIST (EXTENDED) ── */
-var ALL_PANES=['dashboard','businesses','finance','alerts','messages','equipment','support','settings','activity','demo','compare','goals','geo','peakhours','invites'];
+var ALL_PANES=['dashboard','businesses','finance','alerts','messages','equipment','support','links','settings','activity','demo','compare','goals','geo','peakhours','invites'];
 
 /* ── SHOW PANE (OVERRIDE) ── */
 var _origShowPane=showPane;
@@ -1862,6 +1880,7 @@ showPane=function(pane){
   else if(pane==='geo')renderGeoPage();
   else if(pane==='peakhours')renderPeakHoursPage();
   else if(pane==='invites')renderInvitesPage();
+  else if(pane==='links')renderLinksPane();
   else if(pane==='businesses'){populateFilterSelects();renderPendingSection();}
 };
 
@@ -2172,6 +2191,86 @@ function renderHistoryPane(t){
       return '<tr><td style="font-size:11px;">'+fmtDt(h.ts)+'</td><td>'+planName(h.from)+'</td><td style="color:var(--accent);font-weight:700;">'+planName(h.to)+'</td><td style="font-size:11px;color:var(--muted);">'+esc(h.by||'admin')+'</td></tr>';
     }).join('')
     +'</tbody></table>';
+}
+
+/* ── LINKS PANE ── */
+function renderLinksPane(){
+  var base=location.href.replace(/admin\.html.*/,'');
+  var regUrl=base+'weightstock.html';
+  var appUrl=base+'weightstock.html';
+  var ru=document.getElementById('links-reg-url');
+  var au=document.getElementById('links-app-url');
+  if(ru)ru.textContent=regUrl;
+  if(au)au.textContent=appUrl;
+  renderPendingRegs();
+}
+function renderPendingRegs(){
+  var el=document.getElementById('pending-regs-list');
+  if(!el)return;
+  var regs=[];
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.startsWith('ws3_pending_reg_')){
+      try{var v=JSON.parse(localStorage.getItem(k));if(v)regs.push({key:k,data:v});}catch(e){}
+    }
+  }
+  regs.sort(function(a,b){return b.data.ts-a.data.ts;});
+  if(!regs.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px;">אין בקשות רישום ממתינות</div>';return;}
+  el.innerHTML=regs.map(function(r){
+    var d=r.data;
+    return '<div style="background:var(--card2);border-radius:10px;padding:14px;margin-bottom:10px;">'
+      +'<div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px;">'+esc(d.bizName||'—')+'</div>'
+      +'<div style="font-size:11px;color:var(--muted);line-height:1.8;">'
+      +'מנהל: <b style="color:var(--text);">'+esc(d.mgrName||'—')+'</b> · '
+      +'ת"ז: '+esc(d.idnum||'—')+' · '
+      +'טלפון: '+esc(d.phone||'—')+' · '
+      +'מייל: '+esc(d.mgrEmail||'—')+'<br>'
+      +'קוד עסק: <b style="color:var(--accent);">'+esc(d.storeCode||'—')+'</b> · '
+      +'עובדים משוערים: '+esc(String(d.empCount||'—'))+' · '
+      +'סוג: '+esc(d.bizType||'—')
+      +'</div>'
+      +'<div style="display:flex;gap:8px;margin-top:10px;">'
+      +'<button onclick="approvePendingReg(\''+r.key+'\')" style="flex:1;background:var(--ok);border:none;color:#fff;border-radius:8px;padding:8px;font-size:12px;font-weight:700;font-family:inherit;">✓ אשר</button>'
+      +'<button onclick="rejectPendingReg(\''+r.key+'\')" style="flex:1;background:var(--crit);border:none;color:#fff;border-radius:8px;padding:8px;font-size:12px;font-weight:700;font-family:inherit;">✕ דחה</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+function approvePendingReg(key){
+  try{
+    var d=JSON.parse(localStorage.getItem(key));
+    if(!d)return;
+    /* create tenant */
+    var tenants=[];
+    try{tenants=JSON.parse(localStorage.getItem('ws3_admin_tenants')||'[]');}catch(e){}
+    var id='T'+Date.now();
+    tenants.push({id:id,settings:{bizName:d.bizName,bizType:d.bizType,currency:'₪',storeCode:d.storeCode},account:{fullname:d.mgrName,email:d.mgrEmail,phone:d.phone,idnum:d.idnum,registeredAt:d.ts},manager:{name:d.mgrName,email:d.mgrEmail,password:d.pin,pin:d.pin,loginCount:0},employees:[],actlog:[],tags:[],payments:[],planHistory:[],plan:{key:'basic',name:'בסיסי',since:Date.now(),contractEnd:Date.now()+365*86400000},estEmpCount:d.empCount});
+    localStorage.setItem('ws3_admin_tenants',JSON.stringify(tenants));
+    /* mark approved */
+    localStorage.setItem('ws3_reg_status_'+d.storeCode,'approved');
+    localStorage.removeItem(key);
+    loadData();
+    renderPendingRegs();
+    showToast('עסק אושר ✓');
+    /* update alert badge */
+    checkPendingRegsBadge();
+  }catch(e){showToast('שגיאה באישור');}
+}
+function rejectPendingReg(key){
+  try{
+    var d=JSON.parse(localStorage.getItem(key));
+    if(d)localStorage.setItem('ws3_reg_status_'+d.storeCode,'rejected');
+    localStorage.removeItem(key);
+    renderPendingRegs();
+    showToast('בקשה נדחתה');
+    checkPendingRegsBadge();
+  }catch(e){}
+}
+function checkPendingRegsBadge(){
+  var count=0;
+  for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.startsWith('ws3_pending_reg_'))count++;}
+  var badge=document.getElementById('pending-badge');
+  if(badge){badge.textContent=count;badge.style.display=count?'inline-flex':'none';}
 }
 
 /* ── 9. INVITATION LINKS ── */
