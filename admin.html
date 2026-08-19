@@ -412,6 +412,18 @@ button{cursor:pointer;font-family:inherit;}
   </div>
 </div>
 
+<!-- HEALTH DETAIL MODAL -->
+<div class="modal-bg" id="modal-health">
+  <div class="modal" style="max-width:420px;">
+    <h3 id="hd-title">בריאות עסק</h3>
+    <div id="hd-score" style="text-align:center;margin-bottom:16px;"></div>
+    <div id="hd-criteria"></div>
+    <div class="modal-btns" style="margin-top:16px;">
+      <button class="btn-modal sec" onclick="closeModal('modal-health')">סגור</button>
+    </div>
+  </div>
+</div>
+
 <!-- PLAN MODAL -->
 <div class="modal-bg" id="modal-plan">
   <div class="modal" style="max-width:500px;">
@@ -626,46 +638,31 @@ function calcHealth(t){
   var log=t.actlog||[];
   var m=t.manager||{};
   var emps=t.employees||[];
-  var score=0;
+  var criteria=[];
 
-  /* 1. חוזה/מנוי פעיל */
-  if(t.plan&&t.planEnd&&t.planEnd>now) score++;
-
-  /* 2. מנהל התחבר השבוע */
-  var mgrLoggedWeek=m.lastLogin&&(now-m.lastLogin)<week;
-  if(mgrLoggedWeek) score++;
-
-  /* 3. עובד (לא מנהל) התחבר השבוע */
-  var empLoggedWeek=emps.some(function(e){return e.lastLogin&&(now-e.lastLogin)<week;});
-  if(empLoggedWeek) score++;
-
-  /* 4. 5+ כניסות כלל השבוע */
   var weekLogins=log.filter(function(a){return a.action==='login'&&(now-a.ts)<week;}).length;
-  if(weekLogins>=5) score++;
-
-  /* 5. יש לפחות 2 עובדים (כולל מנהל) */
-  if(emps.length+(m.name?1:0)>=2) score++;
-
-  /* 6. עדכון כמות/פריט השבוע */
   var weekItems=log.filter(function(a){return a.action&&(a.action.includes('item')||a.action.includes('qty')||a.action.includes('weight'))&&(now-a.ts)<week;}).length;
-  if(weekItems>=1) score++;
-
-  /* 7. 10+ עדכוני מלאי השבוע */
-  if(weekItems>=10) score++;
-
-  /* 8. פעילות ב-3+ ימים שונים השבוע */
   var days=new Set(log.filter(function(a){return (now-a.ts)<week;}).map(function(a){return new Date(a.ts).toDateString();}));
-  if(days.size>=3) score++;
-
-  /* 9. פעיל החודש האחרון */
   var monthLogins=log.filter(function(a){return a.action==='login'&&(now-a.ts)<month;}).length;
-  if(monthLogins>=1) score++;
+  var mgrLoggedWeek=m.lastLogin&&(now-m.lastLogin)<week;
+  var empLoggedWeek=emps.some(function(e){return e.lastLogin&&(now-e.lastLogin)<week;});
+  var empTotal=emps.length+(m.name?1:0);
 
-  /* 10. מגוון פעולות — גם כניסות וגם עדכוני מלאי */
-  if(weekLogins>=1&&weekItems>=1) score++;
+  criteria.push({ok:!!(t.plan&&t.planEnd&&t.planEnd>now),label:'מנוי פעיל'});
+  criteria.push({ok:!!mgrLoggedWeek,label:'מנהל התחבר השבוע'});
+  criteria.push({ok:empLoggedWeek,label:'עובד התחבר השבוע'});
+  criteria.push({ok:weekLogins>=5,label:'5+ כניסות השבוע ('+weekLogins+')'});
+  criteria.push({ok:empTotal>=2,label:'2+ עובדים ('+empTotal+')'});
+  criteria.push({ok:weekItems>=1,label:'עדכון מלאי השבוע ('+weekItems+')'});
+  criteria.push({ok:weekItems>=10,label:'10+ עדכוני מלאי השבוע'});
+  criteria.push({ok:days.size>=3,label:'פעיל 3+ ימים השבוע ('+days.size+')'});
+  criteria.push({ok:monthLogins>=1,label:'כניסה החודש האחרון'});
+  criteria.push({ok:weekLogins>=1&&weekItems>=1,label:'גם כניסות וגם עדכוני מלאי'});
 
-  return Math.min(10,score);
+  var score=criteria.filter(function(c){return c.ok;}).length;
+  return {score:Math.min(10,score),criteria:criteria};
 }
+function getHealthScore(t){var h=calcHealth(t);return typeof h==='object'?h.score:h;}
 
 function healthColor(score){
   if(score>=8)return 'var(--ok)';
@@ -692,7 +689,7 @@ function renderBizList(list){
     var now=Date.now();
     var mConn=m.lastLogin&&(now-m.lastLogin)<30*60*1000;
     var eConn=emps.filter(function(e){return e.lastLogin&&(now-e.lastLogin)<30*60*1000;}).length;
-    var score=calcHealth(t);
+    var health=calcHealth(t);var score=health.score;
     var hc=healthColor(score);
     return '<div class="biz-card" id="bc-'+t.id+'">'
       +'<div class="biz-header" onclick="toggleBiz(\''+t.id+'\')">'
@@ -708,7 +705,7 @@ function renderBizList(list){
             +(log[0]?'<span class="pill o">'+ago(log[0].ts)+'</span>':'')
           +'</div>'
         +'</div>'
-        +'<div class="health-circle" style="background:'+hc+'22;border-color:'+hc+';color:'+hc+';">'+score+'</div>'
+        +'<div class="health-circle" style="background:'+hc+'22;border-color:'+hc+';color:'+hc+';cursor:pointer;" onclick="event.stopPropagation();showHealthDetail(\''+t.id+'\')">'+score+'</div>'
         +'<div class="biz-chevron" id="chv-'+t.id+'">›</div>'
       +'</div>'
       +'<div class="biz-detail" id="bd-'+t.id+'">'
@@ -1076,16 +1073,36 @@ function renderBarChart(){
 
 function renderHealthList(){
   var el=document.getElementById('dash-health-list');
-  var scored=_bizList.map(function(t){return {t:t,score:calcHealth(t)};});
+  var scored=_bizList.map(function(t){var h=calcHealth(t);return {t:t,score:h.score};});
   scored.sort(function(a,b){return b.score-a.score;});
   var top5=scored.slice(0,5);
   if(!top5.length){el.innerHTML='<div style="color:var(--muted);font-size:12px;">אין עסקים</div>';return;}
   el.innerHTML=top5.map(function(x){
     var name=(x.t.settings&&x.t.settings.bizName)||'ללא שם';
     var c=healthColor(x.score);
-    return '<div class="health-row"><div class="health-name">'+esc(name)+'</div><div class="health-score-badge" style="background:'+c+'22;color:'+c+';">'+x.score+'/10</div></div>';
+    return '<div class="health-row" style="cursor:pointer;" onclick="showHealthDetail(\''+x.t.id+'\')">'
+      +'<div class="health-name">'+esc(name)+'</div>'
+      +'<div class="health-score-badge" style="background:'+c+'22;color:'+c+';">'+x.score+'/10 ›</div>'
+    +'</div>';
   }).join('');
 }
+
+function showHealthDetail(tenantId){
+  var t=_bizList.find(function(x){return x.id===tenantId;});if(!t)return;
+  var h=calcHealth(t);
+  var name=(t.settings&&t.settings.bizName)||'ללא שם';
+  var c=healthColor(h.score);
+  document.getElementById('hd-title').textContent='בריאות עסק — '+name;
+  document.getElementById('hd-score').innerHTML='<span style="font-size:36px;font-weight:900;color:'+c+';">'+h.score+'</span><span style="font-size:18px;color:var(--muted);">/10</span>';
+  document.getElementById('hd-criteria').innerHTML=h.criteria.map(function(cr){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">'
+      +'<div style="width:22px;height:22px;border-radius:50%;background:'+(cr.ok?'var(--ok)':'var(--border)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;color:#fff;">'+(cr.ok?'✓':'—')+'</div>'
+      +'<div style="font-size:13px;color:'+(cr.ok?'var(--text)':'var(--muted)')+';">'+esc(cr.label)+'</div>'
+    +'</div>';
+  }).join('');
+  document.getElementById('modal-health').classList.add('show');
+}
+window.showHealthDetail=showHealthDetail;
 
 /* ── FINANCE ── */
 function renderFinance(){
