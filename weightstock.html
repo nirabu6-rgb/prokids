@@ -283,7 +283,8 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 .vp-option.active .vp-block{background:var(--accent);opacity:.7;}
 .vp-label{font-size:13px;font-weight:600;color:var(--text);line-height:1.2;}
 .vp-sub{font-size:10px;color:var(--muted);font-weight:400;margin-top:1px;}
-.back-btn{
+.back-btn{display:none!important;}
+.back-btn-hidden{
   background:var(--card2);
   border:1px solid var(--border);
   border-radius:20px;
@@ -297,7 +298,12 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   color:var(--accent);
   white-space:nowrap;
 }
-.back-btn:hover{background:var(--card3);}
+.back-btn-hidden:hover{background:var(--card3);}
+/* locked nav/sidebar items — visible but inaccessible */
+.nav-locked{opacity:.45;cursor:not-allowed;position:relative;}
+.nav-locked::after{content:'🔒';font-size:9px;position:absolute;top:2px;left:2px;line-height:1;}
+.side-locked{opacity:.45;cursor:not-allowed;position:relative;}
+.side-locked::after{content:'🔒';font-size:9px;position:absolute;top:4px;left:6px;}
 
 /* ── BOTTOM NAV ── */
 .bottomnav{
@@ -3753,36 +3759,49 @@ function umEnterApp(){
   showToast(greeting);
 }
 
+function _lockEl(el,lock){
+  if(!el)return;
+  if(lock){
+    el.classList.add('nav-locked');
+    if(!el._lockHandler){
+      el._lockHandler=function(e){e.stopPropagation();e.preventDefault();showToast('🔒 אין לך הרשאה לפעולה זו');};
+      el.addEventListener('click',el._lockHandler,true);
+    }
+  } else {
+    el.classList.remove('nav-locked');
+    if(el._lockHandler){el.removeEventListener('click',el._lockHandler,true);el._lockHandler=null;}
+  }
+}
 function applyUserPerms(){
   if(!_umUser)return;
   var mgr=_umUser.isManager;
-  /* Financial cards in dashboard */
+  /* Financial cards — lock for employees without permission */
   var vb=document.getElementById('db-value-bar');
-  if(vb)vb.style.display=(mgr||canDo('seePrices')||canDo('seeProfit'))?'':'none';
-  /* Bottom nav tabs */
+  if(vb){vb.style.display='';_lockEl(vb,!(mgr||canDo('seePrices')||canDo('seeProfit')));}
+  /* Bottom nav tabs — show locked */
   var repNav=document.getElementById('nav-screen-reports');
-  if(repNav)repNav.style.display=(mgr||canDo('seeReports'))?'':'none';
+  if(repNav){repNav.style.display='';_lockEl(repNav,!(mgr||canDo('seeReports')));}
   var catNav=document.getElementById('nav-screen-categories');
-  if(catNav)catNav.style.display=(mgr||canDo('seeCategories'))?'':'none';
-  /* Sidebar items */
+  if(catNav){catNav.style.display='';_lockEl(catNav,!(mgr||canDo('seeCategories')));}
+  /* Sidebar items — show locked */
   var sideRep=document.getElementById('side-screen-reports');
-  if(sideRep)sideRep.style.display=(mgr||canDo('seeReports'))?'':'none';
+  if(sideRep){sideRep.style.display='';_lockEl(sideRep,!(mgr||canDo('seeReports')));}
   var sideCat=document.getElementById('side-screen-categories');
-  if(sideCat)sideCat.style.display=(mgr||canDo('seeCategories'))?'':'none';
-  /* FAB add button */
+  if(sideCat){sideCat.style.display='';_lockEl(sideCat,!(mgr||canDo('seeCategories')));}
+  /* FAB add button — lock */
   var fabAdd=document.getElementById('fab-btn');
-  if(fabAdd)fabAdd.style.display=(mgr||canDo('addItems'))?'':'none';
-  /* Manager-only settings items */
+  if(fabAdd){fabAdd.style.display='';_lockEl(fabAdd,!(mgr||canDo('addItems')));}
+  /* Manager-only settings items — show locked */
   var empBtn=document.getElementById('st-emp-btn');
-  if(empBtn)empBtn.style.display=mgr?'':'none';
+  if(empBtn){empBtn.style.display='';_lockEl(empBtn,!mgr);}
   var logBtn=document.getElementById('st-actlog-btn');
-  if(logBtn)logBtn.style.display=mgr?'':'none';
-  /* Manager-only FAB section */
+  if(logBtn){logBtn.style.display='';_lockEl(logBtn,!mgr);}
+  /* Manager-only FAB section — show locked */
   var fabMgr=document.getElementById('fab-mgr-section');
-  if(fabMgr)fabMgr.style.display=mgr?'block':'none';
-  /* Manager-only sidebar employees button */
+  if(fabMgr){fabMgr.style.display='block';_lockEl(fabMgr,!mgr);}
+  /* Sidebar employees — show locked for non-manager */
   var sideEmp=document.getElementById('side-screen-employees');
-  if(sideEmp)sideEmp.style.display=mgr?'flex':'';
+  if(sideEmp){sideEmp.style.display='flex';_lockEl(sideEmp,!mgr);}
   /* Sidebar switch user */
   var swBtn=document.getElementById('side-switch-user');
   if(swBtn)swBtn.style.display='flex';
