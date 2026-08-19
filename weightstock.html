@@ -3513,17 +3513,47 @@ function umSubmitStoreCode(){
   var errEl=document.getElementById('um-store-err');
   errEl.style.display='none';
   if(entered.length<4||entered.length>6){errEl.textContent='קוד עסק חייב להיות בין 4 ל-6 תווים';errEl.style.display='block';return;}
+  /* search in admin tenants list first */
+  var tenants=[];
+  try{tenants=JSON.parse(localStorage.getItem('ws3_admin_tenants')||'[]');}catch(e){}
+  var found=null;
+  for(var i=0;i<tenants.length;i++){
+    var sc=(tenants[i].settings&&tenants[i].settings.storeCode||'').toUpperCase();
+    if(sc===entered){found=tenants[i];break;}
+  }
+  if(found){
+    /* load this tenant's data into the active session */
+    _umLoadTenant(found);
+    _umShowUserList();
+    return;
+  }
+  /* fallback: check local settings (legacy / single-tenant) */
   var code=getStoreCode();
-  if(!code){errEl.textContent='קוד עסק לא הוגדר — פנה למנהל המערכת';errEl.style.display='block';return;}
-  if(entered!==code){
+  if(!code||code!==entered){
     errEl.textContent='קוד עסק שגוי';errEl.style.display='block';
     if(inp){inp.value='';inp.focus();}
     return;
   }
-  /* show user list */
   _umShowUserList();
 }
 window.umSubmitStoreCode=umSubmitStoreCode;
+
+function _umLoadTenant(t){
+  /* temporarily load tenant data into LS for the session */
+  var s=t.settings||{};
+  var m=t.manager||{};
+  var acc=t.account||{};
+  /* write to local keys so LS.get() reads them */
+  localStorage.setItem('ws3_settings',JSON.stringify(s));
+  localStorage.setItem('ws3_account',JSON.stringify(acc));
+  localStorage.setItem('ws3_employees',JSON.stringify(t.employees||[]));
+  /* build manager object */
+  var mgrObj={name:m.name||acc.fullname||'מנהל',email:m.email||acc.email||'',password:m.password||m.pin||'',pin:m.pin||m.password||'',loginCount:m.loginCount||0,lastLogin:m.lastLogin||0};
+  localStorage.setItem('ws3_um_manager',JSON.stringify(mgrObj));
+  /* mark active tenant */
+  localStorage.setItem('ws3_active_tenant_id',t.id||'');
+}
+window._umLoadTenant=_umLoadTenant;
 
 function umBackToStore(){
   document.getElementById('um-store-section').style.display='block';
