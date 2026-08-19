@@ -516,8 +516,8 @@ button{cursor:pointer;font-family:inherit;}
             <button onclick="copyRegLink();showToast('קישור הרשמה הועתק ✓')" style="background:var(--accent);border:none;color:#fff;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;font-family:inherit;width:100%;">העתק קישור הרשמה</button>
           </div>
           <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;">
-            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">קישור לאפליקציית העובד</div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">קישור ישיר לכניסה עם קוד עסק + סיסמה</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">קישור לאפליקציה (לאחר אישור)</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">שלח קישור זה למנהל העסק לאחר אישורו — כניסה עם קוד עסק + סיסמה. העובדים משתמשים באותו קישור.</div>
             <div style="background:var(--card2);border-radius:9px;padding:10px 13px;font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:12px;" id="links-app-url"></div>
             <button onclick="(function(){var u=(location.href.replace(/admin\.html.*/,'')+'weightstock.html');navigator.clipboard.writeText(u).catch(function(){});showToast('קישור אפליקציה הועתק ✓');})()" style="background:var(--ok);border:none;color:#fff;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;font-family:inherit;width:100%;">העתק קישור אפליקציה</button>
           </div>
@@ -1803,7 +1803,7 @@ window.globalSearch=globalSearch;
 /* ── REGISTRATION LINK ── */
 function getRegLink(){
   var base=location.href.replace(/admin\.html.*/,'');
-  return base+'weightstock.html';
+  return base+'reg.html';
 }
 function copyRegLink(){
   var url=getRegLink();
@@ -2196,7 +2196,7 @@ function renderHistoryPane(t){
 /* ── LINKS PANE ── */
 function renderLinksPane(){
   var base=location.href.replace(/admin\.html.*/,'');
-  var regUrl=base+'weightstock.html';
+  var regUrl=base+'reg.html';
   var appUrl=base+'weightstock.html';
   var ru=document.getElementById('links-reg-url');
   var au=document.getElementById('links-app-url');

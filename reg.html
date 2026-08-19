@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>WeightStock — הרשמת עסק חדש</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;}
+:root{
+  --accent:#003B71;--ok:#00A859;--crit:#dc2626;--warn:#d97706;
+  --bg:#f0f4f8;--card:#fff;--card2:#f5f7fa;--text:#1a2332;--muted:#7a8899;--border:#dde3ec;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#0d1117;--card:#161c26;--card2:#1e2530;--text:#e8edf5;--muted:#8a96a8;--border:#2a3344;}
+  body{background:var(--bg);}
+}
+.wrap{width:100%;max-width:480px;}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:24px;justify-content:center;}
+.logo-icon{font-size:32px;}
+.logo-name{font-size:20px;font-weight:800;color:var(--accent);}
+.card{background:var(--card);border-radius:18px;box-shadow:0 4px 24px rgba(0,59,113,.08);overflow:hidden;}
+.card-header{background:linear-gradient(135deg,#003B71,#005aaa);padding:20px 24px;color:#fff;}
+.card-header h1{font-size:17px;font-weight:800;margin-bottom:4px;}
+.card-header p{font-size:12px;opacity:.8;}
+.progress{display:flex;align-items:center;gap:0;padding:16px 24px 0;background:var(--card);}
+.pdot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);background:var(--card);flex-shrink:0;transition:all .25s;}
+.pdot.active{border-color:var(--accent);color:var(--accent);background:rgba(0,59,113,.06);}
+.pdot.done{border-color:var(--ok);background:var(--ok);color:#fff;}
+.pline{flex:1;height:2px;background:var(--border);transition:background .25s;}
+.pline.done{background:var(--ok);}
+.step{display:none;padding:20px 24px 24px;}
+.step.active{display:block;}
+.fld{margin-bottom:14px;}
+.fld label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;}
+.fld input,.fld select{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;color:var(--text);outline:none;font-family:inherit;transition:border-color .2s;}
+.fld input:focus,.fld select:focus{border-color:var(--accent);}
+.row2{display:flex;gap:10px;}
+.row2 .fld{flex:1;}
+.hint{font-size:11px;color:var(--muted);margin-top:4px;}
+.err{display:none;background:rgba(220,38,38,.08);color:var(--crit);border-radius:9px;padding:10px 14px;font-size:13px;margin-bottom:14px;}
+.box{background:var(--card2);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+.box-title{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;}
+.sc-input{font-size:24px;font-weight:800;text-align:center;letter-spacing:6px;text-transform:uppercase;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;width:100%;padding:10px;color:var(--text);outline:none;font-family:inherit;}
+.sc-input:focus{border-color:var(--accent);}
+.btn{width:100%;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:opacity .15s;}
+.btn:active{opacity:.8;}
+.btn-primary{background:linear-gradient(135deg,#003B71,#005aaa);color:#fff;}
+.btn-ok{background:var(--ok);color:#fff;}
+.btn-sec{background:none;border:1.5px solid var(--border);color:var(--muted);}
+.btns{display:flex;gap:10px;margin-top:4px;}
+.btns .btn-sec{flex:0 0 auto;padding:13px 20px;width:auto;}
+.btns .btn-primary,.btns .btn-ok{flex:1;}
+.pending-screen{text-align:center;padding:36px 24px 28px;}
+.pending-screen .icon{font-size:60px;margin-bottom:16px;}
+.pending-screen h2{font-size:20px;font-weight:800;color:var(--accent);margin-bottom:8px;}
+.pending-screen p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px;}
+.pending-screen .info-box{background:var(--card2);border-radius:12px;padding:14px 16px;margin-bottom:24px;font-size:12px;color:var(--muted);text-align:right;line-height:2;}
+.pending-screen .info-box b{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">
+    <div class="logo-icon">⚖️</div>
+    <div class="logo-name">WeightStock</div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <h1>הרשמת עסק חדש</h1>
+      <p>מלא את הפרטים — לאחר האישור תקבל גישה מלאה למערכת</p>
+    </div>
+
+    <!-- progress -->
+    <div class="progress">
+      <div class="pdot active" id="pd1">1</div>
+      <div class="pline" id="pl1"></div>
+      <div class="pdot" id="pd2">2</div>
+    </div>
+
+    <!-- STEP 1: manager personal details -->
+    <div class="step active" id="s1">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin:16px 0 14px;">👤 פרטים אישיים — בעל העסק / מנהל</div>
+      <div id="err1" class="err"></div>
+      <div class="row2">
+        <div class="fld"><label>שם פרטי *</label><input id="r-firstname" placeholder="ישראל" autocomplete="given-name"></div>
+        <div class="fld"><label>שם משפחה *</label><input id="r-lastname" placeholder="ישראלי" autocomplete="family-name"></div>
+      </div>
+      <div class="fld">
+        <label>תעודת זהות *</label>
+        <input id="r-idnum" type="tel" inputmode="numeric" maxlength="9" placeholder="000000000" dir="ltr" autocomplete="off">
+      </div>
+      <div class="fld">
+        <label>טלפון נייד *</label>
+        <input id="r-phone" type="tel" placeholder="050-0000000" autocomplete="tel">
+      </div>
+      <div class="fld">
+        <label>כתובת מייל *</label>
+        <input id="r-email" type="email" placeholder="manager@example.com" autocomplete="email">
+      </div>
+      <div class="btns" style="margin-top:20px;">
+        <button class="btn btn-primary" onclick="toStep2()">הבא — פרטי העסק ›</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: business details -->
+    <div class="step" id="s2">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin:16px 0 14px;">🏢 פרטי העסק</div>
+      <div id="err2" class="err"></div>
+      <div class="fld"><label>שם העסק *</label><input id="r-bizname" placeholder="חנות כהן בע&quot;מ" autocomplete="organization"></div>
+      <div class="fld">
+        <label>סוג עסק *</label>
+        <select id="r-biztype">
+          <option value="">— בחר סוג —</option>
+          <option>מכולת / סופרמרקט</option>
+          <option>בית מרקחת / פארם</option>
+          <option>מחסן / ספק</option>
+          <option>חנות קמעונאית</option>
+          <option>מסעדה / קייטרינג</option>
+          <option>מאפייה / קונדיטוריה</option>
+          <option>חנות גבינות / מעדנייה</option>
+          <option>חנות בשר / שחיטה</option>
+          <option>חנות דגים / פירות ים</option>
+          <option>ירקות ופירות</option>
+          <option>חנות ממתקים / יבוא</option>
+          <option>מחסן חומרי גלם</option>
+          <option>אחר</option>
+        </select>
+      </div>
+      <div class="row2">
+        <div class="fld"><label>עיר *</label><input id="r-city" placeholder="תל אביב" autocomplete="address-level2"></div>
+        <div class="fld"><label>רחוב</label><input id="r-street" placeholder="הרצל 1" autocomplete="street-address"></div>
+      </div>
+      <div class="fld"><label>טלפון עסק</label><input id="r-bizphone" type="tel" placeholder="03-0000000"></div>
+      <div class="fld">
+        <label>מספר עובדים משוער</label>
+        <input id="r-empcount" type="tel" inputmode="numeric" placeholder="5" oninput="this.value=this.value.replace(/\D/g,'')">
+        <div class="hint">לידיעתנו בלבד — ניתן לשנות בהמשך</div>
+      </div>
+      <div class="box">
+        <div class="box-title">🏪 קוד עסק — לכניסה לאפליקציה</div>
+        <input class="sc-input" id="r-storecode" maxlength="6" autocomplete="off" placeholder="SHOP1"
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)">
+        <div class="hint" style="margin-top:6px;">4 עד 6 תווים — אותיות אנגליות ו/או מספרים. תעביר קוד זה לעובדים שלך לכניסה.</div>
+      </div>
+      <div class="box">
+        <div class="box-title">🔑 סיסמת כניסה שלך</div>
+        <div class="row2">
+          <div class="fld" style="margin-bottom:0;">
+            <label>סיסמה (מספרים בלבד)</label>
+            <input id="r-pin" type="tel" inputmode="numeric" placeholder="לפחות 4 ספרות" autocomplete="new-password" oninput="this.value=this.value.replace(/\D/g,'')">
+          </div>
+          <div class="fld" style="margin-bottom:0;">
+            <label>אימות סיסמה</label>
+            <input id="r-pin2" type="tel" inputmode="numeric" placeholder="חזור על הסיסמה" autocomplete="new-password" oninput="this.value=this.value.replace(/\D/g,'')">
+          </div>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="btn btn-sec" onclick="toStep1()">← חזור</button>
+        <button class="btn btn-ok" onclick="submitReg()">שלח בקשת הרשמה ✓</button>
+      </div>
+    </div>
+
+    <!-- PENDING SCREEN -->
+    <div class="pending-screen" id="s-pending" style="display:none;">
+      <div class="icon">⏳</div>
+      <h2>הבקשה נשלחה!</h2>
+      <p>הרישום שלך התקבל ועובר בדיקה ואישור על ידי מנהל המערכת.<br>לאחר האישור תקבל קישור לכניסה לאפליקציה.</p>
+      <div class="info-box" id="pending-info"></div>
+      <button class="btn btn-primary" onclick="location.reload()">בדוק סטטוס</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function showErr(id,msg){var e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
+function hideErr(id){var e=document.getElementById(id);if(e)e.style.display='none';}
+
+function setProgress(step){
+  var pd1=document.getElementById('pd1'),pd2=document.getElementById('pd2'),pl1=document.getElementById('pl1');
+  if(step===1){pd1.className='pdot active';pd2.className='pdot';pl1.className='pline';}
+  if(step===2){pd1.className='pdot done';pd2.className='pdot active';pl1.className='pline done';}
+}
+
+function toStep1(){
+  document.getElementById('s2').classList.remove('active');
+  document.getElementById('s1').classList.add('active');
+  setProgress(1);
+}
+
+function toStep2(){
+  hideErr('err1');
+  var fn=document.getElementById('r-firstname').value.trim();
+  var ln=document.getElementById('r-lastname').value.trim();
+  var id=document.getElementById('r-idnum').value.trim();
+  var ph=document.getElementById('r-phone').value.trim();
+  var em=document.getElementById('r-email').value.trim();
+  if(!fn){showErr('err1','הכנס שם פרטי');return;}
+  if(!ln){showErr('err1','הכנס שם משפחה');return;}
+  if(!id||id.length<7){showErr('err1','הכנס מספר תעודת זהות תקין (לפחות 7 ספרות)');return;}
+  if(!ph){showErr('err1','הכנס מספר טלפון');return;}
+  if(!em||!em.includes('@')){showErr('err1','הכנס כתובת מייל תקינה');return;}
+  /* check email not already pending or approved */
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.startsWith('ws3_pending_reg_')){
+      try{var v=JSON.parse(localStorage.getItem(k));if(v&&v.mgrEmail&&v.mgrEmail.toLowerCase()===em.toLowerCase()){showErr('err1','כתובת מייל זו כבר קיימת בבקשה ממתינה');return;}}catch(e2){}
+    }
+  }
+  document.getElementById('s1').classList.remove('active');
+  document.getElementById('s2').classList.add('active');
+  setProgress(2);
+}
+
+function submitReg(){
+  hideErr('err2');
+  var biz=document.getElementById('r-bizname').value.trim();
+  var btype=document.getElementById('r-biztype').value;
+  var city=document.getElementById('r-city').value.trim();
+  var sc=document.getElementById('r-storecode').value.trim().toUpperCase();
+  var pin=document.getElementById('r-pin').value.trim();
+  var pin2=document.getElementById('r-pin2').value.trim();
+  if(!biz){showErr('err2','הכנס שם עסק');return;}
+  if(!btype){showErr('err2','בחר סוג עסק');return;}
+  if(!city){showErr('err2','הכנס עיר');return;}
+  if(!sc||sc.length<4||sc.length>6){showErr('err2','קוד העסק חייב להיות 4-6 תווים');return;}
+  if(!pin||pin.length<4){showErr('err2','הסיסמה חייבת להיות לפחות 4 ספרות');return;}
+  if(pin!==pin2){showErr('err2','הסיסמאות לא תואמות');return;}
+
+  var fn=document.getElementById('r-firstname').value.trim();
+  var ln=document.getElementById('r-lastname').value.trim();
+  var id=document.getElementById('r-idnum').value.trim();
+  var ph=document.getElementById('r-phone').value.trim();
+  var em=document.getElementById('r-email').value.trim();
+  var street=document.getElementById('r-street').value.trim();
+  var bizphone=document.getElementById('r-bizphone').value.trim();
+  var empcount=parseInt(document.getElementById('r-empcount').value)||0;
+
+  var regKey='ws3_pending_reg_'+sc+'_'+Date.now();
+  localStorage.setItem(regKey,JSON.stringify({
+    bizName:biz,bizType:btype,storeCode:sc,
+    mgrName:fn+' '+ln,firstname:fn,lastname:ln,
+    idnum:id,phone:ph,mgrEmail:em,pin:pin,
+    bizCity:city,bizStreet:street,bizPhone:bizphone,
+    empCount:empcount,ts:Date.now()
+  }));
+
+  /* show pending screen */
+  document.getElementById('s1').classList.remove('active');
+  document.getElementById('s2').classList.remove('active');
+  document.querySelector('.progress').style.display='none';
+  document.getElementById('s-pending').style.display='block';
+  document.getElementById('pending-info').innerHTML=
+    'שם: <b>'+esc(fn+' '+ln)+'</b><br>'
+    +'מייל: <b>'+esc(em)+'</b><br>'
+    +'עסק: <b>'+esc(biz)+'</b><br>'
+    +'קוד עסק: <b style="color:var(--accent);">'+esc(sc)+'</b>';
+}
+
+/* check if already pending on load */
+(function(){
+  /* check if there's a pending or approved registration for this browser */
+  var approved=null,pending=null;
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.startsWith('ws3_pending_reg_')){
+      try{var v=JSON.parse(localStorage.getItem(k));if(v)pending=v;}catch(e){}
+    }
+    if(k&&k.startsWith('ws3_reg_status_')){
+      var status=localStorage.getItem(k);
+      var sc2=k.replace('ws3_reg_status_','');
+      if(status==='approved'){approved={sc:sc2,status:'approved'};}
+      else if(status==='rejected'){approved={sc:sc2,status:'rejected'};}
+    }
+  }
+  if(approved&&approved.status==='approved'){
+    var appUrl=location.href.replace(/reg\.html.*/,'')+'weightstock.html';
+    document.querySelector('.card').innerHTML=
+      '<div class="pending-screen" style="display:block;">'
+      +'<div class="icon">✅</div>'
+      +'<h2>החשבון אושר!</h2>'
+      +'<p style="margin-bottom:16px;">ברכות! העסק שלך אושר במערכת.<br>לחץ כאן להיכנס לאפליקציה:</p>'
+      +'<a href="'+appUrl+'" style="display:block;background:var(--ok);color:#fff;border-radius:12px;padding:13px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;">כניסה לאפליקציה ›</a>'
+      +'</div>';
+    return;
+  }
+  if(approved&&approved.status==='rejected'){
+    localStorage.removeItem('ws3_reg_status_'+approved.sc);
+    document.querySelector('.card-header p').textContent='בקשת הרישום הקודמת נדחתה — מלא טופס חדש';
+    return;
+  }
+  if(pending){
+    document.getElementById('s1').classList.remove('active');
+    document.querySelector('.progress').style.display='none';
+    document.getElementById('s-pending').style.display='block';
+    document.getElementById('pending-info').innerHTML=
+      'שם: <b>'+esc(pending.mgrName||'—')+'</b><br>'
+      +'מייל: <b>'+esc(pending.mgrEmail||'—')+'</b><br>'
+      +'עסק: <b>'+esc(pending.bizName||'—')+'</b><br>'
+      +'קוד עסק: <b style="color:var(--accent);">'+esc(pending.storeCode||'—')+'</b>';
+  }
+})();
+</script>
+</body>
+</html>
