@@ -314,7 +314,6 @@ button{cursor:pointer;font-family:inherit;}
       <div class="sidebar-item" onclick="showPane('alerts')" id="si-alerts"><span class="sic"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>התראות<span class="sb-badge" id="alerts-badge" style="display:none;">0</span><span class="sb-badge" id="pending-badge" style="display:none;background:var(--warn);margin-right:2px;">0</span></div>
       <div class="sidebar-item" onclick="showPane('messages')" id="si-messages"><span class="sic"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>הודעות<span class="sb-badge" id="msgs-badge" style="display:none;">0</span></div>
       <div class="sidebar-item" onclick="showPane('equipment')" id="si-equipment"><span class="sic"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>ציוד</div>
-      <div class="sidebar-item" onclick="showPane('support')" id="si-support"><span class="sic"><svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></span>תמיכה</div>
       <div class="sidebar-item" onclick="showPane('links')" id="si-links"><span class="sic"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>קישורים</div>
       <div class="sidebar-item" onclick="showPane('settings')" id="si-settings"><span class="sic"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>הגדרות</div>
       <div class="sidebar-sep"></div>
@@ -1570,6 +1569,21 @@ function renderAlerts(){
       cards.push('<div class="alert-card"><div class="alert-icon">👥</div><div class="alert-body"><div class="alert-title">קרוב למגבלת עובדים: '+esc(name)+'</div><div class="alert-sub">עסק בסיסי עם '+(t.employees||[]).length+' עובדים</div></div><button class="btn-sm blue" onclick="openPlanModal(\''+t.id+'\')">שדרג חבילה</button></div>');
     }
   });
+  /* קריאות תמיכה מהמנהלים */
+  var tickets=getTickets().filter(function(tk){return tk.status==='open';});
+  tickets.forEach(function(tk){
+    var biz=_bizList.find(function(t){return t.id===tk.tenantId;});
+    var bizName=(biz&&biz.settings&&biz.settings.bizName)||tk.tenantId||'—';
+    cards.push('<div class="alert-card" style="border-right:4px solid var(--accent);">'
+      +'<div class="alert-icon">🎧</div>'
+      +'<div class="alert-body">'
+      +'<div class="alert-title">קריאת תמיכה — '+esc(bizName)+'</div>'
+      +'<div class="alert-sub"><b>'+esc(tk.subject)+'</b><br>'+esc(tk.text||'')+'</div>'
+      +'<div class="alert-sub" style="margin-top:4px;font-size:10px;color:var(--muted);">'+new Date(tk.ts).toLocaleDateString('he-IL')+'</div>'
+      +'</div>'
+      +'<button class="btn-sm blue" onclick="replyTicket(\''+tk.id+'\')">↩ הגב</button>'
+      +'</div>');
+  });
   if(!cards.length){el.innerHTML='<div class="empty"><div class="ei">✅</div><b>אין התראות פעילות</b></div>';return;}
   el.innerHTML=cards.join('');
 }
@@ -1715,6 +1729,18 @@ function saveTicket(){
   renderSupport();
   showToast('קריאה נפתחה ✓');
 }
+
+function replyTicket(id){
+  var resp=prompt('תגובה לקריאה:');
+  if(!resp)return;
+  var tickets=getTickets();
+  var tk=tickets.find(function(t){return t.id===id;});
+  if(tk){tk.response=resp;tk.responseTs=Date.now();tk.status='closed';}
+  setTickets(tickets);
+  renderAlerts();
+  showToast('✅ תגובה נשלחה — הקריאה נסגרה');
+}
+window.replyTicket=replyTicket;
 
 function respondTicket(id){
   var inp=document.getElementById('tk-resp-'+id);

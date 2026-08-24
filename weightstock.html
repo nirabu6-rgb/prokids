@@ -2304,6 +2304,13 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <span>›</span>
         </button>
       </div>
+      <!-- תמיכה -->
+      <div class="card" style="margin:0 0 8px;padding:0;overflow:hidden;">
+        <button onclick="openSupportTicket()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
+          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">🎧 פתח קריאת תמיכה</div>
+          <span style="color:var(--muted);">›</span>
+        </button>
+      </div>
       <!-- התנתק -->
       <div class="card" style="margin:0;padding:0;overflow:hidden;">
         <button onclick="logoutApp()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--crit);">
@@ -5670,6 +5677,22 @@ function resetToOnboarding(){
   LS.del('tmpl'); _DR=null; closeModal('modal-settings'); location.reload();
 }
 window.resetToOnboarding=resetToOnboarding;
+function openSupportTicket(){
+  var s=getSettings();
+  var tenantId=localStorage.getItem('ws3_active_tenant_id')||'';
+  var subject=prompt('נושא הקריאה:');
+  if(!subject)return;
+  var text=prompt('תאר את הבעיה:');
+  if(text===null)return;
+  var tickets=[];
+  try{tickets=JSON.parse(localStorage.getItem('ws3_admin_tickets')||'[]');}catch(e){}
+  tickets.unshift({id:'tk'+Date.now(),tenantId:tenantId,bizName:s.bizName||'',ts:Date.now(),subject:subject,text:text,status:'open',response:'',responseTs:null});
+  localStorage.setItem('ws3_admin_tickets',JSON.stringify(tickets));
+  closeModal('modal-settings');
+  showToast('✅ קריאת התמיכה נשלחה — נחזור אליך בהקדם');
+}
+window.openSupportTicket=openSupportTicket;
+
 function logoutApp(){
   if(!confirm('להתנתק? הנתונים ישמרו.'))return;
   LS.del('session'); _DR=null; _umUser=null;
