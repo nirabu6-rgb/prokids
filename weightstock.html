@@ -2244,7 +2244,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <button onclick="copyStoreCode()" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--text);">העתק</button>
         </div>
         <button onclick="closeModal('modal-settings');openEmployees();" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
-          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">👥 ניהול עובדים וסיסמאות</div>
+          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">👥 ניהול עובדים</div>
           <span style="color:var(--muted);">›</span>
         </button>
         <button onclick="openChangeMgrPin();" style="width:100%;background:none;border:none;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);border-top:1px solid var(--border);">
@@ -2296,7 +2296,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       <!-- מחק משתמשים -->
       <div class="card" style="margin:0 0 8px;padding:0;overflow:hidden;">
         <button onclick="resetUsers()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--warn);">
-          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">👥 מחק משתמשים והתחל מחדש</div>
+          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">🗑️ מחק עובדים והתחל מחדש</div>
           <span>›</span>
         </button>
       </div>
@@ -5633,9 +5633,14 @@ function processSerialWeight(raw){
 function toggleDemo(){var s=getSettings();s.demo=!(s.demo!==false);LS.set('settings',s);document.getElementById('demo-tog').classList.toggle('on',s.demo!==false);}
 window.toggleDemo=toggleDemo;
 function resetUsers(){
-  if(!confirm('למחוק את כל המשתמשים (מנהל ועובדים)?\nהנתונים יישמרו — רק המשתמשים יימחקו.'))return;
-  ['um_manager','um_employees','um_session','um_actlog'].forEach(function(k){LS.del(k);});
-  _umUser=null; closeModal('modal-settings'); location.reload();
+  if(!confirm('למחוק את כל העובדים?\nהמנהל ישמר — רק רשימת העובדים תימחק.'))return;
+  LS.del('um_employees');
+  LS.del('um_actlog');
+  /* log out current user if they're an employee */
+  if(_umUser&&!_umUser.isManager){_umUser=null;LS.del('um_session');closeModal('modal-settings');location.reload();return;}
+  closeModal('modal-settings');
+  showToast('✅ כל העובדים נמחקו — המנהל נשמר');
+  if(typeof openEmployees==='function')openEmployees();
 }
 window.resetUsers=resetUsers;
 function resetAll(){
