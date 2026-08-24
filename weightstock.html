@@ -1756,8 +1756,27 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       <div id="emp-inline-form" style="flex:0 0 320px;background:var(--card);border:2px solid var(--accent);border-radius:16px;padding:20px;display:none;">
         <div style="font-weight:800;font-size:15px;margin-bottom:14px;color:var(--accent);" id="emp-form-title">✏️ הוספת עובד</div>
 
-        <label>שם מלא</label>
-        <input id="emp-name" placeholder="דוד לוי">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><label>שם פרטי *</label><input id="emp-firstname" placeholder="דוד" style="margin-top:4px;"></div>
+          <div><label>שם משפחה</label><input id="emp-lastname" placeholder="לוי" style="margin-top:4px;"></div>
+        </div>
+        <input id="emp-name" type="hidden">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+          <div><label>מגדר</label>
+            <select id="emp-gender" style="margin-top:4px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:14px;color:var(--text);outline:none;font-family:inherit;width:100%;">
+              <option value="">בחר...</option>
+              <option value="male">זכר</option>
+              <option value="female">נקבה</option>
+            </select>
+          </div>
+          <div><label>תפקיד</label><input id="emp-role" placeholder="קופאי / מחסנאי..." style="margin-top:4px;"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+          <div><label>טלפון</label><input id="emp-phone" type="tel" placeholder="050-0000000" style="margin-top:4px;"></div>
+          <div><label>מייל</label><input id="emp-email" type="email" placeholder="name@example.com" style="margin-top:4px;"></div>
+        </div>
 
         <label style="margin-top:12px;">סיסמה לעובד</label>
         <div style="position:relative;">
@@ -3702,7 +3721,7 @@ function umSubmitPassword(){
     if(!ok){errEl.textContent='סיסמה שגויה';errEl.style.display='block';document.getElementById('um-pw-input').value='';document.getElementById('um-pw-input').focus();return;}
     mgr.loginCount=(mgr.loginCount||0)+1; mgr.lastLogin=Date.now();
     LS.set('um_manager',mgr);
-    _umUser={isManager:true,empId:'manager',name:mgr.name,perms:null,loginTime:Date.now()};
+    _umUser={isManager:true,empId:'manager',name:mgr.name,gender:mgr.gender||'',perms:null,loginTime:Date.now()};
     LS.set('um_session',_umUser);
     logAct('login','כניסת מנהל');
     umEnterApp();
@@ -3715,16 +3734,19 @@ function umSubmitPassword(){
     if(!okEmp){errEl.textContent='סיסמה שגויה';errEl.style.display='block';document.getElementById('um-pw-input').value='';document.getElementById('um-pw-input').focus();return;}
     emp.loginCount=(emp.loginCount||0)+1; emp.lastLogin=Date.now();
     setEmployees(emps);
-    _umUser={isManager:false,empId:emp.id,name:emp.name,perms:emp.permissions,loginTime:Date.now()};
+    _umUser={isManager:false,empId:emp.id,name:emp.name,gender:emp.gender||'',perms:emp.permissions,loginTime:Date.now()};
     LS.set('um_session',_umUser);
-    logAct('login','כניסת עובד: '+emp.name);
+    logAct('login','כניסת '+(emp.gender==='female'?'עובדת':'עובד')+': '+emp.name);
     umEnterApp();
   }
 }
 window.umSubmitPassword=umSubmitPassword;
 
 function umForgotPin(){
-  alert('לאיפוס סיסמה — פנה למנהל החנות.\nהמנהל יכול לראות ולשנות סיסמאות מהגדרות עובדים.');
+  var mgr=LS.get('um_manager',null);
+  var mgrG=mgr&&mgr.gender||'';
+  var mgrTitle=mgrG==='female'?'המנהלת':'המנהל';
+  alert('לאיפוס סיסמה — פנה ל'+mgrTitle+' החנות.\n'+mgrTitle+' יכול לראות ולשנות סיסמאות מהגדרות עובדים.');
 }
 window.umForgotPin=umForgotPin;
 
@@ -3753,7 +3775,7 @@ function umSubmitEmail(){
   }
   mgr.loginCount=(mgr.loginCount||0)+1; mgr.lastLogin=Date.now();
   LS.set('um_manager',mgr);
-  _umUser={isManager:true,empId:'manager',name:mgr.name,perms:null,loginTime:Date.now()};
+  _umUser={isManager:true,empId:'manager',name:mgr.name,gender:mgr.gender||'',perms:null,loginTime:Date.now()};
   LS.set('um_session',_umUser);
   logAct('login','כניסת מנהל מייל+סיסמה');
   umEnterApp();
@@ -3761,12 +3783,18 @@ function umSubmitEmail(){
 window.umSubmitEmail=umSubmitEmail;
 window.umSubmitPin=umSubmitPin;
 
+function genderTitle(isManager,gender){
+  if(isManager)return gender==='female'?'מנהלת':'מנהל';
+  return gender==='female'?'עובדת':'עובד';
+}
 function umEnterApp(){
   document.getElementById('um-login-screen').classList.remove('show');
   applyUserPerms();
   renderDash(); updBell(); updateDashLogo(); renderDailyTip();
   updateOnlineStatus&&updateOnlineStatus();
-  var greeting=_umUser.isManager?'ברוך הבא מנהל, '+_umUser.name+' 👑':'שלום '+_umUser.name+' 👋 — ברוך הבא!';
+  var g=_umUser.gender||'';
+  var title=genderTitle(_umUser.isManager,g);
+  var greeting=_umUser.isManager?'ברוך הבא '+title+', '+_umUser.name+' 👑':'שלום '+_umUser.name+' 👋 — ברוך הבא '+title+'!';
   showToast(greeting);
 }
 
@@ -3911,10 +3939,18 @@ function showEmpForm(){
   document.getElementById('emp-name').focus();
 }
 
+function _clearEmpFields(){
+  document.getElementById('emp-firstname').value='';
+  document.getElementById('emp-lastname').value='';
+  document.getElementById('emp-gender').value='';
+  document.getElementById('emp-role').value='';
+  document.getElementById('emp-phone').value='';
+  document.getElementById('emp-email').value='';
+  document.getElementById('emp-code').value='';
+}
 function openAddEmpInline(){
   document.getElementById('emp-form-title').textContent='✏️ הוספת עובד';
-  document.getElementById('emp-name').value='';
-  document.getElementById('emp-code').value='';
+  _clearEmpFields();
   document.getElementById('emp-edit-id').value='';
   buildPermGrid(DEFAULT_EMP_PERMS);
   showEmpForm();
@@ -3927,8 +3963,14 @@ function openEditEmpInline(id){
   var emps=getEmployees();
   var emp=emps.find(function(e){return e.id===id;});
   if(!emp)return;
-  document.getElementById('emp-form-title').textContent='✏️ עריכת '+emp.name;
-  document.getElementById('emp-name').value=emp.name;
+  var parts=(emp.name||'').split(' ');
+  document.getElementById('emp-form-title').textContent='✏️ עריכת '+(emp.firstname||parts[0]||emp.name);
+  document.getElementById('emp-firstname').value=emp.firstname||parts[0]||'';
+  document.getElementById('emp-lastname').value=emp.lastname||parts.slice(1).join(' ')||'';
+  document.getElementById('emp-gender').value=emp.gender||'';
+  document.getElementById('emp-role').value=emp.role||'';
+  document.getElementById('emp-phone').value=emp.phone||'';
+  document.getElementById('emp-email').value=emp.email||'';
   document.getElementById('emp-code').value=emp.password||emp.code||'';
   document.getElementById('emp-edit-id').value=emp.id;
   buildPermGrid(emp.permissions);
@@ -3945,10 +3987,16 @@ function cancelEmpForm(){
 window.cancelEmpForm=cancelEmpForm;
 
 function saveEmp(){
-  var name=document.getElementById('emp-name').value.trim();
+  var firstname=document.getElementById('emp-firstname').value.trim();
+  var lastname=document.getElementById('emp-lastname').value.trim();
+  var name=(firstname+' '+lastname).trim()||firstname;
+  var gender=document.getElementById('emp-gender').value;
+  var role=document.getElementById('emp-role').value.trim();
+  var phone=document.getElementById('emp-phone').value.trim();
+  var email=document.getElementById('emp-email').value.trim();
   var pw=document.getElementById('emp-code').value.trim();
   var editId=document.getElementById('emp-edit-id').value;
-  if(!name){showToast('חסר שם עובד');return;}
+  if(!firstname){showToast('חסר שם פרטי');return;}
   if(!pw){showToast('חסרה סיסמה לעובד');return;}
   var perms={};
   PERMISSIONS.forEach(function(p){
@@ -3957,9 +4005,9 @@ function saveEmp(){
   var emps=getEmployees();
   if(editId){
     var idx=emps.findIndex(function(e){return e.id===editId;});
-    if(idx>=0){emps[idx].name=name;emps[idx].code=pw;emps[idx].password=pw;emps[idx].permissions=perms;}
+    if(idx>=0){var e=emps[idx];e.name=name;e.firstname=firstname;e.lastname=lastname;e.gender=gender;e.role=role;e.phone=phone;e.email=email;e.code=pw;e.password=pw;e.permissions=perms;}
   } else {
-    emps.push({id:'emp_'+Date.now(),name:name,code:pw,password:pw,permissions:perms});
+    emps.push({id:'emp_'+Date.now(),name:name,firstname:firstname,lastname:lastname,gender:gender,role:role,phone:phone,email:email,code:pw,password:pw,permissions:perms});
   }
   setEmployees(emps);
   logAct('emp_save','שמירת עובד: '+name);
@@ -4529,10 +4577,12 @@ function renderDash(){
     var h=new Date().getHours();
     var word=h<12?'בוקר טוב':h<17?'צהריים טובים':'ערב טוב';
     var uname=(_umUser&&_umUser.name)||'';
+    var ug=(_umUser&&_umUser.gender)||'';
+    var utitle=_umUser?genderTitle(_umUser.isManager,ug):'';
     gb.innerHTML='<div style="background:linear-gradient(135deg,var(--accent),#005aaa);border-radius:14px;padding:14px 18px;color:#fff;display:flex;align-items:center;gap:14px;">'
       +'<div style="font-size:28px;line-height:1;">'+(h<12?'🌅':h<17?'☀️':'🌙')+'</div>'
       +'<div><div style="font-size:19px;font-weight:800;line-height:1.2;">'+(uname?word+', '+uname+'!':word+'!')+'</div>'
-      +'<div style="font-size:11px;opacity:.8;margin-top:3px;">ברוכים הבאים ל-WeightStock ⚖️</div></div>'
+      +'<div style="font-size:11px;opacity:.8;margin-top:3px;">'+(utitle?utitle+' יקר — ':'')+'ברוכים הבאים ל-WeightStock ⚖️</div></div>'
       +'</div>';
   })();
 

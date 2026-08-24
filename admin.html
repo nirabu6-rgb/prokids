@@ -561,10 +561,29 @@ button{cursor:pointer;font-family:inherit;}
     <h3 id="modal-emp-title">✏️ עריכת עובד</h3>
     <input type="hidden" id="me-tenant-id">
     <input type="hidden" id="me-emp-id">
-    <div class="mfl"><label>שם מלא</label><input id="me-name" placeholder="דוד לוי"></div>
-    <div class="mfl"><label>סיסמה (מספרים בלבד)</label><input id="me-code" type="tel" inputmode="numeric" placeholder="מספרים בלבד" autocomplete="new-password" oninput="this.value=this.value.replace(/\D/g,'')"></div>
-    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">הרשאות:</div>
-    <div id="me-perms"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div class="mfl"><label>שם פרטי</label><input id="me-firstname" placeholder="דוד"></div>
+      <div class="mfl"><label>שם משפחה</label><input id="me-lastname" placeholder="לוי"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+      <div class="mfl"><label>מגדר</label>
+        <select id="me-gender" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:14px;color:var(--text);outline:none;font-family:inherit;width:100%;">
+          <option value="">בחר...</option>
+          <option value="male">זכר</option>
+          <option value="female">נקבה</option>
+        </select>
+      </div>
+      <div class="mfl"><label>תפקיד</label><input id="me-role" placeholder="קופאי / מחסנאי..."></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+      <div class="mfl"><label>טלפון</label><input id="me-phone" type="tel" placeholder="050-0000000"></div>
+      <div class="mfl"><label>מייל</label><input id="me-email" type="email" placeholder="name@example.com"></div>
+    </div>
+    <div class="mfl" style="margin-top:4px;"><label>סיסמה (מספרים בלבד)</label><input id="me-code" type="tel" inputmode="numeric" placeholder="מספרים בלבד" autocomplete="new-password" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+    <div id="me-perms-wrap">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;margin-top:8px;">הרשאות:</div>
+      <div id="me-perms"></div>
+    </div>
     <div class="modal-btns">
       <button class="btn-modal sec" onclick="closeModal('modal-emp')">ביטול</button>
       <button class="btn-modal pri" onclick="saveEmpFromAdmin()">שמור ✓</button>
@@ -1248,14 +1267,24 @@ var PERMS_LIST=[
   {key:'seeReports',label:'דוחות'},{key:'seeCategories',label:'קטגוריות'}
 ];
 
+function _fillEmpModal(emp){
+  var parts=(emp.name||'').split(' ');
+  document.getElementById('me-firstname').value=emp.firstname||parts[0]||'';
+  document.getElementById('me-lastname').value=emp.lastname||parts.slice(1).join(' ')||'';
+  document.getElementById('me-gender').value=emp.gender||'';
+  document.getElementById('me-role').value=emp.role||'';
+  document.getElementById('me-phone').value=emp.phone||'';
+  document.getElementById('me-email').value=emp.email||'';
+  document.getElementById('me-code').value=emp.password||emp.code||'';
+}
 function openEmpEdit(tenantId,empId){
   var t=_bizList.find(function(x){return x.id===tenantId;});if(!t)return;
   var emp=(t.employees||[]).find(function(e){return e.id===empId;});if(!emp)return;
-  document.getElementById('modal-emp-title').textContent='✏️ עריכת '+emp.name;
+  document.getElementById('modal-emp-title').textContent='✏️ עריכת '+(emp.firstname||emp.name);
   document.getElementById('me-tenant-id').value=tenantId;
   document.getElementById('me-emp-id').value=empId;
-  document.getElementById('me-name').value=emp.name;
-  document.getElementById('me-code').value=emp.password||emp.code||'';
+  document.getElementById('me-perms-wrap').style.display='';
+  _fillEmpModal(emp);
   buildPermGrid(emp.permissions||{});
   document.getElementById('modal-emp').classList.add('show');
 }
@@ -1264,8 +1293,8 @@ function openAddEmpModal(tenantId){
   document.getElementById('modal-emp-title').textContent='➕ הוספת עובד';
   document.getElementById('me-tenant-id').value=tenantId;
   document.getElementById('me-emp-id').value='';
-  document.getElementById('me-name').value='';
-  document.getElementById('me-code').value='';
+  document.getElementById('me-perms-wrap').style.display='';
+  _fillEmpModal({});
   buildPermGrid({editQty:true});
   document.getElementById('modal-emp').classList.add('show');
 }
@@ -1279,30 +1308,36 @@ function buildPermGrid(perms){
 function saveEmpFromAdmin(){
   var tenantId=document.getElementById('me-tenant-id').value;
   var empId=document.getElementById('me-emp-id').value;
-  var name=document.getElementById('me-name').value.trim();
+  var firstname=document.getElementById('me-firstname').value.trim();
+  var lastname=document.getElementById('me-lastname').value.trim();
+  var name=(firstname+' '+lastname).trim()||firstname||lastname;
+  var gender=document.getElementById('me-gender').value;
+  var role=document.getElementById('me-role').value.trim();
+  var phone=document.getElementById('me-phone').value.trim();
+  var email=document.getElementById('me-email').value.trim();
   var code=document.getElementById('me-code').value.trim();
-  if(!name||!code){alert('שם וקוד הם שדות חובה');return;}
+  if(!firstname){alert('שם פרטי הוא שדה חובה');return;}
+  if(!code&&empId!=='__manager__'){alert('סיסמה היא שדה חובה');return;}
   var perms={};
   PERMS_LIST.forEach(function(p){perms[p.key]=document.getElementById('mp-'+p.key).checked;});
   var t=_bizList.find(function(x){return x.id===tenantId;});if(!t)return;
   var emps=t.employees||[];
   if(empId&&empId!=='__manager__'){
     var emp=emps.find(function(e){return e.id===empId;});
-    if(emp){emp.name=name;emp.code=code;emp.password=code;emp.permissions=perms;}
+    if(emp){emp.name=name;emp.firstname=firstname;emp.lastname=lastname;emp.gender=gender;emp.role=role;emp.phone=phone;emp.email=email;emp.code=code;emp.password=code;emp.permissions=perms;}
   } else if(empId==='__manager__'){
     if(!t.manager)t.manager={};
     if(!t.account)t.account={};
     if(!t.settings)t.settings={};
     t.manager.name=name; t.manager.pin=code; t.manager.password=code;
-    t.manager.email=document.getElementById('me-mgr-email').value.trim();
-    t.account.phone=document.getElementById('me-mgr-phone').value.trim();
-    t.account.email=t.manager.email;
+    t.manager.email=email; t.manager.gender=gender;
+    t.account.firstname=firstname; t.account.lastname=lastname; t.account.phone=phone; t.account.email=email; t.account.gender=gender;
     t.settings.bizStreet=document.getElementById('me-mgr-street').value.trim();
     t.settings.bizCity=document.getElementById('me-mgr-city').value.trim();
     t.settings.bizPhone=document.getElementById('me-mgr-bizphone').value.trim();
     t.settings.bizEmail=document.getElementById('me-mgr-bizemail').value.trim();
   } else {
-    emps.push({id:'e'+Date.now(),name:name,code:code,password:code,permissions:perms,loginCount:0,lastLogin:null});
+    emps.push({id:'e'+Date.now(),name:name,firstname:firstname,lastname:lastname,gender:gender,role:role,phone:phone,email:email,code:code,password:code,permissions:perms,loginCount:0,lastLogin:null});
   }
   t.employees=emps;
   saveTenantBack(t);
@@ -1314,15 +1349,20 @@ function saveEmpFromAdmin(){
 function openMgrEdit(tenantId){
   var t=_bizList.find(function(x){return x.id===tenantId;});if(!t)return;
   var m=t.manager||{}, a=t.account||{}, s=t.settings||{};
+  var parts=(m.name||a.fullname||'').split(' ');
   document.getElementById('modal-emp-title').textContent='✏️ עריכת מנהל';
   document.getElementById('me-tenant-id').value=tenantId;
   document.getElementById('me-emp-id').value='__manager__';
-  document.getElementById('me-name').value=m.name||a.fullname||'';
+  document.getElementById('me-perms-wrap').style.display='none';
+  document.getElementById('me-firstname').value=a.firstname||parts[0]||'';
+  document.getElementById('me-lastname').value=a.lastname||parts.slice(1).join(' ')||'';
+  document.getElementById('me-gender').value=m.gender||a.gender||'';
+  document.getElementById('me-role').value='';
+  document.getElementById('me-phone').value=a.phone||'';
+  document.getElementById('me-email').value=m.email||a.email||'';
   document.getElementById('me-code').value=m.password||m.pin||'';
   document.getElementById('me-perms').innerHTML=
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">'
-    +'<div class="mfl"><label>מייל מנהל</label><input id="me-mgr-email" value="'+esc(m.email||a.email||'')+'"></div>'
-    +'<div class="mfl"><label>טלפון נייד</label><input id="me-mgr-phone" value="'+esc(a.phone||'')+'"></div>'
     +'<div class="mfl"><label>טלפון עסק</label><input id="me-mgr-bizphone" value="'+esc(s.bizPhone||'')+'"></div>'
     +'<div class="mfl"><label>מייל עסק</label><input id="me-mgr-bizemail" value="'+esc(s.bizEmail||'')+'"></div>'
     +'<div class="mfl"><label>רחוב</label><input id="me-mgr-street" value="'+esc(s.bizStreet||'')+'"></div>'
