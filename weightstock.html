@@ -3936,7 +3936,7 @@ function showEmpForm(){
   /* on mobile (narrow), switch split to column so form appears below list */
   var split=document.getElementById('emp-split');
   if(split)split.style.flexDirection=window.innerWidth<640?'column':'row';
-  document.getElementById('emp-name').focus();
+  var ff=document.getElementById('emp-firstname');if(ff)ff.focus();
 }
 
 function _clearEmpFields(){
@@ -5003,13 +5003,22 @@ function toggleSidebarFab(btn){
   var m=document.getElementById('fab-menu');
   var open=m.style.display!=='none';
   if(open){m.style.display='none';return;}
-  /* position menu above the button, aligned to sidebar */
   var r=btn.getBoundingClientRect();
   m.style.position='fixed';
-  m.style.bottom=(window.innerHeight-r.top+8)+'px';
+  /* הצג מעל הכפתור — אם יש מקום; אחרת מתחתיו */
+  var menuH=Math.min(window.innerHeight*0.7,500);
+  var topAbove=r.top-menuH-8;
+  if(topAbove>0){
+    m.style.top=topAbove+'px';
+    m.style.bottom='auto';
+  } else {
+    m.style.top=(r.bottom+8)+'px';
+    m.style.bottom='auto';
+  }
   m.style.right='8px';
   m.style.left='auto';
   m.style.transform='none';
+  m.style.maxHeight=menuH+'px';
   m.style.display='block';
 }
 window.toggleSidebarFab=toggleSidebarFab;
