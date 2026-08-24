@@ -485,6 +485,10 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 
 /* ── PROGRESS ── */
 .prog{height:6px;background:var(--card2);border-radius:8px;overflow:hidden;margin:6px 0;}
+/* per-shelf scale live indicator */
+.scale-live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,168,89,.12);border:1px solid rgba(0,168,89,.3);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;color:var(--ok);}
+.scale-live-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse-dot .9s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
 .prog-fill{height:100%;border-radius:8px;}
 
 /* ── ZONE HEADER (section header style) ── */
@@ -4613,8 +4617,10 @@ function shCard(sh,its){
   var qc={ok:'var(--text)',warn:'var(--warn)',crit:'var(--crit)',offline:'var(--muted)'}[st];
   var bdg={ok:'<span class="badge ok">✓ תקין</span>',warn:'<span class="badge warn">⚠ נמוך</span>',crit:'<span class="badge crit">🔴 קריטי</span>',offline:'<span class="badge off">לא מחובר</span>'}[st];
   var sparkSvg=mkSparkline(sh.id,st);
+  var liveTxt=_shLiveW&&_shLiveW[sh.id]?'<div style="font-size:9px;color:var(--ok);display:flex;align-items:center;gap:3px;"><span class="dot" style="width:5px;height:5px;border-radius:50%;background:var(--ok);animation:pulse-dot .9s ease-in-out infinite;display:inline-block;"></span>'+_shLiveW[sh.id]+' חי</div>':'';
   return '<div class="shelf-card '+st+'" data-shid="'+sh.id+'" onclick="openSh(\''+sh.id+'\')">'+bdg+
     '<div class="qty" id="qty-'+sh.id+'" style="color:'+qc+';">'+(r?r.qty:'—')+'</div>'+
+    liveTxt+
     '<div style="font-size:10px;color:var(--muted);">'+unitL(it)+'</div>'+
     '<div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(it?it.name:'—')+'</div>'+
     '<div style="font-size:10px;color:var(--muted);">'+(r?fmtW(r.netWeight):'—')+'</div>'+
@@ -4683,7 +4689,17 @@ function renderSh(id){
       (it&&it.location&&(it.location.row||it.location.shelf||it.location.cell)?'<div style="font-size:12px;color:var(--muted);margin-top:6px;border-top:1px solid var(--border);padding-top:6px;">📍 מיקום: '+(it.location.row?'שורה '+it.location.row+' ':'')+(it.location.shelf?'מדף '+it.location.shelf+' ':'')+(it.location.cell?'תא '+it.location.cell:'')+'</div>':'')+
       '</div>';
   }
-  html+='<button class="btn sec" onclick="manualRead(\''+id+'\')">קרא עכשיו (ידני)</button>';
+  /* scale connect button + live badge */
+  var shCfg=getShelfScale(id);
+  var scaleConnected=shCfg&&shCfg.type!=='none'&&(shCfg.ip||shCfg.btName||shCfg.type==='serial');
+  var liveBadge=(_shLiveW[id]&&scaleConnected)
+    ?'<span class="scale-live-badge" id="sh-live-'+id+'"><span class="dot"></span>'+_shLiveW[id]+'</span> '
+    :'<span id="sh-live-'+id+'"></span>';
+  html+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">'+liveBadge
+    +'<button class="btn sec" style="flex:1;" onclick="openShelfScaleModal(\''+id+'\')">'
+    +(scaleConnected?'⚖️ '+({wifi:'📶 WiFi',bluetooth:'🔵 BT',serial:'🔌 USB',none:''}[shCfg.type]||'')+'מחובר — שנה':'⚖️ חבר משקל')
+    +'</button></div>';
+  html+='<button class="btn sec" onclick="manualRead(\''+id+'\')">✋ קרא עכשיו (ידני)</button>';
   if(it){
     var urgColor=st==='crit'?'var(--crit)':st==='warn'?'var(--warn)':'var(--accent)';
     html+='<button class="btn" style="margin-top:8px;background:'+urgColor+';" onclick="openOrder(\''+id+'\')">'+
@@ -7633,6 +7649,194 @@ setInterval(function(){
 },30000);
 
 })();
+
+/* ═══════════════════════════════════════════
+   PER-SHELF SCALE CONNECTION
+═══════════════════════════════════════════ */
+var _shPollers={};   /* shelfId → intervalId */
+var _shLiveW={};     /* shelfId → last live weight string */
+
+function getShelfScale(id){
+  try{return JSON.parse(localStorage.getItem('ws3_sh_scale_'+id)||'null');}catch(e){return null;}
+}
+function setShelfScale(id,cfg){
+  if(cfg)localStorage.setItem('ws3_sh_scale_'+id,JSON.stringify(cfg));
+  else localStorage.removeItem('ws3_sh_scale_'+id);
+}
+
+function openShelfScaleModal(shelfId){
+  var cfg=getShelfScale(shelfId)||{type:'wifi',ip:'',port:'80',btName:'',baud:'9600'};
+  var mo=document.getElementById('modal-sh-scale');
+  if(!mo){
+    mo=document.createElement('div');
+    mo.id='modal-sh-scale';
+    mo.className='modal-overlay';
+    mo.innerHTML='<div class="modal-box mid" style="max-width:420px;padding:24px 20px 28px;">'
+      +'<div style="font-size:17px;font-weight:800;color:var(--accent);margin-bottom:16px;text-align:center;">⚖️ חיבור משקל למשטח</div>'
+      +'<div id="sh-scale-body"></div>'
+      +'<div style="display:flex;gap:8px;margin-top:16px;">'
+      +'<button class="btn sec" style="flex:1;" onclick="document.getElementById(\'modal-sh-scale\').classList.remove(\'show\')">ביטול</button>'
+      +'<button class="btn" style="flex:2;" onclick="saveShelfScale()">💾 שמור חיבור</button>'
+      +'</div></div>';
+    document.body.appendChild(mo);
+  }
+  mo.setAttribute('data-shid',shelfId);
+  renderShScaleBody(cfg);
+  mo.classList.add('show');
+}
+window.openShelfScaleModal=openShelfScaleModal;
+
+function renderShScaleBody(cfg){
+  var body=document.getElementById('sh-scale-body'); if(!body)return;
+  var types=[
+    {id:'wifi', icon:'📶', label:'WiFi / רשת מקומית', sub:'מומלץ — טווח רשת מלא', rec:true},
+    {id:'bluetooth', icon:'🔵', label:'Bluetooth', sub:'אלחוטי קצר טווח'},
+    {id:'serial', icon:'🔌', label:'USB / Serial', sub:'חיבור ישיר למחשב — Chrome בלבד'},
+    {id:'none', icon:'✋', label:'ידני בלבד', sub:'הזנה ידנית בכל שקילה'}
+  ];
+  var html='<div style="display:grid;gap:8px;margin-bottom:14px;">';
+  types.forEach(function(t){
+    var active=(cfg.type||'wifi')===t.id;
+    html+='<label style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:2px solid '+(active?'var(--accent)':'var(--border)')+';background:'+(active?'var(--accent-light)':'var(--card2)')+';cursor:pointer;position:relative;">'
+      +'<input type="radio" name="sh-scale-type" value="'+t.id+'" '+(active?'checked':'')+' style="accent-color:var(--accent);" onchange="onShScaleTypeChange()">'
+      +'<span style="font-size:20px;">'+t.icon+'</span>'
+      +'<div><div style="font-size:14px;font-weight:700;color:var(--text);">'+t.label+'</div><div style="font-size:11px;color:var(--muted);">'+t.sub+'</div></div>'
+      +(t.rec?'<span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:10px;background:var(--ok);color:#fff;border-radius:8px;padding:2px 7px;font-weight:700;">מומלץ</span>':'')
+      +'</label>';
+  });
+  html+='</div>';
+  /* WiFi detail */
+  var wShow=(cfg.type||'wifi')==='wifi';
+  html+='<div id="sh-wifi-detail" style="'+(wShow?'':'display:none;')+'background:var(--card2);border-radius:12px;padding:14px;margin-bottom:10px;">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;">🌐 פרטי חיבור WiFi</div>'
+    +'<label style="font-size:12px;color:var(--muted);">כתובת IP של המשקל</label>'
+    +'<input id="sh-wifi-ip" placeholder="192.168.1.100" value="'+(cfg.ip||'')+'" dir="ltr" style="margin:4px 0 8px;">'
+    +'<label style="font-size:12px;color:var(--muted);">פורט</label>'
+    +'<input id="sh-wifi-port" placeholder="80" value="'+(cfg.port||'80')+'" type="number" dir="ltr" style="margin:4px 0 8px;">'
+    +'<button onclick="testShWifi()" style="background:var(--accent);color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;width:100%;">🔍 בדוק חיבור</button>'
+    +'<div id="sh-wifi-status" style="font-size:12px;margin-top:8px;text-align:center;color:var(--muted);"></div>'
+    +'</div>';
+  /* BT detail */
+  var btShow=cfg.type==='bluetooth';
+  html+='<div id="sh-bt-detail" style="'+(btShow?'':'display:none;')+'background:var(--card2);border-radius:12px;padding:14px;margin-bottom:10px;">'
+    +'<button onclick="connectShBluetooth()" style="background:var(--accent);color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;width:100%;">🔵 חפש מכשיר Bluetooth</button>'
+    +'<div id="sh-bt-status" style="font-size:12px;margin-top:8px;text-align:center;color:var(--muted);"></div>'
+    +'<input id="sh-bt-name" placeholder="שם המכשיר" value="'+(cfg.btName||'')+'" style="margin-top:8px;">'
+    +'</div>';
+  /* interval */
+  html+='<div style="font-size:13px;font-weight:700;margin-bottom:8px;">⏱ קריאה אוטומטית כל:</div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;">';
+  [5,10,30,60,120].forEach(function(v){
+    var act=(cfg.interval||30)===v;
+    html+='<button onclick="setShInterval('+v+')" class="aw-preset-btn'+(act?' active':'')+'" data-v="'+v+'">'+
+      (v<60?v+' דק\'':v/60+' שעה')+'</button>';
+  });
+  html+='</div>';
+  body.innerHTML=html;
+}
+window.renderShScaleBody=renderShScaleBody;
+
+function onShScaleTypeChange(){
+  var sel=document.querySelector('input[name="sh-scale-type"]:checked');
+  var t=sel?sel.value:'wifi';
+  var wd=document.getElementById('sh-wifi-detail');
+  var bd=document.getElementById('sh-bt-detail');
+  if(wd)wd.style.display=t==='wifi'?'':'none';
+  if(bd)bd.style.display=t==='bluetooth'?'':'none';
+}
+window.onShScaleTypeChange=onShScaleTypeChange;
+
+function setShInterval(v){
+  document.querySelectorAll('.aw-preset-btn').forEach(function(b){
+    b.classList.toggle('active',parseInt(b.getAttribute('data-v'))===v);
+  });
+}
+window.setShInterval=setShInterval;
+
+function testShWifi(){
+  var ip=(document.getElementById('sh-wifi-ip').value||'').trim();
+  var port=(document.getElementById('sh-wifi-port').value||'80').trim();
+  var st=document.getElementById('sh-wifi-status');
+  if(!ip){st.textContent='❌ הכנס כתובת IP';st.style.color='var(--crit)';return;}
+  st.textContent='🔍 בודק...';st.style.color='var(--muted)';
+  fetch('http://'+ip+':'+port+'/weight',{signal:AbortSignal.timeout(4000)})
+    .then(function(r){st.textContent='✅ מחובר! קוד '+r.status;st.style.color='var(--ok)';})
+    .catch(function(){st.textContent='⚠️ לא הגיב — בדוק IP ושהמשקל דלוק';st.style.color='var(--warn)';});
+}
+window.testShWifi=testShWifi;
+
+function connectShBluetooth(){
+  var st=document.getElementById('sh-bt-status');
+  if(!navigator.bluetooth){st.textContent='❌ Chrome בלבד';st.style.color='var(--crit)';return;}
+  st.textContent='🔍 מחפש...';st.style.color='var(--muted)';
+  navigator.bluetooth.requestDevice({acceptAllDevices:true})
+    .then(function(d){
+      document.getElementById('sh-bt-name').value=d.name||'';
+      st.textContent='✅ '+d.name;st.style.color='var(--ok)';
+    }).catch(function(){st.textContent='⚠️ לא נבחר';st.style.color='var(--warn)';});
+}
+window.connectShBluetooth=connectShBluetooth;
+
+function saveShelfScale(){
+  var mo=document.getElementById('modal-sh-scale'); if(!mo)return;
+  var shelfId=mo.getAttribute('data-shid');
+  var sel=document.querySelector('input[name="sh-scale-type"]:checked');
+  var type=sel?sel.value:'wifi';
+  var activeBtn=document.querySelector('.aw-preset-btn.active');
+  var interval=activeBtn?parseInt(activeBtn.getAttribute('data-v')):30;
+  var cfg={type:type,interval:interval,
+    ip:(document.getElementById('sh-wifi-ip')||{value:''}).value.trim(),
+    port:(document.getElementById('sh-wifi-port')||{value:'80'}).value.trim()||'80',
+    btName:(document.getElementById('sh-bt-name')||{value:''}).value.trim()
+  };
+  setShelfScale(shelfId,cfg);
+  mo.classList.remove('show');
+  startShelfPoller(shelfId,cfg);
+  renderSh(shelfId);
+  showToast('✅ חיבור משקל נשמר');
+}
+window.saveShelfScale=saveShelfScale;
+
+function startShelfPoller(shelfId,cfg){
+  if(_shPollers[shelfId])clearInterval(_shPollers[shelfId]);
+  if(!cfg||cfg.type==='none'||cfg.type==='bluetooth'){return;}
+  if(cfg.type==='wifi'&&cfg.ip){
+    var ms=(cfg.interval||30)*60*1000;
+    _shPollers[shelfId]=setInterval(function(){fetchShWifi(shelfId,cfg);},ms);
+    fetchShWifi(shelfId,cfg); /* immediate first read */
+  }
+}
+
+function fetchShWifi(shelfId,cfg){
+  var url='http://'+cfg.ip+':'+( cfg.port||'80')+'/weight';
+  fetch(url,{signal:AbortSignal.timeout(4000)})
+    .then(function(r){return r.text();})
+    .then(function(txt){
+      var w=parseFloat(txt.replace(/[^0-9.\-]/g,''));
+      if(isNaN(w))return;
+      _shLiveW[shelfId]=w.toFixed(1)+'g';
+      /* update live badge in UI */
+      var badge=document.getElementById('sh-live-'+shelfId);
+      if(badge)badge.innerHTML='<span class="dot"></span>'+w.toFixed(1)+'g';
+      /* auto-record reading if on detail screen */
+      if(typeof curSh!=='undefined'&&curSh===shelfId){
+        var detail=document.getElementById('sh-live-detail');
+        if(detail)detail.textContent=w.toFixed(1)+' גרם (חי)';
+      }
+    }).catch(function(){/* silent */});
+}
+
+/* boot: start pollers for all shelves that have scale config */
+(function(){
+  try{
+    var shs=JSON.parse(localStorage.getItem('ws3_shelves')||'[]');
+    shs.forEach(function(sh){
+      var cfg=getShelfScale(sh.id);
+      if(cfg&&cfg.type!=='none')startShelfPoller(sh.id,cfg);
+    });
+  }catch(e){}
+})();
+
 </script>
 </body>
 </html>
