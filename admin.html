@@ -956,6 +956,14 @@ function loadData(){
     else{f.settings=cs||f.settings||{};f.account=ca;f.manager=cm;f.employees=ce;f.actlog=cl;}
     lsSet('admin_tenants',tenants);
   }
+  /* dedup by storeCode — keep last occurrence */
+  var seen={};
+  tenants=tenants.filter(function(t){
+    var sc=((t.settings&&t.settings.storeCode)||t.id||'').toUpperCase();
+    if(seen[sc])return false;
+    seen[sc]=true;return true;
+  });
+  lsSet('admin_tenants',tenants);
   _bizList=tenants;
   _glog=[];
   tenants.forEach(function(t){
@@ -1069,7 +1077,8 @@ function renderBizList(list){
           +'<div class="biz-pills">'
             +(mConn?'<span class="pill g">🟢 מנהל מחובר</span>':'')
             +(eConn?'<span class="pill g">'+eConn+' עובד מחובר</span>':'')
-            +'<span class="pill b">'+(emps.length+(m.name?1:0))+' עובדים</span>'
+            +(m.name?'<span class="pill p">👑 '+esc(m.name)+'</span>':'')
+            +(emps.length?'<span class="pill b">'+emps.length+' עובדים</span>':'<span class="pill" style="color:var(--muted);">0 עובדים</span>')
             +'<span class="pill p">'+log.length+' פעולות</span>'
             +(log[0]?'<span class="pill o">'+ago(log[0].ts)+'</span>':'')
           +'</div>'
@@ -1120,25 +1129,38 @@ function renderBizInfo(t){
 }
 
 function renderEmpsPane(t){
-  var emps=t.employees||[];
-  if(!emps.length)return '<div class="empty"><div class="ei">👤</div><b>אין עובדים</b></div>';
+  var emps=t.employees||[], m=t.manager||{};
   var now=Date.now();
-  return '<table class="etable"><thead><tr><th>שם</th><th>סיסמה</th><th>כניסות</th><th>כניסה אחרונה</th><th>סטטוס</th><th>פעולות</th></tr></thead><tbody>'
-    +emps.map(function(e){
-      var conn=e.lastLogin&&(now-e.lastLogin)<30*60*1000;
-      return '<tr>'
-        +'<td><b>'+esc(e.name)+'</b></td>'
-        +'<td><code style="background:var(--card2);border-radius:5px;padding:2px 7px;font-size:13px;">'+esc(e.password||e.code)+'</code></td>'
-        +'<td>'+(e.loginCount||0)+'</td>'
-        +'<td style="font-size:11px;color:var(--muted);">'+fmtDt(e.lastLogin)+'</td>'
-        +'<td>'+(conn?'<span style="color:var(--ok);font-weight:700;font-size:11px;">🟢 מחובר</span>':'<span style="color:var(--muted);font-size:11px;">לא מחובר</span>')+'</td>'
-        +'<td><div style="display:flex;gap:5px;">'
-          +'<button class="btn-action blue" style="padding:4px 8px;font-size:11px;" onclick="openEmpEdit(\''+t.id+'\',\''+e.id+'\')">✏️</button>'
-          +'<button class="btn-action red" style="padding:4px 8px;font-size:11px;" onclick="confirmDelEmp(\''+t.id+'\',\''+e.id+'\')">🗑️</button>'
-        +'</div></td>'
+  var rows='';
+  /* manager row first */
+  if(m.name){
+    var mConn=m.lastLogin&&(now-m.lastLogin)<30*60*1000;
+    rows+='<tr style="background:rgba(0,59,113,.05);">'
+      +'<td><b>'+esc(m.name)+'</b> <span style="font-size:10px;background:var(--accent);color:#fff;border-radius:6px;padding:1px 6px;">👑 מנהל</span></td>'
+      +'<td><code style="background:var(--card2);border-radius:5px;padding:2px 7px;font-size:13px;">'+esc(m.pin||m.password||'—')+'</code></td>'
+      +'<td>'+(m.loginCount||0)+'</td>'
+      +'<td style="font-size:11px;color:var(--muted);">'+fmtDt(m.lastLogin)+'</td>'
+      +'<td>'+(mConn?'<span style="color:var(--ok);font-weight:700;font-size:11px;">🟢 מחובר</span>':'<span style="color:var(--muted);font-size:11px;">לא מחובר</span>')+'</td>'
+      +'<td><button class="btn-action blue" style="padding:4px 8px;font-size:11px;" onclick="openMgrEdit(\''+t.id+'\')">✏️</button></td>'
       +'</tr>';
-    }).join('')
-  +'</tbody></table>';
+  }
+  /* employee rows */
+  emps.forEach(function(e){
+    var conn=e.lastLogin&&(now-e.lastLogin)<30*60*1000;
+    rows+='<tr>'
+      +'<td><b>'+esc(e.name)+'</b></td>'
+      +'<td><code style="background:var(--card2);border-radius:5px;padding:2px 7px;font-size:13px;">'+esc(e.password||e.code)+'</code></td>'
+      +'<td>'+(e.loginCount||0)+'</td>'
+      +'<td style="font-size:11px;color:var(--muted);">'+fmtDt(e.lastLogin)+'</td>'
+      +'<td>'+(conn?'<span style="color:var(--ok);font-weight:700;font-size:11px;">🟢 מחובר</span>':'<span style="color:var(--muted);font-size:11px;">לא מחובר</span>')+'</td>'
+      +'<td><div style="display:flex;gap:5px;">'
+        +'<button class="btn-action blue" style="padding:4px 8px;font-size:11px;" onclick="openEmpEdit(\''+t.id+'\',\''+e.id+'\')">✏️</button>'
+        +'<button class="btn-action red" style="padding:4px 8px;font-size:11px;" onclick="confirmDelEmp(\''+t.id+'\',\''+e.id+'\')">🗑️</button>'
+      +'</div></td>'
+      +'</tr>';
+  });
+  if(!rows)return '<div class="empty"><div class="ei">👤</div><b>אין עובדים</b></div>';
+  return '<table class="etable"><thead><tr><th>שם</th><th>סיסמה</th><th>כניסות</th><th>כניסה אחרונה</th><th>סטטוס</th><th>פעולות</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 
 function renderLogPane(t){
@@ -2795,7 +2817,8 @@ renderBizList=function(list){
           +'<div class="biz-pills">'
             +(mConn?'<span class="pill g">🟢 מנהל מחובר</span>':'')
             +(eConn?'<span class="pill g">'+eConn+' עובד מחובר</span>':'')
-            +'<span class="pill b">'+(emps.length+(m.name?1:0))+' עובדים</span>'
+            +(m.name?'<span class="pill p">👑 '+esc(m.name)+'</span>':'')
+            +(emps.length?'<span class="pill b">'+emps.length+' עובדים</span>':'<span class="pill" style="color:var(--muted);">0 עובדים</span>')
             +'<span class="pill p">'+log.length+' פעולות</span>'
             +(log[0]?'<span class="pill o">'+ago(log[0].ts)+'</span>':'')
           +'</div>'
