@@ -829,7 +829,7 @@ function doAdminLogin(){
     lsSet('admin_sessions',sessions);
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
-    loadData(); startClock(); initAutoLock();
+    loadData(); startClock(); initAutoLock(); showPane('dashboard');
     setTimeout(showRenewalPopup,800);
   } else {
     err.style.display='block';
