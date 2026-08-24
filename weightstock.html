@@ -566,7 +566,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   position:relative;
   width:44px;
   height:24px;
-  background:#CBD5E1;
+  background:var(--border);
   border-radius:20px;
   border:none;
   flex:0 0 44px;
@@ -577,12 +577,12 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   position:absolute;
   top:3px;right:3px;
   width:18px;height:18px;
-  background:#fff;
+  background:var(--card);
   border-radius:50%;
   transition:.2s;
-  box-shadow:0 1px 4px rgba(0,0,0,.2);
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
 }
-.toggle.on .knob{right:23px;}
+.toggle.on .knob{right:23px;background:#fff;}
 
 /* ── ALERT ITEMS ── */
 .alert-item{
@@ -3068,7 +3068,7 @@ function renderLangGrid(){
   var cur=LS.get('lang','he');
   grid.innerHTML=LANGS_META.map(function(m){
     var active=m.code===cur;
-    return '<button onclick="applyLang(\''+m.code+'\')" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;border:2px solid '+(active?'var(--accent)':'var(--border)')+';background:'+(active?'rgba(37,99,235,.08)':'var(--card2)')+';cursor:pointer;font-size:13px;font-weight:700;color:'+(active?'var(--accent)':'var(--text)')+';">'+
+    return '<button onclick="applyLang(\''+m.code+'\')" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;border:2px solid '+(active?'var(--accent)':'var(--muted)')+';background:'+(active?'var(--accent-light)':'var(--card3)')+';cursor:pointer;font-size:13px;font-weight:700;color:'+(active?'var(--accent)':'var(--text)')+';">'+
       '<span style="font-size:18px;">'+m.flag+'</span>'+
       '<span>'+m.name+'</span>'+
     '</button>';
