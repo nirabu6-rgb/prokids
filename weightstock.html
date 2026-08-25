@@ -4038,14 +4038,12 @@ function applyUserPerms(){
   if(_umUser&&sName){
     sName.textContent=_umUser.name||'—';
     var h=new Date().getHours();
-    var greetings;
-    if(h<5){greetings=['לילה טוב 🌙','שמירה על הלילה 🌃','עבודה בלילה? מרשים! 💪'];}
-    else if(h<12){greetings=['בוקר טוב ☀️','בוקר אור! 🌅','בוקר מקסים 🌻','יום נפלא מתחיל! ✨','בוקר אנרגטי! ⚡'];}
-    else if(h<14){greetings=['צהריים טובים 🌞','ארוחת צהריים? 🥗','שעת צהריים! ☀️'];}
-    else if(h<17){greetings=['אחה"צ טוב 🌤️','אחר הצהריים פורה! 💡','יום פרודוקטיבי! 📊'];}
-    else if(h<20){greetings=['ערב טוב 🌆','ערב נעים! 🌇','ערב מקסים 🌃'];}
-    else{greetings=['ערב טוב 🌙','לילה טוב 🌌','סיום יום נפלא! ⭐'];}
-    if(sWord)sWord.textContent=greetings[Math.floor(Math.random()*greetings.length)];
+    var greeting;
+    if(h>=22||h<4){greeting='לילה טוב 🌙';}
+    else if(h<12){greeting='בוקר טוב ☀️';}
+    else if(h<17){greeting='צהריים טובים 🌞';}
+    else{greeting='ערב טוב 🌆';}
+    if(sWord)sWord.textContent=greeting;
     var g=_umUser.gender||'';
     if(sRole)sRole.textContent=_umUser.isManager?(g==='female'?'מנהלת':'מנהל'):(g==='female'?'עובדת':'עובד');
     if(sAvatar)sAvatar.textContent=(_umUser.name||'?')[0];
