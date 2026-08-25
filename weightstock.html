@@ -5880,7 +5880,7 @@ function openSettings(){
 window.openSettings=openSettings;
 
 /* ── Support / Tickets ── */
-var SUPPORT_TOPICS=['בעיה טכנית','שאלה כללית','בקשת פיצ\'ר','שגיאה בנתונים','אחר'];
+var SUPPORT_TOPICS=['שאלה כללית','בקשה','הצעה לשיפור','דיווח על בעיה','אחר'];
 function openSupportModal(){
   var body=document.getElementById('support-body');
   if(!body)return;
@@ -5892,7 +5892,7 @@ function openSupportModal(){
   var html='';
   /* New ticket form */
   html+='<div class="card" style="margin:0;padding:16px;display:flex;flex-direction:column;gap:10px;">'
-    +'<div style="font-size:14px;font-weight:700;color:var(--text);">✉️ פתח קריאת תמיכה חדשה</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--text);">✉️ פנייה חדשה לתמיכה</div>'
     +'<div>'
     +'<label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">נושא</label>'
     +'<select id="sup-topic" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;font-family:inherit;">'
@@ -5900,8 +5900,8 @@ function openSupportModal(){
     +'</select>'
     +'</div>'
     +'<div>'
-    +'<label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">תיאור התקלה / הבקשה</label>'
-    +'<textarea id="sup-msg" rows="4" placeholder="תאר את הבעיה בפירוט..." style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;font-family:inherit;resize:vertical;"></textarea>'
+    +'<label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">תוכן הפנייה</label>'
+    +'<textarea id="sup-msg" rows="4" placeholder="כתוב את פנייתך כאן..." style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;font-family:inherit;resize:vertical;"></textarea>'
     +'</div>'
     +'<button onclick="submitTicket()" style="padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">📨 שלח</button>'
     +'</div>';
@@ -5959,7 +5959,7 @@ function openSupportModal(){
 function submitTicket(){
   var topic=(document.getElementById('sup-topic')||{}).value||'';
   var msg=((document.getElementById('sup-msg')||{}).value||'').trim();
-  if(!msg){showToast('תאר את הבעיה');return;}
+  if(!msg){showToast('כתוב את תוכן הפנייה');return;}
   var tickets=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
   tickets.push({
     id:Date.now().toString(36),
