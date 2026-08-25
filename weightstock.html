@@ -4276,9 +4276,9 @@ function openChangeMgrPin(){
   if(!cur)return;
   var ok=(mgr.password&&mgr.password===cur)||(mgr.pin&&mgr.pin===cur);
   if(!ok){showToast('סיסמה שגויה');return;}
-  var np=prompt('סיסמה חדשה:');
-  if(!np){showToast('בוטל');return;}
-  mgr.pin=np; mgr.password=np; LS.set('um_manager',mgr);
+  var np=prompt('סיסמה חדשה (לפחות 4 תווים):');
+  if(!np||np.length<4){showToast('סיסמה חייבת להיות לפחות 4 תווים');return;}
+  mgr.pin=np; mgr.password=np; mgr.pwHash=''; LS.set('um_manager',mgr);
   showToast('סיסמת מנהל עודכנה ✓');
 }
 window.openChangeMgrPin=openChangeMgrPin;
@@ -5584,11 +5584,11 @@ function openChangeMyPassword(){
     var mgr=LS.get('um_manager',null);
     var ok=(mgr.password&&mgr.password===cur)||(mgr.pin&&mgr.pin===cur);
     if(!ok){showToast('סיסמה שגויה');return;}
-    var np=prompt('סיסמה חדשה (מספרים בלבד, לפחות 4 ספרות):');
-    if(!np||!/^\d{4,}$/.test(np)){showToast('סיסמה חייבת להיות לפחות 4 ספרות');return;}
+    var np=prompt('סיסמה חדשה (לפחות 4 תווים):');
+    if(!np||np.length<4){showToast('סיסמה חייבת להיות לפחות 4 תווים');return;}
     var np2=prompt('חזור על הסיסמה החדשה:');
     if(np!==np2){showToast('הסיסמאות לא תואמות');return;}
-    mgr.pin=np; mgr.password=np; LS.set('um_manager',mgr);
+    mgr.pin=np; mgr.password=np; mgr.pwHash=''; LS.set('um_manager',mgr);
     logAct('settings','שינוי סיסמת מנהל');
     showToast('סיסמה עודכנה ✓');
   } else {
@@ -5872,7 +5872,7 @@ window.openSupportTicket=openSupportTicket;
 
 function logoutApp(){
   if(!confirm('להתנתק? הנתונים ישמרו.'))return;
-  LS.del('session'); _DR=null; _umUser=null;
+  LS.del('session'); LS.del('um_session'); _DR=null; _umUser=null; _unlockedSections={};
   closeModal('modal-settings');
   document.querySelectorAll('.modal-overlay').forEach(function(m){m.classList.remove('show');});
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
