@@ -87,6 +87,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
         <div class="fld"><label>שם משפחה *</label><input id="r-lastname" placeholder="ישראלי" autocomplete="family-name"></div>
       </div>
       <div class="fld">
+        <label>מגדר *</label>
+        <div style="display:flex;gap:12px;margin-top:6px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:15px;padding:10px 18px;border:2px solid var(--border);border-radius:10px;flex:1;justify-content:center;transition:all .18s;" id="g-male-lbl">
+            <input type="radio" name="r-gender" id="r-gender-male" value="male" onchange="highlightGender()" style="accent-color:var(--accent);width:18px;height:18px;"> זכר
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:15px;padding:10px 18px;border:2px solid var(--border);border-radius:10px;flex:1;justify-content:center;transition:all .18s;" id="g-female-lbl">
+            <input type="radio" name="r-gender" id="r-gender-female" value="female" onchange="highlightGender()" style="accent-color:var(--accent);width:18px;height:18px;"> נקבה
+          </label>
+        </div>
+      </div>
+      <div class="fld">
         <label>תעודת זהות *</label>
         <input id="r-idnum" type="tel" inputmode="numeric" maxlength="9" placeholder="000000000" dir="ltr" autocomplete="off">
       </div>
@@ -278,6 +289,11 @@ function clearReg(){
 
 function showErr(id,msg){var e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
 function hideErr(id){var e=document.getElementById(id);if(e)e.style.display='none';}
+function highlightGender(){
+  var accent='2px solid var(--accent)';var def='2px solid var(--border)';
+  document.getElementById('g-male-lbl').style.border=document.getElementById('r-gender-male').checked?accent:def;
+  document.getElementById('g-female-lbl').style.border=document.getElementById('r-gender-female').checked?accent:def;
+}
 
 function setProgress(step){
   var pd1=document.getElementById('pd1'),pd2=document.getElementById('pd2'),pl1=document.getElementById('pl1');
@@ -298,8 +314,11 @@ function toStep2(){
   var id=document.getElementById('r-idnum').value.trim();
   var ph=document.getElementById('r-phone').value.trim();
   var em=document.getElementById('r-email').value.trim();
+  var genderEl=document.querySelector('input[name="r-gender"]:checked');
+  var gender=genderEl?genderEl.value:'';
   if(!fn){showErr('err1','הכנס שם פרטי');return;}
   if(!ln){showErr('err1','הכנס שם משפחה');return;}
+  if(!gender){showErr('err1','בחר מגדר');return;}
   if(!id||id.length<7){showErr('err1','הכנס מספר תעודת זהות תקין (לפחות 7 ספרות)');return;}
   if(!ph){showErr('err1','הכנס מספר טלפון');return;}
   if(!em||!em.includes('@')){showErr('err1','הכנס כתובת מייל תקינה');return;}
@@ -354,6 +373,7 @@ function submitReg(){
   localStorage.setItem(regKey,JSON.stringify({
     bizName:biz,bizType:btype,storeCode:sc,
     mgrName:fn+' '+ln,firstname:fn,lastname:ln,
+    gender:(document.querySelector('input[name="r-gender"]:checked')||{value:''}).value,
     idnum:id,phone:ph,mgrEmail:em,pin:pin,
     bizCity:city,bizStreet:street,bizPhone:bizphone,
     empCount:empcount,ts:Date.now()
