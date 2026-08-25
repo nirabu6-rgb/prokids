@@ -3466,10 +3466,11 @@ var PERMISSIONS=[
   {key:'editQty',     label:'עדכון כמויות',         icon:'⚖️'},
   {key:'seeReports',  label:'דוחות וגרפים',         icon:'📊'},
   {key:'seeCategories',label:'ניהול קטגוריות',      icon:'📁'},
+  {key:'seeOrders',  label:'הזמנות',               icon:'🛒'},
   {key:'tvMode',      label:'מצב תצוגה (TV)',       icon:'📺'},
 ];
 
-var DEFAULT_EMP_PERMS={seePrices:false,seeProfit:false,editItems:false,addItems:false,deleteItems:false,editQty:true,seeReports:false,seeCategories:false,tvMode:false};
+var DEFAULT_EMP_PERMS={seePrices:false,seeProfit:false,editItems:false,addItems:false,deleteItems:false,editQty:true,seeReports:false,seeCategories:false,seeOrders:false,tvMode:false};
 
 /* current user session — {isManager, empId, name, perms, loginTime} */
 var _umUser=null;
@@ -3838,6 +3839,26 @@ function applyUserPerms(){
   /* Manager-only FAB section — show locked */
   var fabMgr=document.getElementById('fab-mgr-section');
   if(fabMgr){fabMgr.style.display='block';_lockEl(fabMgr,!mgr);}
+  /* Orders — sidebar + bottom nav */
+  var sideOrd=document.querySelector('.sidebtn[onclick*="screen-autoorders"]');
+  if(sideOrd){sideOrd.style.display='flex';_lockEl(sideOrd,!(mgr||canDo('seeOrders')));}
+  var navOrd=document.querySelector('.navbtn[onclick*="autoorders"]');
+  if(navOrd){navOrd.style.display='';_lockEl(navOrd,!(mgr||canDo('seeOrders')));}
+  /* Items sidebar — lock if no item permissions at all */
+  var canItems=mgr||canDo('editItems')||canDo('addItems')||canDo('deleteItems')||canDo('editQty');
+  var sideItems=document.getElementById('side-screen-items');
+  if(sideItems){sideItems.style.display='flex';_lockEl(sideItems,!canItems);}
+  var navItems=document.getElementById('nav-screen-items');
+  if(navItems){navItems.style.display='';_lockEl(navItems,!canItems);}
+  /* History — show locked if no manager */
+  var sideHist=document.getElementById('side-screen-history');
+  if(sideHist){sideHist.style.display='flex';_lockEl(sideHist,!mgr);}
+  /* Alerts — show locked if no manager */
+  var sideAlerts=document.getElementById('side-screen-alerts');
+  if(sideAlerts){sideAlerts.style.display='flex';_lockEl(sideAlerts,!mgr);}
+  /* TV mode — lock if no permission */
+  var sideTv=document.querySelector('.sidebtn[onclick*="openTVMode"]');
+  if(sideTv){sideTv.style.display='flex';_lockEl(sideTv,!(mgr||canDo('tvMode')));}
   /* Sidebar employees — show locked for non-manager */
   var sideEmp=document.getElementById('side-screen-employees');
   if(sideEmp){sideEmp.style.display='flex';_lockEl(sideEmp,!mgr);}
