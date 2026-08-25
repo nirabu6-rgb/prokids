@@ -2684,7 +2684,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 <nav id="sidebar-nav" style="display:none;">
   <!-- User greeting block — top of sidebar -->
   <div id="sidebar-user-block" style="padding:16px 14px 14px;border-bottom:1px solid var(--border);margin-bottom:8px;">
-    <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:6px;letter-spacing:.4px;text-transform:uppercase;" id="sidebar-greeting-word">בוקר טוב</div>
+    <div style="font-size:15px;color:var(--accent);font-weight:800;margin-bottom:6px;letter-spacing:.2px;" id="sidebar-greeting-word">בוקר טוב ☀️</div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div id="sidebar-user-avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#00A859);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;">?</div>
       <div style="min-width:0;">
@@ -3964,7 +3964,14 @@ function applyUserPerms(){
   if(_umUser&&sName){
     sName.textContent=_umUser.name||'—';
     var h=new Date().getHours();
-    if(sWord)sWord.textContent=h<12?'בוקר טוב':h<17?'צהריים טובים':'ערב טוב';
+    var greetings;
+    if(h<5){greetings=['לילה טוב 🌙','שמירה על הלילה 🌃','עבודה בלילה? מרשים! 💪'];}
+    else if(h<12){greetings=['בוקר טוב ☀️','בוקר אור! 🌅','בוקר מקסים 🌻','יום נפלא מתחיל! ✨','בוקר אנרגטי! ⚡'];}
+    else if(h<14){greetings=['צהריים טובים 🌞','ארוחת צהריים? 🥗','שעת צהריים! ☀️'];}
+    else if(h<17){greetings=['אחה"צ טוב 🌤️','אחר הצהריים פורה! 💡','יום פרודוקטיבי! 📊'];}
+    else if(h<20){greetings=['ערב טוב 🌆','ערב נעים! 🌇','ערב מקסים 🌃'];}
+    else{greetings=['ערב טוב 🌙','לילה טוב 🌌','סיום יום נפלא! ⭐'];}
+    if(sWord)sWord.textContent=greetings[Math.floor(Math.random()*greetings.length)];
     var g=_umUser.gender||'';
     if(sRole)sRole.textContent=_umUser.isManager?(g==='female'?'מנהלת':'מנהל'):(g==='female'?'עובדת':'עובד');
     if(sAvatar)sAvatar.textContent=(_umUser.name||'?')[0];
@@ -4695,20 +4702,8 @@ function renderDash(){
         '</div>':'')+
       '</div>':'';
   }
-  /* greeting */
-  (function(){
-    var gb=document.getElementById('greeting-bar');if(!gb)return;
-    var h=new Date().getHours();
-    var word=h<12?'בוקר טוב':h<17?'צהריים טובים':'ערב טוב';
-    var uname=(_umUser&&_umUser.name)||'';
-    var ug=(_umUser&&_umUser.gender)||'';
-    var utitle=_umUser?genderTitle(_umUser.isManager,ug):'';
-    gb.innerHTML='<div style="background:linear-gradient(135deg,var(--accent),#005aaa);border-radius:14px;padding:14px 18px;color:#fff;display:flex;align-items:center;gap:14px;">'
-      +'<div style="font-size:28px;line-height:1;">'+(h<12?'🌅':h<17?'☀️':'🌙')+'</div>'
-      +'<div><div style="font-size:19px;font-weight:800;line-height:1.2;">'+(uname?word+', '+uname+'!':word+'!')+'</div>'
-      +'<div style="font-size:11px;opacity:.8;margin-top:3px;">'+(utitle?utitle+' יקר — ':'')+'ברוכים הבאים ל-WeightStock ⚖️</div></div>'
-      +'</div>';
-  })();
+  /* greeting — cleared (shown in sidebar instead) */
+  (function(){var gb=document.getElementById('greeting-bar');if(gb)gb.innerHTML='';})();
 
   var s=getSettings();
   /* update business header */
