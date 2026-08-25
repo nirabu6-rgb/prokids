@@ -1516,7 +1516,17 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <!-- תוכן טאב מסלולים -->
     <div id="ptab-content-plans">
       <div style="display:flex;flex-direction:column;gap:10px;" id="plans-list-modal"></div>
-      <div style="margin-top:14px;padding:12px;background:var(--card2);border-radius:12px;font-size:12px;color:var(--muted);text-align:center;line-height:1.6;">
+      <!-- קופון -->
+      <div style="margin-top:14px;padding:14px;background:var(--card2);border-radius:14px;border:1.5px solid var(--border);">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">🎟️ יש לך קוד קופון?</div>
+        <div id="coupon-applied-info" style="display:none;margin-bottom:10px;padding:10px;background:rgba(0,168,89,.1);border-radius:10px;font-size:13px;color:var(--ok);font-weight:700;"></div>
+        <div style="display:flex;gap:8px;">
+          <input id="coupon-input" type="text" placeholder="הכנס קוד קופון..." style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:14px;font-family:inherit;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+          <button onclick="applyCoupon()" style="padding:10px 16px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">החל</button>
+        </div>
+        <div id="coupon-err" style="display:none;font-size:12px;color:var(--crit);margin-top:6px;"></div>
+      </div>
+      <div style="margin-top:12px;padding:12px;background:var(--card2);border-radius:12px;font-size:12px;color:var(--muted);text-align:center;line-height:1.6;">
         📅 התחייבות שנתית — תשלום חודשי<br>
         ⚡ עלות הקמה חד פעמית (כולל התקנה והדרכה)<br>
         🔄 בסיום השנה ללא חידוש — הציוד חוזר אלינו<br>
@@ -4689,7 +4699,7 @@ function openUpgradePlans(){
     var p=PLANS[k], isCur=cur.key===k;
     html+='<div class="plan-card'+(isCur?' selected':'')+'" style="'+(isCur?'opacity:.6;cursor:default;':'')+'">'+
       (k==='pro'?'<div class="plan-badge">הכי פופולרי</div>':'')+
-      '<div class="plan-top"><span class="plan-name">'+p.name+'</span><span class="plan-price">₪'+p.price+'/חודש</span></div>'+
+      '<div class="plan-top"><span class="plan-name">'+p.name+'</span><span class="plan-price plan-price-orig" data-orig="'+p.price+'">₪'+p.price+'<span style="font-size:11px;font-weight:400;">/חודש</span></span></div>'+
       '<ul class="plan-list">'+
       '<li>עד '+(p.shelves>999?'ללא הגבלה':p.shelves)+' משטחים</li>'+
       '<li>עד '+(p.items>999?'ללא הגבלה':p.items)+' פריטים</li>'+
@@ -4700,9 +4710,61 @@ function openUpgradePlans(){
       '</div>';
   });
   document.getElementById('plans-list-modal').innerHTML=html;
+  /* restore active coupon if exists */
+  var activeCoupon=LS.get('ws3_active_coupon',null);
+  var infoEl=document.getElementById('coupon-applied-info');
+  if(activeCoupon&&infoEl){
+    infoEl.innerHTML='✅ קופון <b>'+activeCoupon.code+'</b> פעיל — הנחה של <b>'+activeCoupon.discount+'%</b>';
+    infoEl.style.display='';
+    renderPlansWithDiscount(activeCoupon);
+  }
   openModal('modal-plans');
 }
 window.openUpgradePlans=openUpgradePlans;
+
+function applyCoupon(){
+  var code=(document.getElementById('coupon-input')||{}).value||'';
+  code=code.trim().toUpperCase();
+  var errEl=document.getElementById('coupon-err');
+  var infoEl=document.getElementById('coupon-applied-info');
+  if(!code){if(errEl){errEl.textContent='הכנס קוד קופון';errEl.style.display='';}return;}
+  /* load coupons from admin localStorage */
+  var coupons=[];
+  try{coupons=JSON.parse(localStorage.getItem('admin_coupons')||'[]');}catch(e){}
+  var coupon=coupons.find(function(c){return (c.code||'').toUpperCase()===code;});
+  if(!coupon){
+    if(errEl){errEl.textContent='קוד קופון לא תקין';errEl.style.display='';}
+    if(infoEl)infoEl.style.display='none';
+    return;
+  }
+  /* check expiry */
+  if(coupon.expires&&new Date(coupon.expires)<new Date()){
+    if(errEl){errEl.textContent='קוד הקופון פג תוקף ב-'+coupon.expires;errEl.style.display='';}
+    return;
+  }
+  /* apply */
+  if(errEl)errEl.style.display='none';
+  LS.set('ws3_active_coupon',{code:code,discount:coupon.discount,plan:coupon.plan,applied:new Date().toISOString()});
+  if(infoEl){
+    infoEl.innerHTML='✅ קופון <b>'+code+'</b> הופעל — הנחה של <b>'+coupon.discount+'%</b>'+(coupon.plan?' על מסלול '+coupon.plan:'');
+    infoEl.style.display='';
+  }
+  showToast('🎟️ קופון הופעל! הנחה '+coupon.discount+'%');
+  /* re-render plans with discount */
+  renderPlansWithDiscount(coupon);
+}
+window.applyCoupon=applyCoupon;
+
+function renderPlansWithDiscount(coupon){
+  var list=document.getElementById('plans-list-modal');
+  if(!list)return;
+  var rows=list.querySelectorAll('.plan-price-orig');
+  rows.forEach(function(el){
+    var orig=parseInt(el.getAttribute('data-orig')||'0',10);
+    var disc=Math.round(orig*(1-coupon.discount/100));
+    el.innerHTML='<span style="text-decoration:line-through;color:var(--muted);font-size:14px;">₪'+orig+'</span> <span style="color:var(--ok);font-weight:800;">₪'+disc+'</span><span style="font-size:11px;color:var(--muted);">/חודש</span>';
+  });
+}
 
 function upgradeTo(key){
   // כאן בעתיד יתחבר לתשלום — כרגע מאשר ישירות
