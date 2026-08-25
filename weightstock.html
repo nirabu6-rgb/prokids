@@ -3942,16 +3942,12 @@ function mgrUnlockSubmit(){
   var pin=(inp?inp.value:'').trim();
   var keys=_mgrUnlockPendingKeys.length?_mgrUnlockPendingKeys:[_mgrUnlockPrimaryKey||'unknown'];
 
-  /* Check temp code (one-time, unlocks one section) */
-  if(_tempCodes[pin]){
-    var allowedSection=_tempCodes[pin];
+  /* Check temp code (one-time, unlocks specific sections) */
+  if(_tempCodes[pin]!==undefined){
+    var allowed=_tempCodes[pin];
     delete _tempCodes[pin];
-    if(keys.indexOf(allowedSection)>=0){
-      _doUnlockSections([allowedSection]);
-    } else {
-      if(err){err.textContent='הקוד הזמני הוא לאזור: '+(SECTION_LABELS[allowedSection]||allowedSection);err.style.display='';}
-      if(inp){inp.value='';inp.focus();}
-    }
+    if(!Array.isArray(allowed))allowed=[allowed];
+    _doUnlockSections(allowed);
     return;
   }
 
@@ -3986,88 +3982,152 @@ window.muGoToPin=muGoToPin;
 
 /* ── Temp code generator (manager only) ── */
 var SECTION_ICONS={'reports':'📊','categories':'🗂️','orders':'🛒','items':'📦','history':'⏱️','alerts':'🔔','tvmode':'📺','employees':'👥','prices':'💰','addemp':'➕','actlog':'📋','fab':'⚡'};
+/* ── Temp code: selected emp & sections ── */
+var _tcSelectedEmp='';
+var _tcSelectedSections=[];
+
 function openTempCodeModal(){
   if(!_umUser||!_umUser.isManager){showToast('רק מנהל יכול ליצור קוד זמני');return;}
-  var emps=getEmployees?getEmployees():[];
-  var empOpts='<option value="">— בחר עובד (אופציונלי) —</option>'
-    +emps.filter(function(e){return !e.isManager;}).map(function(e){
-      return '<option value="'+e.id+'">'+e.name+'</option>';
-    }).join('');
-  var sectionCards=Object.keys(SECTION_LABELS).map(function(k){
-    return '<div class="tc-sec-card" data-key="'+k+'" onclick="tcSelectSection(this,\''+k+'\')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:2px solid var(--border);background:var(--card2);cursor:pointer;transition:all .15s;">'
-      +'<span style="font-size:18px;">'+( SECTION_ICONS[k]||'🔒')+'</span>'
-      +'<span style="font-size:14px;font-weight:600;color:var(--text);">'+SECTION_LABELS[k]+'</span>'
-      +'<span class="tc-check" style="margin-right:auto;font-size:16px;display:none;">✓</span>'
-      +'</div>';
-  }).join('');
-  var html='<div id="modal-tempcode" style="display:flex;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:950;align-items:flex-end;justify-content:center;padding:0;">'
-    +'<div style="background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 28px;width:100%;max-width:420px;font-family:inherit;max-height:90vh;overflow-y:auto;">'
-    +'<div style="text-align:center;margin-bottom:16px;">'
-    +'<div style="font-size:28px;margin-bottom:6px;">🔑</div>'
-    +'<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:3px;">קוד זמני לעובד</div>'
-    +'<div style="font-size:12px;color:var(--muted);">הקוד יפתח אזור אחד בלבד — שימוש חד-פעמי</div>'
+  _tcSelectedEmp=''; _tcSelectedSections=[];
+  var html='<div id="modal-tempcode" style="display:flex;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:950;align-items:flex-end;justify-content:center;">'
+    +'<div style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:440px;font-family:inherit;max-height:88vh;display:flex;flex-direction:column;">'
+    /* header */
+    +'<div style="padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">'
+    +'<div style="font-size:22px;">🔑</div>'
+    +'<div style="font-size:15px;font-weight:800;color:var(--text);">קוד זמני לעובד</div>'
+    +'<button onclick="document.getElementById(\'modal-tempcode\').remove()" style="margin-right:auto;background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer;line-height:1;">×</button>'
     +'</div>'
-    +'<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;">עובד (אופציונלי)</div>'
-    +'<select id="tc-emp" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-family:inherit;font-size:14px;margin-bottom:14px;direction:rtl;">'+empOpts+'</select>'
-    +'<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">בחר אזור לפתיחה</div>'
-    +'<div id="tc-section-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">'+sectionCards+'</div>'
-    +'<input type="hidden" id="tc-section" value="">'
-    +'<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;">קוד גישה (4–6 ספרות)</div>'
-    +'<input id="tc-custom-code" type="tel" inputmode="numeric" maxlength="6" placeholder="לדוגמה: 1234" oninput="this.value=this.value.replace(/\\D/g,\'\').slice(0,6)" style="width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-family:inherit;font-size:22px;text-align:center;letter-spacing:8px;font-weight:800;margin-bottom:6px;">'
-    +'<div id="tc-err" style="display:none;color:var(--crit);font-size:12px;margin-bottom:8px;text-align:center;"></div>'
-    +'<div id="tc-result" style="display:none;background:linear-gradient(135deg,var(--accent),#005aaa);border-radius:14px;padding:16px;margin-bottom:14px;text-align:center;color:#fff;">'
-    +'<div id="tc-for-emp" style="font-size:12px;opacity:.85;margin-bottom:4px;"></div>'
-    +'<div style="font-size:12px;opacity:.85;margin-bottom:4px;">אזור: <b id="tc-for-section"></b></div>'
-    +'<div id="tc-code" style="font-size:38px;font-weight:900;letter-spacing:8px;font-variant-numeric:tabular-nums;margin:6px 0;"></div>'
-    +'<div style="font-size:11px;opacity:.75;">שלח קוד זה לעובד — שימוש אחד בלבד</div>'
+    /* scrollable body */
+    +'<div style="overflow-y:auto;padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:14px;">'
+    /* emp picker */
+    +'<div>'
+    +'<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">עובד (אופציונלי)</div>'
+    +'<div id="tc-emp-btn" onclick="tcOpenEmpPicker()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;">'
+    +'<span id="tc-emp-label" style="font-size:14px;color:var(--muted);">— בחר עובד —</span>'
+    +'<span style="color:var(--muted);font-size:18px;">›</span>'
     +'</div>'
-    +'<div style="display:flex;gap:10px;">'
-    +'<button onclick="document.getElementById(\'modal-tempcode\').remove()" style="flex:1;padding:12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>'
-    +'<button onclick="generateTempCode()" style="flex:1;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">✓ שמור קוד</button>'
+    +'</div>'
+    /* section picker */
+    +'<div>'
+    +'<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">אזור לפתיחה</div>'
+    +'<div id="tc-sec-btn" onclick="tcOpenSecPicker()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;">'
+    +'<span id="tc-sec-label" style="font-size:14px;color:var(--muted);">— בחר אזורים —</span>'
+    +'<span style="color:var(--muted);font-size:18px;">›</span>'
+    +'</div>'
+    +'</div>'
+    /* code input */
+    +'<div>'
+    +'<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">קוד גישה (4–6 ספרות)</div>'
+    +'<input id="tc-custom-code" type="tel" inputmode="numeric" maxlength="6" placeholder="1234" oninput="this.value=this.value.replace(/\\D/g,\'\').slice(0,6)" style="width:100%;box-sizing:border-box;padding:13px;border-radius:12px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-family:monospace;font-size:26px;text-align:center;letter-spacing:10px;font-weight:800;">'
+    +'</div>'
+    +'<div id="tc-err" style="display:none;color:var(--crit);font-size:12px;text-align:center;"></div>'
+    /* result */
+    +'<div id="tc-result" style="display:none;background:linear-gradient(135deg,#003B71,#005aaa);border-radius:14px;padding:18px;text-align:center;color:#fff;">'
+    +'<div id="tc-for-emp" style="font-size:12px;opacity:.8;margin-bottom:3px;"></div>'
+    +'<div style="font-size:12px;opacity:.8;margin-bottom:6px;">אזורים: <b id="tc-for-section"></b></div>'
+    +'<div id="tc-code" style="font-size:40px;font-weight:900;letter-spacing:10px;font-variant-numeric:tabular-nums;"></div>'
+    +'<div style="font-size:11px;opacity:.65;margin-top:6px;">שלח קוד זה לעובד — שימוש אחד בלבד</div>'
+    +'</div>'
+    +'</div>'
+    /* footer */
+    +'<div style="padding:12px 16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;">'
+    +'<button onclick="document.getElementById(\'modal-tempcode\').remove()" style="flex:1;padding:12px;background:var(--card2);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>'
+    +'<button onclick="generateTempCode()" style="flex:2;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">✓ שמור קוד</button>'
     +'</div>'
     +'</div></div>';
   document.body.insertAdjacentHTML('beforeend',html);
 }
-function tcSelectSection(el,key){
-  document.querySelectorAll('.tc-sec-card').forEach(function(c){
-    c.style.border='2px solid var(--border)';
-    c.style.background='var(--card2)';
-    var ch=c.querySelector('.tc-check');if(ch)ch.style.display='none';
-  });
-  el.style.border='2px solid var(--accent)';
-  el.style.background='rgba(0,168,89,.08)';
-  var ch=el.querySelector('.tc-check');if(ch)ch.style.display='';
-  var inp=document.getElementById('tc-section');if(inp)inp.value=key;
+
+function tcOpenEmpPicker(){
+  var emps=(getEmployees?getEmployees():[]).filter(function(e){return !e.isManager;});
+  var rows='<div onclick="tcPickEmp(\'\',\'— ללא עובד ספציפי —\')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;">'
+    +'<span style="font-size:18px;">👤</span><span style="font-size:14px;color:var(--muted);">— ללא עובד ספציפי —</span></div>'
+    +emps.map(function(e){
+      return '<div onclick="tcPickEmp(\''+e.id+'\',\''+e.name+'\')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;">'
+        +'<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#00A859,#007a40);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px;flex-shrink:0;">'+(e.name||'?')[0]+'</div>'
+        +'<span style="font-size:14px;font-weight:600;color:var(--text);">'+e.name+'</span>'
+        +'</div>';
+    }).join('');
+  tcShowPicker('בחר עובד',rows);
 }
-window.tcSelectSection=tcSelectSection;
+function tcPickEmp(id,name){
+  _tcSelectedEmp=id;
+  var lbl=document.getElementById('tc-emp-label');
+  if(lbl){lbl.textContent=name||'— ללא —';lbl.style.color='var(--text)';}
+  tcClosePicker();
+}
+
+function tcOpenSecPicker(){
+  var rows=Object.keys(SECTION_LABELS).map(function(k){
+    var sel=_tcSelectedSections.indexOf(k)>=0;
+    return '<div onclick="tcToggleSec(this,\''+k+'\')" data-key="'+k+'" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;background:'+(sel?'rgba(0,168,89,.06)':'transparent')+'">'
+      +'<span style="font-size:20px;">'+(SECTION_ICONS[k]||'🔒')+'</span>'
+      +'<span style="flex:1;font-size:14px;font-weight:600;color:var(--text);">'+SECTION_LABELS[k]+'</span>'
+      +'<span class="tc-cb" style="width:22px;height:22px;border-radius:6px;border:2px solid '+(sel?'var(--accent)':'var(--border)')+';background:'+(sel?'var(--accent)':'#fff')+';display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;flex-shrink:0;">'+(sel?'✓':'')+'</span>'
+      +'</div>';
+  }).join('');
+  tcShowPicker('בחר אזורים',rows+'<div style="padding:12px 14px;"><button onclick="tcClosePicker()" style="width:100%;padding:11px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">אישור</button></div>');
+}
+function tcToggleSec(row,key){
+  var idx=_tcSelectedSections.indexOf(key);
+  var cb=row.querySelector('.tc-cb');
+  if(idx>=0){
+    _tcSelectedSections.splice(idx,1);
+    row.style.background='transparent';
+    if(cb){cb.style.background='#fff';cb.style.borderColor='var(--border)';cb.textContent='';}
+  } else {
+    _tcSelectedSections.push(key);
+    row.style.background='rgba(0,168,89,.06)';
+    if(cb){cb.style.background='var(--accent)';cb.style.borderColor='var(--accent)';cb.textContent='✓';}
+  }
+  var lbl=document.getElementById('tc-sec-label');
+  if(lbl){
+    if(_tcSelectedSections.length){lbl.textContent=_tcSelectedSections.map(function(k){return SECTION_LABELS[k];}).join(', ');lbl.style.color='var(--text)';}
+    else{lbl.textContent='— בחר אזורים —';lbl.style.color='var(--muted)';}
+  }
+}
+
+function tcShowPicker(title,rows){
+  var old=document.getElementById('tc-picker-sheet');if(old)old.remove();
+  var sh='<div id="tc-picker-sheet" style="position:fixed;inset:0;z-index:960;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.4);">'
+    +'<div style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:440px;max-height:75vh;display:flex;flex-direction:column;font-family:inherit;">'
+    +'<div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;">'
+    +'<span style="font-size:15px;font-weight:800;color:var(--text);flex:1;">'+title+'</span>'
+    +'<button onclick="tcClosePicker()" style="background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer;">×</button>'
+    +'</div>'
+    +'<div style="overflow-y:auto;flex:1;">'+rows+'</div>'
+    +'</div></div>';
+  document.body.insertAdjacentHTML('beforeend',sh);
+}
+function tcClosePicker(){var el=document.getElementById('tc-picker-sheet');if(el)el.remove();}
+window.tcOpenEmpPicker=tcOpenEmpPicker;window.tcPickEmp=tcPickEmp;
+window.tcOpenSecPicker=tcOpenSecPicker;window.tcToggleSec=tcToggleSec;
+window.tcClosePicker=tcClosePicker;
+
 function generateTempCode(){
-  var secInp=document.getElementById('tc-section');
   var inp=document.getElementById('tc-custom-code');
   var errEl=document.getElementById('tc-err');
-  if(!secInp||!inp)return;
-  var sectionKey=(secInp.value||'').trim();
-  var code=(inp.value||'').trim();
-  if(!sectionKey){
-    if(errEl){errEl.textContent='בחר אזור מהרשימה';errEl.style.display='';}
-    return;
+  var code=(inp?inp.value:'').trim();
+  if(!_tcSelectedSections.length){
+    if(errEl){errEl.textContent='בחר לפחות אזור אחד';errEl.style.display='';}return;
   }
   if(!code||code.length<4){
     if(errEl){errEl.textContent='הכנס קוד בין 4 ל-6 ספרות';errEl.style.display='';}
-    inp.focus();return;
+    if(inp)inp.focus();return;
   }
   if(errEl)errEl.style.display='none';
-  _tempCodes[code]=sectionKey;
-  /* show result */
-  var empSel=document.getElementById('tc-emp');
-  var empName=empSel&&empSel.selectedIndex>0?empSel.options[empSel.selectedIndex].text:'';
+  /* store code → first selected section (temp codes are per-section, one code per section) */
+  _tcSelectedSections.forEach(function(k){_tempCodes[code]=k;}); /* last wins if multi; show all in label */
+  /* For multi-section with same code, store array */
+  _tempCodes[code]=_tcSelectedSections.slice();
+  var empLbl=document.getElementById('tc-emp-label');
+  var empName=empLbl&&_tcSelectedEmp?empLbl.textContent:'';
   var forEmp=document.getElementById('tc-for-emp');
   if(forEmp)forEmp.textContent=empName?'עבור: '+empName:'';
   var forSec=document.getElementById('tc-for-section');
-  if(forSec)forSec.textContent=SECTION_LABELS[sectionKey]||sectionKey;
-  var codeEl=document.getElementById('tc-code');
-  if(codeEl)codeEl.textContent=code;
-  var res=document.getElementById('tc-result');
-  if(res)res.style.display='';
+  if(forSec)forSec.textContent=_tcSelectedSections.map(function(k){return SECTION_LABELS[k];}).join(', ');
+  var codeEl=document.getElementById('tc-code');if(codeEl)codeEl.textContent=code;
+  var res=document.getElementById('tc-result');if(res)res.style.display='';
 }
 window.openTempCodeModal=openTempCodeModal;
 window.generateTempCode=generateTempCode;
