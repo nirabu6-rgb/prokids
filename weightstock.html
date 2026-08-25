@@ -2061,7 +2061,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <div style="display:flex;flex-direction:column;gap:8px;">
 
       <!-- פרטי העסק -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
+      <div class="card st-mgr-only" style="margin:0;padding:0;overflow:hidden;">
         <button onclick="stToggle('st-biz-sec')" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
           <div style="display:flex;align-items:center;gap:10px;font-weight:700;">🏢 פרטי העסק</div>
           <span id="st-biz-sec-ic" style="color:var(--muted);">›</span>
@@ -2079,7 +2079,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       </div>
 
       <!-- הגדרות מערכת -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
+      <div class="card st-mgr-only" style="margin:0;padding:0;overflow:hidden;">
         <button onclick="stToggle('st-sys-sec')" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
           <div style="display:flex;align-items:center;gap:10px;font-weight:700;">🔧 הגדרות מערכת</div>
           <span id="st-sys-sec-ic" style="color:var(--muted);">›</span>
@@ -2118,7 +2118,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       </div>
 
       <!-- ענן וסנכרון -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
+      <div class="card st-mgr-only" style="margin:0;padding:0;overflow:hidden;">
         <button onclick="stToggle('st-cloud-sec');setTimeout(renderCloudAccountSection,60);" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
           <div style="display:flex;align-items:center;gap:10px;font-weight:700;">☁️ ענן וסנכרון</div>
           <span id="st-cloud-sec-ic" style="color:var(--muted);">›</span>
@@ -2129,7 +2129,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       </div>
 
       <!-- יחידת משקל -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
+      <div class="card st-mgr-only" style="margin:0;padding:0;overflow:hidden;">
         <button onclick="stToggle('st-unit-sec')" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
           <div style="display:flex;align-items:center;gap:10px;font-weight:700;">⚖️ יחידת משקל</div>
           <span id="st-unit-sec-ic" style="color:var(--muted);">›</span>
@@ -2149,7 +2149,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       </div>
 
       <!-- חיבורים למשקלים -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
+      <div class="card st-mgr-only" style="margin:0;padding:0;overflow:hidden;">
         <button onclick="stToggle('st-scale-sec')" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
           <div style="display:flex;align-items:center;gap:10px;font-weight:700;">⚖️ חיבורים למשקלים</div>
           <span id="st-scale-sec-ic" style="color:var(--muted);">›</span>
@@ -2278,7 +2278,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       <div id="st-actlog-btn" style="display:none;"></div>
 
       <!-- מנוי -->
-      <div class="card" style="margin:0;padding:0;overflow:hidden;">
+      <div class="card st-mgr-only" style="margin:0;padding:0;overflow:hidden;">
         <button onclick="closeModal('modal-settings');openUpgradePlans();" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
           <div style="display:flex;align-items:center;gap:10px;font-weight:700;">💳 מנוי<span id="settings-plan-badge" style="font-size:11px;background:rgba(37,99,235,.12);color:var(--accent);border-radius:20px;padding:2px 10px;font-weight:600;"></span></div>
           <span style="color:var(--muted);">›</span>
@@ -2317,7 +2317,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
       </div>
 
       <!-- מחק משתמשים -->
-      <div class="card" style="margin:0 0 8px;padding:0;overflow:hidden;">
+      <div class="card st-mgr-only" style="margin:0 0 8px;padding:0;overflow:hidden;">
         <button onclick="resetUsers()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--warn);">
           <div style="display:flex;align-items:center;gap:10px;font-weight:700;">🗑️ מחק עובדים והתחל מחדש</div>
           <span>›</span>
@@ -3879,6 +3879,9 @@ function applyUserPerms(){
   /* Current user chip in dashboard header */
   var uchip=document.getElementById('db-user-chip');
   if(uchip&&_umUser)uchip.textContent=(_umUser.isManager?'👑 ':'👤 ')+_umUser.name;
+  /* Settings — hide manager-only sections for employees */
+  var mgrSections=document.querySelectorAll('.st-mgr-only');
+  mgrSections.forEach(function(el){el.style.display=mgr?'':'none';});
   /* Sidebar user greeting block */
   var sName=document.getElementById('sidebar-user-name');
   var sRole=document.getElementById('sidebar-user-role');
