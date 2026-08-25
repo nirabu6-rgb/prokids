@@ -2673,18 +2673,40 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 <div id="ws3-print-area"></div>
 
 <!-- MANAGER PIN UNLOCK MODAL -->
-<div id="modal-mgr-unlock" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center;padding:20px;user-select:none;-webkit-user-select:none;">
-  <div style="background:var(--card);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;box-shadow:0 8px 40px rgba(0,0,0,.25);text-align:center;">
-    <div style="font-size:36px;margin-bottom:10px;">🔐</div>
-    <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px;">אזור נעול</div>
-    <div id="mgr-unlock-label" style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5;">הכנס את קוד המנהל כדי לגשת לאזור זה עד להתנתקות הבאה</div>
-    <input id="mgr-unlock-input" type="password" inputmode="numeric" placeholder="קוד מנהל" maxlength="20"
-      style="width:100%;box-sizing:border-box;padding:12px 14px;border:2px solid var(--border);border-radius:12px;font-size:18px;text-align:center;letter-spacing:4px;font-family:monospace;background:var(--card2);color:var(--text);outline:none;margin-bottom:8px;"
-      onkeydown="if(event.key==='Enter')mgrUnlockSubmit()">
-    <div id="mgr-unlock-err" style="display:none;color:var(--crit);font-size:12px;margin-bottom:8px;font-weight:600;">קוד שגוי — נסה שוב</div>
-    <div style="display:flex;gap:10px;margin-top:6px;">
-      <button onclick="closeMgrUnlock()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:none;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">ביטול</button>
-      <button onclick="mgrUnlockSubmit()" style="flex:1;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">פתח 🔓</button>
+<div id="modal-mgr-unlock" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:flex-end;justify-content:center;user-select:none;-webkit-user-select:none;">
+  <div style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:440px;box-shadow:0 -4px 40px rgba(0,0,0,.2);font-family:inherit;max-height:85vh;display:flex;flex-direction:column;">
+
+    <!-- Step 1: section checklist -->
+    <div id="mu-step1" style="display:flex;flex-direction:column;overflow:hidden;max-height:85vh;">
+      <div style="padding:18px 18px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+        <div style="font-size:22px;">🔒</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--text);">בחר אזורים לפתיחה</div>
+          <div style="font-size:11px;color:var(--muted);">סמן את האזורים שתרצה לפתוח</div>
+        </div>
+        <button onclick="closeMgrUnlock()" style="margin-right:auto;background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;padding:4px;">×</button>
+      </div>
+      <div id="mu-step1-body" style="overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px;flex:1;"></div>
+      <div style="padding:12px 14px 18px;display:flex;gap:10px;border-top:1px solid var(--border);">
+        <button onclick="closeMgrUnlock()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:none;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">ביטול</button>
+        <button onclick="muGoToPin()" style="flex:1;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">המשך להזנת קוד ›</button>
+      </div>
+    </div>
+
+    <!-- Step 2: PIN entry -->
+    <div id="mu-step2" style="display:none;padding:24px 20px 28px;text-align:center;">
+      <button onclick="document.getElementById('mu-step1').style.display='flex';document.getElementById('mu-step2').style.display='none';" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:12px;">‹ חזור לרשימה</button>
+      <div style="font-size:32px;margin-bottom:8px;">🔐</div>
+      <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;">הזן קוד גישה</div>
+      <div id="mgr-unlock-label" style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5;"></div>
+      <input id="mgr-unlock-input" type="password" inputmode="numeric" placeholder="קוד" maxlength="20"
+        style="width:100%;box-sizing:border-box;padding:14px;border:2px solid var(--border);border-radius:14px;font-size:22px;text-align:center;letter-spacing:6px;font-family:monospace;background:var(--card2);color:var(--text);outline:none;margin-bottom:8px;"
+        onkeydown="if(event.key==='Enter')mgrUnlockSubmit()">
+      <div id="mgr-unlock-err" style="display:none;color:var(--crit);font-size:12px;margin-bottom:8px;font-weight:600;"></div>
+      <div style="display:flex;gap:10px;margin-top:6px;">
+        <button onclick="closeMgrUnlock()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:none;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">ביטול</button>
+        <button onclick="mgrUnlockSubmit()" style="flex:1;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">פתח 🔓</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3838,8 +3860,10 @@ function umEnterApp(){
 var _unlockedSections={};
 /* _tempCodes: code(string) → sectionKey (one-time, set by manager) */
 var _tempCodes={};
-var _mgrUnlockCallback=null;
-var _mgrUnlockSectionKey=null;
+/* _lockedSectionCallbacks: sectionKey → onclick callback */
+var _lockedSectionCallbacks={};
+var _mgrUnlockPendingKeys=[];  /* sections selected in step-1 checklist */
+var _mgrUnlockPrimaryKey=null; /* the section that was originally clicked */
 
 /* Section label map for display */
 var SECTION_LABELS={
@@ -3848,48 +3872,90 @@ var SECTION_LABELS={
   'tvmode':'מצב תצוגה','employees':'עובדים','prices':'מחירים ורווח',
   'addemp':'הוספת עובד','actlog':'יומן פעולות','fab':'הוספה מהירה'
 };
+var SECTION_ICONS2={'reports':'📊','categories':'🗂️','orders':'🛒','items':'📦','history':'⏱️','alerts':'🔔','tvmode':'📺','employees':'👥','prices':'💰','addemp':'➕','actlog':'📋','fab':'⚡'};
 
+/* ── Step 1: open checklist of locked sections ── */
 function openMgrUnlock(sectionKey,label,cb){
-  _mgrUnlockCallback=cb||null;
-  _mgrUnlockSectionKey=sectionKey||'unknown';
-  var lbl=document.getElementById('mgr-unlock-label');
-  if(lbl)lbl.textContent=label||'הכנס את קוד המנהל כדי לגשת לאזור זה';
+  _mgrUnlockPrimaryKey=sectionKey||'unknown';
+  if(cb)_lockedSectionCallbacks[sectionKey]=cb;
+
+  /* Collect currently locked sections (have nav-locked class) */
+  var locked=[];
+  Object.keys(SECTION_LABELS).forEach(function(k){
+    if(!_unlockedSections[k]) locked.push(k);
+  });
+
+  var rows=locked.map(function(k){
+    var checked=(k===sectionKey)?'checked':'';
+    return '<label style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;border:2px solid '+(k===sectionKey?'var(--accent)':'var(--border)')+';background:'+(k===sectionKey?'rgba(0,168,89,.07)':'var(--card2)')+';cursor:pointer;user-select:none;transition:all .15s;" onclick="muToggle(this,\''+k+'\')">'
+      +'<span style="font-size:20px;">'+( SECTION_ICONS2[k]||'🔒')+'</span>'
+      +'<span style="flex:1;font-size:14px;font-weight:600;color:var(--text);">'+SECTION_LABELS[k]+'</span>'
+      +'<span class="mu-check" style="width:22px;height:22px;border-radius:6px;border:2px solid '+(k===sectionKey?'var(--accent)':'var(--border)')+';display:flex;align-items:center;justify-content:center;font-size:14px;background:'+(k===sectionKey?'var(--accent)':'transparent')+';color:#fff;flex-shrink:0;">'+(k===sectionKey?'✓':'')+'</span>'
+      +'<input type="checkbox" data-key="'+k+'" '+ checked+' style="display:none;">'
+      +'</label>';
+  }).join('');
+
+  var el=document.getElementById('modal-mgr-unlock');
+  if(el){
+    var body=document.getElementById('mu-step1-body');
+    if(body)body.innerHTML=rows;
+    document.getElementById('mu-step1').style.display='';
+    document.getElementById('mu-step2').style.display='none';
+    var inp=document.getElementById('mgr-unlock-input');if(inp)inp.value='';
+    var err=document.getElementById('mgr-unlock-err');if(err)err.style.display='none';
+    el.style.display='flex';
+  }
+}
+function muToggle(lbl,key){
+  var cb=lbl.querySelector('input[type=checkbox]');
+  var chk=lbl.querySelector('.mu-check');
+  if(!cb)return;
+  cb.checked=!cb.checked;
+  if(cb.checked){
+    lbl.style.border='2px solid var(--accent)';lbl.style.background='rgba(0,168,89,.07)';
+    if(chk){chk.style.background='var(--accent)';chk.style.borderColor='var(--accent)';chk.textContent='✓';}
+  } else {
+    lbl.style.border='2px solid var(--border)';lbl.style.background='var(--card2)';
+    if(chk){chk.style.background='transparent';chk.style.borderColor='var(--border)';chk.textContent='';}
+  }
+}
+function muGoToPin(){
+  var checked=Array.from(document.querySelectorAll('#mu-step1-body input[type=checkbox]:checked')).map(function(c){return c.dataset.key;});
+  if(!checked.length){showToast('סמן לפחות אזור אחד');return;}
+  _mgrUnlockPendingKeys=checked;
+  document.getElementById('mu-step1').style.display='none';
+  document.getElementById('mu-step2').style.display='';
   var inp=document.getElementById('mgr-unlock-input');
-  if(inp)inp.value='';
-  var err=document.getElementById('mgr-unlock-err');
-  if(err)err.style.display='none';
-  var m=document.getElementById('modal-mgr-unlock');
-  if(m){m.style.display='flex';}
-  setTimeout(function(){if(inp)inp.focus();},120);
+  if(inp){inp.value='';setTimeout(function(){inp.focus();},80);}
+  var err=document.getElementById('mgr-unlock-err');if(err)err.style.display='none';
+  var lbl=document.getElementById('mgr-unlock-label');
+  if(lbl)lbl.textContent='הכנס קוד מנהל כדי לפתוח: '+checked.map(function(k){return SECTION_LABELS[k]||k;}).join(', ');
 }
 function closeMgrUnlock(){
   var m=document.getElementById('modal-mgr-unlock');
   if(m)m.style.display='none';
-  _mgrUnlockCallback=null;
-  _mgrUnlockSectionKey=null;
+  _mgrUnlockPendingKeys=[];
 }
 function mgrUnlockSubmit(){
   var inp=document.getElementById('mgr-unlock-input');
   var err=document.getElementById('mgr-unlock-err');
   var pin=(inp?inp.value:'').trim();
-  var sectionKey=_mgrUnlockSectionKey||'unknown';
+  var keys=_mgrUnlockPendingKeys.length?_mgrUnlockPendingKeys:[_mgrUnlockPrimaryKey||'unknown'];
 
-  /* Check temp code first (one-time, section-specific) */
+  /* Check temp code (one-time, unlocks one section) */
   if(_tempCodes[pin]){
     var allowedSection=_tempCodes[pin];
-    delete _tempCodes[pin]; /* one-time use */
-    if(allowedSection===sectionKey){
-      _doUnlockSection(sectionKey);
-      return;
+    delete _tempCodes[pin];
+    if(keys.indexOf(allowedSection)>=0){
+      _doUnlockSections([allowedSection]);
     } else {
-      /* Code is for a different section */
-      if(err){err.textContent='הקוד הזמני הוא לאזור אחר';err.style.display='';}
+      if(err){err.textContent='הקוד הזמני הוא לאזור: '+(SECTION_LABELS[allowedSection]||allowedSection);err.style.display='';}
       if(inp){inp.value='';inp.focus();}
-      return;
     }
+    return;
   }
 
-  /* Check manager PIN — unlocks only the requested section */
+  /* Check manager PIN — unlocks all selected sections */
   var mgr=LS.get('um_manager',null);
   var correctPin=mgr?(mgr.pin||mgr.password||''):'';
   if(!correctPin||pin!==correctPin){
@@ -3897,21 +3963,26 @@ function mgrUnlockSubmit(){
     if(inp){inp.value='';inp.focus();}
     return;
   }
-  _doUnlockSection(sectionKey);
+  _doUnlockSections(keys);
 }
-function _doUnlockSection(sectionKey){
+function _doUnlockSections(keys){
   closeMgrUnlock();
-  _unlockedSections[sectionKey]=true;
+  keys.forEach(function(k){_unlockedSections[k]=true;});
   applyUserPerms();
-  if(_mgrUnlockCallback){
-    var cb=_mgrUnlockCallback;
-    _mgrUnlockCallback=null;
+  /* Execute the callback for the primary clicked section */
+  var primaryKey=_mgrUnlockPrimaryKey;
+  _mgrUnlockPendingKeys=[];
+  if(primaryKey&&_lockedSectionCallbacks[primaryKey]){
+    var cb=_lockedSectionCallbacks[primaryKey];
+    delete _lockedSectionCallbacks[primaryKey];
     setTimeout(cb,80);
   }
 }
 window.openMgrUnlock=openMgrUnlock;
 window.closeMgrUnlock=closeMgrUnlock;
 window.mgrUnlockSubmit=mgrUnlockSubmit;
+window.muToggle=muToggle;
+window.muGoToPin=muGoToPin;
 
 /* ── Temp code generator (manager only) ── */
 var SECTION_ICONS={'reports':'📊','categories':'🗂️','orders':'🛒','items':'📦','history':'⏱️','alerts':'🔔','tvmode':'📺','employees':'👥','prices':'💰','addemp':'➕','actlog':'📋','fab':'⚡'};
