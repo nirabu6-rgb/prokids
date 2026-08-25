@@ -516,7 +516,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   position:fixed;inset:0;
   background:rgba(0,10,30,.65);
   display:none;
-  align-items:flex-end;
+  align-items:center;
   justify-content:center;
   z-index:200;
   backdrop-filter:blur(3px);
@@ -524,9 +524,9 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 .modal-overlay.show{display:flex;}
 .modal-box{
   background:var(--card);
-  border-radius:24px 24px 0 0;
+  border-radius:20px;
   padding:28px 20px 36px;
-  width:100%;
+  width:90%;
   max-width:600px;
   max-height:90vh;
   overflow-y:auto;
@@ -2673,8 +2673,8 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 <div id="ws3-print-area"></div>
 
 <!-- MANAGER PIN UNLOCK MODAL -->
-<div id="modal-mgr-unlock" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:flex-end;justify-content:center;user-select:none;-webkit-user-select:none;">
-  <div style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:440px;box-shadow:0 -4px 40px rgba(0,0,0,.2);font-family:inherit;max-height:85vh;display:flex;flex-direction:column;">
+<div id="modal-mgr-unlock" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;">
+  <div style="background:var(--card);border-radius:20px;width:90%;max-width:440px;box-shadow:0 4px 40px rgba(0,0,0,.2);font-family:inherit;max-height:85vh;display:flex;flex-direction:column;">
 
     <!-- Step 1: section checklist -->
     <div id="mu-step1" style="display:flex;flex-direction:column;overflow:hidden;max-height:85vh;">
