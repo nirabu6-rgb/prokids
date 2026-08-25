@@ -179,7 +179,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
       <h2>הבקשה נשלחה!</h2>
       <p>הרישום שלך התקבל ועובר בדיקה ואישור על ידי מנהל המערכת.<br>לאחר האישור תקבל קישור לכניסה לאפליקציה.</p>
       <div class="info-box" id="pending-info"></div>
-      <button class="btn btn-primary" onclick="checkStatus()">בדוק סטטוס</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="checkStatus()" style="flex:1;min-width:140px;">🔍 בדוק סטטוס</button>
+        <a href="weightstock.html" class="btn" style="flex:1;min-width:140px;background:var(--card2);border:1.5px solid var(--border);color:var(--text);text-decoration:none;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;border-radius:12px;padding:12px;">⚖️ כניסה לאפליקציה</a>
+      </div>
     </div>
 
   </div>
@@ -246,12 +249,18 @@ function checkStatus(){
 
   var statusHtml='';
   if(status==='approved'){
-    statusHtml='<div style="background:rgba(0,168,89,.1);border:1.5px solid var(--ok);border-radius:12px;padding:14px;text-align:center;margin-bottom:16px;">'
-      +'<div style="font-size:22px;margin-bottom:4px;">✅</div>'
-      +'<div style="font-weight:800;color:var(--ok);font-size:15px;">אושר!</div>'
-      +'<div style="font-size:12px;color:var(--muted);margin-top:4px;">העסק אושר במערכת — לחץ "כניסה לאפליקציה"</div>'
+    var mgrFirst=(reg&&reg.firstname)||'';
+    var genderVal=(reg&&reg.gender)||'';
+    var mgrTitle=genderVal==='female'?'מנהלת יקרה':'מנהל יקר';
+    statusHtml='<div style="background:linear-gradient(135deg,rgba(0,168,89,.12),rgba(0,59,113,.08));border:2px solid var(--ok);border-radius:16px;padding:22px 16px;text-align:center;margin-bottom:16px;">'
+      +'<div style="font-size:42px;margin-bottom:10px;">🎉</div>'
+      +'<div style="font-weight:900;color:var(--ok);font-size:20px;margin-bottom:6px;">ברכות! הבקשה אושרה</div>'
+      +'<div style="font-size:14px;color:var(--text);font-weight:600;margin-bottom:4px;">'+(mgrFirst?mgrTitle+' '+mgrFirst+',':mgrTitle+',')+' ברוכים הבאים למשפחת WeightStock! ⚖️</div>'
+      +'<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.7;">העסק שלך פעיל במערכת.<br>כעת תוכל להיכנס לאפליקציה ולהתחיל לעבוד.</div>'
       +'</div>';
-    rows='<a href="weightstock.html" style="display:block;background:var(--ok);color:#fff;border-radius:12px;padding:14px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;margin-top:16px;">כניסה לאפליקציה ›</a>';
+    rows='<div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">'
+      +'<a href="weightstock.html" style="display:block;background:linear-gradient(135deg,#003B71,#005aaa);color:#fff;border-radius:12px;padding:14px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;">⚖️ כניסה לאפליקציה</a>'
+      +'</div>';
   } else if(status==='rejected'){
     statusHtml='<div style="background:rgba(220,38,38,.08);border:1.5px solid var(--crit);border-radius:12px;padding:14px;text-align:center;margin-bottom:16px;">'
       +'<div style="font-size:22px;margin-bottom:4px;">❌</div>'
