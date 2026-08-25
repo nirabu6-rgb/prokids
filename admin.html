@@ -1876,53 +1876,32 @@ function toggleTicket(id){
   if(b)b.style.display=b.style.display==='none'?'':'none';
 }
 
-function adminRespondTicket(id,src){
+function adminRespondTicket(id){
   var inp=document.getElementById('tk-resp-'+id);
   var resp=(inp?inp.value:'').trim();
   if(!resp){showToast('כתוב תגובה');return;}
-  if(src==='ws3'){
-    var ws=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
-    var t=ws.find(function(x){return x.id===id;});
-    if(t){t.reply=resp;t.status='נענה';}
-    localStorage.setItem('ws3_support_tickets',JSON.stringify(ws));
-  } else {
-    var tickets=getTickets();
-    var tk=tickets.find(function(t){return t.id===id;});
-    if(tk){tk.response=resp;tk.responseTs=Date.now();tk.status='answered';}
-    setTickets(tickets);
-  }
+  var ws=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+  var t=ws.find(function(x){return x.id===id;});
+  if(t){t.ownerReply=resp;t.ownerReplyDate=new Date().toISOString();t.status='נענה';}
+  localStorage.setItem('ws3_support_tickets',JSON.stringify(ws));
   showToast('✅ תגובה נשלחה');
   renderSupport();
 }
 
-function adminCloseTicket(id,src){
-  if(src==='ws3'){
-    var ws=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
-    var t=ws.find(function(x){return x.id===id;});
-    if(t)t.status='נפתר';
-    localStorage.setItem('ws3_support_tickets',JSON.stringify(ws));
-  } else {
-    var tickets=getTickets();
-    var tk=tickets.find(function(t){return t.id===id;});
-    if(tk)tk.status='closed';
-    setTickets(tickets);
-  }
+function adminCloseTicket(id){
+  var ws=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+  var t=ws.find(function(x){return x.id===id;});
+  if(t)t.status='נפתר';
+  localStorage.setItem('ws3_support_tickets',JSON.stringify(ws));
   showToast('קריאה סגורה');
   renderSupport();
 }
 
-function adminReopenTicket(id,src){
-  if(src==='ws3'){
-    var ws=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
-    var t=ws.find(function(x){return x.id===id;});
-    if(t)t.status='ממתין לתשובה';
-    localStorage.setItem('ws3_support_tickets',JSON.stringify(ws));
-  } else {
-    var tickets=getTickets();
-    var tk=tickets.find(function(t){return t.id===id;});
-    if(tk)tk.status='open';
-    setTickets(tickets);
-  }
+function adminReopenTicket(id){
+  var ws=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+  var t=ws.find(function(x){return x.id===id;});
+  if(t)t.status='ממתין לתשובה';
+  localStorage.setItem('ws3_support_tickets',JSON.stringify(ws));
   renderSupport();
 }
 
