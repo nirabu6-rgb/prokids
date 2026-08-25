@@ -5980,8 +5980,9 @@ function openSupportModal(){
         +'</div>'
         +'<div style="font-size:13px;color:var(--text);white-space:pre-wrap;">'+t.msg+'</div>'
         +'<div style="font-size:11px;color:var(--muted);">'+new Date(t.date).toLocaleDateString('he-IL')+'</div>'
-        +(t.reply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;color:var(--text);white-space:pre-wrap;">💬 <b>'+(t.autoReply?'תשובה אוטומטית:':'תשובה:')+'</b> '+t.reply+'</div>':'')
-        +(t.autoReply&&!t.resolved&&t.status==='נענה-אוטומטי'
+        +(t.autoReply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;color:var(--text);white-space:pre-wrap;">💬 <b>תשובה אוטומטית:</b> '+t.autoReply+'</div>':'')
+        +(t.ownerReply?'<div style="background:rgba(59,130,246,.1);border-right:3px solid #3b82f6;border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;color:var(--text);white-space:pre-wrap;">💬 <b>תגובת הנציג:</b> '+t.ownerReply+'</div>':'')
+        +(t.autoReply&&!t.autoResolved&&(t.status==='ממתין לתשובה'||t.status==='ממתין לנציג')
           ?'<div style="display:flex;gap:8px;margin-top:8px;">'
           +'<button onclick="ticketResolved(\''+t.id+'\',true)" style="flex:1;padding:9px;background:var(--ok);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">✅ כן, הסתדרתי</button>'
           +'<button onclick="ticketResolved(\''+t.id+'\',false)" style="flex:1;padding:9px;background:var(--warn);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🔔 לא, צריך נציג</button>'
@@ -6004,12 +6005,14 @@ function openSupportModal(){
         var statusColor=t.status==='נפתר'?'var(--ok)':t.status==='ממתין לנציג'?'var(--crit)':t.status==='ממתין לתשובה'?'var(--warn)':'var(--muted)';
         html+='<div class="card" style="margin:0;padding:14px;display:flex;flex-direction:column;gap:8px;'+(t.status==='ממתין לנציג'?'border:2px solid var(--crit);':'')+'border-radius:12px;">'
           +'<div style="display:flex;justify-content:space-between;align-items:center;">'
-          +'<span style="font-size:13px;font-weight:700;color:var(--text);">'+t.name+' — '+t.topic+'</span>'
+          +'<span style="font-size:13px;font-weight:700;color:var(--text);">'+(t.senderName||t.name||'')+'  — '+t.topic+'</span>'
           +'<span style="font-size:11px;color:'+statusColor+';font-weight:600;">'+(t.status==='ממתין לנציג'?'🔔 '+t.status:t.status)+'</span>'
           +'</div>'
           +'<div style="font-size:13px;color:var(--text);white-space:pre-wrap;">'+t.msg+'</div>'
           +'<div style="font-size:11px;color:var(--muted);">'+new Date(t.date).toLocaleDateString('he-IL')+'</div>'
-          +(t.reply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;white-space:pre-wrap;">💬 <b>תשובה:</b> '+t.reply+'</div>':'')
+          +(t.autoReply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;white-space:pre-wrap;">💬 <b>אוטומטי:</b> '+t.autoReply+'</div>':'')
+          +(t.ownerReply?'<div style="background:rgba(59,130,246,.1);border-right:3px solid #3b82f6;border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;white-space:pre-wrap;">💬 <b>תגובת נציג:</b> '+t.ownerReply+'</div>':'')
+          +(t.localManagerNote?'<div style="background:rgba(245,158,11,.1);border-right:3px solid var(--warn);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;white-space:pre-wrap;">📝 <b>הערת מנהל:</b> '+t.localManagerNote+'</div>':'')
           +'<div style="display:flex;gap:8px;margin-top:4px;">'
           +'<input id="sup-reply-'+t.id+'" placeholder="תשובה לעובד..." style="flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
           +'<button onclick="replyTicket(\''+t.id+'\')" style="padding:8px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">שלח</button>'
@@ -6055,19 +6058,24 @@ function submitTicket(){
   var topic=(document.getElementById('sup-topic')||{}).value||'';
   var msg=((document.getElementById('sup-msg')||{}).value||'').trim();
   if(!msg){showToast('כתוב את תוכן הפנייה');return;}
-  var autoReply=getAutoReply(topic,msg);
+  var autoReplyText=getAutoReply(topic,msg);
   var ticketId=Date.now().toString(36);
   var tickets=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+  var settings=LS.get('settings',{});
+  var bizName=settings.bizName||LS.get('mode',{}).bizName||'WeightStock';
   tickets.push({
     id:ticketId,
+    bizName:bizName,
+    senderName:(_umUser&&_umUser.name)||'מנהל',
+    senderRole:(_umUser&&_umUser.isManager)?'manager':'employee',
     uid:(_umUser&&_umUser.empId)||'mgr',
-    name:(_umUser&&_umUser.name)||'מנהל',
     topic:topic,msg:msg,
     date:new Date().toISOString(),
-    status:'נענה-אוטומטי',
-    reply:autoReply+'\n\n❓ האם זה עזר לך להסתדר?',
-    autoReply:true,
-    resolved:false
+    status:'ממתין לתשובה',
+    ownerReply:'',
+    ownerReplyDate:'',
+    autoReply:autoReplyText+'\n\n❓ האם זה עזר לך להסתדר?',
+    autoResolved:false
   });
   localStorage.setItem('ws3_support_tickets',JSON.stringify(tickets));
   showToast('✅ קריאה נשלחה — קיבלת תשובה אוטומטית');
@@ -6078,8 +6086,8 @@ function ticketResolved(id,yes){
   var tickets=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
   var t=tickets.find(function(x){return x.id===id;});
   if(t){
-    if(yes){t.status='נפתר';t.resolved=true;}
-    else{t.status='ממתין לנציג';t.escalated=true;t.reply=(t.reply||'')+'\n\n🔔 הפנייה הועברה לטיפול נציג — נחזור אליך בהקדם.';}
+    if(yes){t.status='נפתר';t.autoResolved=true;}
+    else{t.status='ממתין לנציג';}
   }
   localStorage.setItem('ws3_support_tickets',JSON.stringify(tickets));
   if(yes)showToast('שמחים שהסתדרת! ✓');
@@ -6092,7 +6100,7 @@ function replyTicket(id){
   if(!reply){showToast('כתוב תשובה');return;}
   var tickets=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
   var t=tickets.find(function(x){return x.id===id;});
-  if(t){t.reply=reply;t.status='נענה';}
+  if(t){t.localManagerNote=reply;t.status='נענה';}
   localStorage.setItem('ws3_support_tickets',JSON.stringify(tickets));
   showToast('✅ תשובה נשלחה');
   openSupportModal();

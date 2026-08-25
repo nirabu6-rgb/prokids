@@ -1781,17 +1781,8 @@ function getTickets(){return lsGet('admin_tickets',[]);}
 function setTickets(arr){lsSet('admin_tickets',arr);}
 
 function getAllTickets(){
-  /* merge admin tickets + ws3 support tickets from all localStorage keys */
-  var all=getTickets().map(function(tk){
-    var biz=_bizList.find(function(t){return t.id===tk.tenantId;});
-    return Object.assign({},tk,{
-      _bizName:biz&&biz.settings&&biz.settings.bizName?biz.settings.bizName:(tk.tenantId||'—'),
-      _sender:tk.senderName||'—',
-      _ts:tk.ts||0,
-      _source:'admin'
-    });
-  });
-  /* ws3_support_tickets are stored per-tenant in localStorage */
+  /* single source of truth: ws3_support_tickets */
+  var all=[];
   try{
     var raw=localStorage.getItem('ws3_support_tickets');
     if(raw){
@@ -1800,15 +1791,14 @@ function getAllTickets(){
         all.push({
           id:t.id||('ws'+Date.now()),
           _bizName:t.bizName||'WeightStock',
-          _sender:t.name||'—',
+          _sender:t.senderName||t.name||'—',
           _ts:new Date(t.date||0).getTime(),
           subject:t.topic||'פנייה',
           text:t.msg||'',
-          status:t.status==='נפתר'?'closed':t.status==='נענה'?'answered':'open',
-          response:t.reply||'',
-          responseTs:null,
-          _source:'ws3',
-          _wsRef:t
+          status:t.status||'ממתין לתשובה',
+          response:t.ownerReply||'',
+          responseTs:t.ownerReplyDate?new Date(t.ownerReplyDate).getTime():null,
+          senderRole:t.senderRole||'employee'
         });
       });
     }
@@ -1823,7 +1813,7 @@ function renderSupport(){
   var filterHtml='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">'
     +'<input id="sup-search" oninput="filterSupport()" placeholder="🔍 חיפוש לפי נושא / עסק / שולח..." style="flex:1;min-width:180px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
     +'<select id="sup-status" onchange="filterSupport()" style="padding:9px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
-    +'<option value="">כל הסטטוסים</option><option value="open">פתוח</option><option value="answered">נענה</option><option value="closed">סגור</option>'
+    +'<option value="">כל הסטטוסים</option><option value="ממתין לתשובה">ממתין לתשובה</option><option value="נענה">נענה</option><option value="ממתין לנציג">ממתין לנציג</option><option value="נפתר">נפתר</option>'
     +'</select>'
     +'<select id="sup-biz-filter" onchange="filterSupport()" style="padding:9px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
     +'<option value="">כל העסקים</option>'
@@ -1851,8 +1841,8 @@ function filterSupport(){
   var list=document.getElementById('sup-list');
   if(!list)return;
   if(!filtered.length){list.innerHTML='<div class="empty"><div class="ei">🎧</div><b>אין תוצאות</b></div>';return;}
-  var statusLabel={'open':'פתוח','answered':'נענה','closed':'סגור'};
-  var statusColor={'open':'#ef4444','answered':'#f59e0b','closed':'#10b981'};
+  var statusLabel={'ממתין לתשובה':'ממתין לתשובה','נענה':'נענה','ממתין לנציג':'ממתין לנציג','נפתר':'נפתר'};
+  var statusColor={'ממתין לתשובה':'#ef4444','נענה':'#f59e0b','ממתין לנציג':'#f97316','נפתר':'#10b981'};
   list.innerHTML=filtered.map(function(tk){
     var dt=tk._ts?new Date(tk._ts).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
     return '<div class="ticket-row" id="tk-row-'+tk.id+'" style="margin-bottom:10px;border-radius:12px;border:1.5px solid var(--border);overflow:hidden;">'
@@ -1869,13 +1859,13 @@ function filterSupport(){
         +'</div>'
         +'<p style="font-size:13px;margin-bottom:12px;white-space:pre-wrap;color:var(--text);">'+esc(tk.text)+'</p>'
         +(tk.response?'<div style="background:rgba(0,168,89,.08);border-right:3px solid #10b981;border-radius:0 8px 8px 0;padding:10px 12px;font-size:12px;margin-bottom:12px;color:var(--text);"><b>תגובתך:</b> '+esc(tk.response)+'</div>':'')
-        +(tk.status!=='closed'
+        +(tk.status!=='נפתר'
           ?'<textarea id="tk-resp-'+tk.id+'" placeholder="כתוב תגובה לעובד/לקוח..." rows="2" style="width:100%;box-sizing:border-box;padding:9px;border-radius:9px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;resize:vertical;margin-bottom:8px;"></textarea>'
           +'<div style="display:flex;gap:8px;">'
-          +'<button class="btn-action blue" onclick="adminRespondTicket(\''+tk.id+'\',\''+tk._source+'\')">📨 שלח תגובה</button>'
-          +'<button class="btn-action green" onclick="adminCloseTicket(\''+tk.id+'\',\''+tk._source+'\')">✓ סגור קריאה</button>'
+          +'<button class="btn-action blue" onclick="adminRespondTicket(\''+tk.id+'\')">📨 שלח תגובה</button>'
+          +'<button class="btn-action green" onclick="adminCloseTicket(\''+tk.id+'\')">✓ סגור קריאה</button>'
           +'</div>'
-          :'<button class="btn-action orange" onclick="adminReopenTicket(\''+tk.id+'\',\''+tk._source+'\')">↩ פתח מחדש</button>')
+          :'<button class="btn-action orange" onclick="adminReopenTicket(\''+tk.id+'\')">↩ פתח מחדש</button>')
       +'</div>'
     +'</div>';
   }).join('');
