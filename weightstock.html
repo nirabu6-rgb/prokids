@@ -3926,24 +3926,38 @@ function mgrUnlockSubmit(){
   var pin=(inp?inp.value:'').trim();
   var keys=_mgrUnlockPendingKeys.length?_mgrUnlockPendingKeys:[_mgrUnlockPrimaryKey||'unknown'];
 
-  /* Check temp code (one-time, unlocks specific sections) */
-  if(_tempCodes[pin]!==undefined){
-    var allowed=_tempCodes[pin];
-    delete _tempCodes[pin];
+  /* Check temp code from localStorage (persisted, one-time use) */
+  var storedCodes=LS.get('ws3_temp_codes',{});
+  if(storedCodes[pin]!==undefined){
+    var allowed=storedCodes[pin];
+    delete storedCodes[pin];
+    LS.set('ws3_temp_codes',storedCodes);
     if(!Array.isArray(allowed))allowed=[allowed];
     _doUnlockSections(allowed);
     return;
   }
 
-  /* Check manager PIN — unlocks all selected sections */
-  var mgr=LS.get('um_manager',null);
-  var correctPin=mgr?(mgr.pin||mgr.password||''):'';
-  if(!correctPin||pin!==correctPin){
-    if(err){err.textContent='קוד שגוי — נסה שוב';err.style.display='';}
-    if(inp){inp.value='';inp.focus();}
+  /* Check in-memory temp codes (same session) */
+  if(_tempCodes[pin]!==undefined){
+    var allowed2=_tempCodes[pin];
+    delete _tempCodes[pin];
+    if(!Array.isArray(allowed2))allowed2=[allowed2];
+    _doUnlockSections(allowed2);
     return;
   }
-  _doUnlockSections(keys);
+
+  /* Manager PIN only works if current user IS the manager */
+  if(_umUser&&_umUser.isManager){
+    var mgr=LS.get('um_manager',null);
+    var correctPin=mgr?(mgr.pin||mgr.password||''):'';
+    if(correctPin&&pin===correctPin){
+      _doUnlockSections(keys);
+      return;
+    }
+  }
+
+  if(err){err.textContent='קוד שגוי — נסה שוב';err.style.display='';}
+  if(inp){inp.value='';inp.focus();}
 }
 function _doUnlockSections(keys){
   closeMgrUnlock();
@@ -4100,10 +4114,11 @@ function generateTempCode(){
     if(inp)inp.focus();return;
   }
   if(errEl)errEl.style.display='none';
-  /* store code → first selected section (temp codes are per-section, one code per section) */
-  _tcSelectedSections.forEach(function(k){_tempCodes[code]=k;}); /* last wins if multi; show all in label */
-  /* For multi-section with same code, store array */
+  /* store in memory AND localStorage so it survives session switch */
   _tempCodes[code]=_tcSelectedSections.slice();
+  var storedCodes=LS.get('ws3_temp_codes',{});
+  storedCodes[code]=_tcSelectedSections.slice();
+  LS.set('ws3_temp_codes',storedCodes);
   var empLbl=document.getElementById('tc-emp-label');
   var empName=empLbl&&_tcSelectedEmp?empLbl.textContent:'';
   var forEmp=document.getElementById('tc-for-emp');
