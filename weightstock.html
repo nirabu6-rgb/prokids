@@ -2677,6 +2677,17 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 <!-- PRINT AREA FOR PDF EXPORT -->
 <div id="ws3-print-area"></div>
 
+<!-- SUPPORT MODAL -->
+<div class="modal-overlay" id="modal-support">
+  <div class="modal-box mid" style="width:calc(100% - 28px);max-height:90vh;overflow-y:auto;">
+    <div class="modal-header">
+      <h3 style="margin:0;">💬 תמיכה</h3>
+      <button class="modal-close" onclick="closeModal('modal-support')">&#x2715;</button>
+    </div>
+    <div id="support-body" style="display:flex;flex-direction:column;gap:14px;padding-top:4px;"></div>
+  </div>
+</div>
+
 <!-- MANAGER PIN UNLOCK MODAL -->
 <div id="modal-mgr-unlock" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;">
   <div style="background:var(--card);border-radius:20px;width:90%;max-width:440px;box-shadow:0 4px 40px rgba(0,0,0,.2);font-family:inherit;max-height:85vh;display:flex;flex-direction:column;">
@@ -2753,6 +2764,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   <div style="flex:1;"></div>
   <button class="sidebtn" onclick="openTVMode()"><span class="sic"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>מצב תצוגה</button>
   <button class="sidebtn" id="side-screen-employees" onclick="navTo('screen-employees')" style="display:none;"><span class="sic">👥</span>עובדים</button>
+  <button class="sidebtn" onclick="openSupportModal()"><span class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>תמיכה</button>
   <button class="sidebtn" onclick="openSettings()"><span class="sic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>הגדרות</button>
   <button class="sidebtn" id="side-switch-user" onclick="switchUserConfirm()" style="display:none;border-top:1px solid rgba(255,255,255,.1);margin-top:4px;"><span class="sic"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>החלף משתמש</button>
 </nav>
@@ -4230,9 +4242,9 @@ function applyUserPerms(){
   /* History — show locked if no manager */
   var sideHist=document.getElementById('side-screen-history');
   if(sideHist){sideHist.style.display='flex';_lockEl(sideHist,!mgr,'history');}
-  /* Alerts — show locked if no manager */
+  /* Alerts — open to everyone */
   var sideAlerts=document.getElementById('side-screen-alerts');
-  if(sideAlerts){sideAlerts.style.display='flex';_lockEl(sideAlerts,!mgr,'alerts');}
+  if(sideAlerts){sideAlerts.style.display='flex';_lockEl(sideAlerts,false,'alerts');}
   /* TV mode — lock if no permission */
   var sideTv=document.querySelector('.sidebtn[onclick*="openTVMode"]');
   if(sideTv){sideTv.style.display='flex';_lockEl(sideTv,!(mgr||canDo('tvMode')),'tvmode');}
@@ -5866,6 +5878,125 @@ function openSettings(){
   openModal('modal-settings');
 }
 window.openSettings=openSettings;
+
+/* ── Support / Tickets ── */
+var SUPPORT_TOPICS=['בעיה טכנית','שאלה כללית','בקשת פיצ\'ר','שגיאה בנתונים','אחר'];
+function openSupportModal(){
+  var body=document.getElementById('support-body');
+  if(!body)return;
+  var tickets=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+  var myId=(_umUser&&_umUser.empId)||'mgr';
+  var myTickets=tickets.filter(function(t){return t.uid===myId;});
+  var isMgr=_umUser&&_umUser.isManager;
+
+  var html='';
+  /* New ticket form */
+  html+='<div class="card" style="margin:0;padding:16px;display:flex;flex-direction:column;gap:10px;">'
+    +'<div style="font-size:14px;font-weight:700;color:var(--text);">✉️ פתח קריאת תמיכה חדשה</div>'
+    +'<div>'
+    +'<label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">נושא</label>'
+    +'<select id="sup-topic" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;font-family:inherit;">'
+    +SUPPORT_TOPICS.map(function(t){return '<option>'+t+'</option>';}).join('')
+    +'</select>'
+    +'</div>'
+    +'<div>'
+    +'<label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">תיאור התקלה / הבקשה</label>'
+    +'<textarea id="sup-msg" rows="4" placeholder="תאר את הבעיה בפירוט..." style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;font-family:inherit;resize:vertical;"></textarea>'
+    +'</div>'
+    +'<button onclick="submitTicket()" style="padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">📨 שלח</button>'
+    +'</div>';
+
+  /* Existing tickets */
+  if(myTickets.length){
+    html+='<div style="font-size:13px;font-weight:700;color:var(--muted);margin-top:4px;">הקריאות שלי</div>';
+    myTickets.slice().reverse().forEach(function(t){
+      var statusColor=t.status==='נפתר'?'var(--ok)':t.status==='ממתין לתשובה'?'var(--warn)':'var(--muted)';
+      html+='<div class="card" style="margin:0;padding:14px;display:flex;flex-direction:column;gap:8px;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+        +'<span style="font-size:13px;font-weight:700;color:var(--text);">'+t.topic+'</span>'
+        +'<span style="font-size:11px;color:'+statusColor+';font-weight:600;">'+t.status+'</span>'
+        +'</div>'
+        +'<div style="font-size:13px;color:var(--text);white-space:pre-wrap;">'+t.msg+'</div>'
+        +'<div style="font-size:11px;color:var(--muted);">'+new Date(t.date).toLocaleDateString('he-IL')+'</div>'
+        +(t.reply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;color:var(--text);">💬 <b>תשובה:</b> '+t.reply+'</div>':'')
+        +(isMgr?'<div style="display:flex;gap:8px;margin-top:4px;">'
+          +'<input id="sup-reply-'+t.id+'" placeholder="תשובה לעובד..." style="flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
+          +'<button onclick="replyTicket(\''+t.id+'\')" style="padding:8px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">שלח</button>'
+          +'<button onclick="resolveTicket(\''+t.id+'\')" style="padding:8px 12px;background:var(--ok);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✓ נפתר</button>'
+          +'</div>':'')
+        +'</div>';
+    });
+  }
+
+  /* Manager view: all tickets */
+  if(isMgr){
+    var others=tickets.filter(function(t){return t.uid!==myId;});
+    if(others.length){
+      html+='<div style="font-size:13px;font-weight:700;color:var(--muted);margin-top:4px;">כל קריאות העובדים</div>';
+      others.slice().reverse().forEach(function(t){
+        var statusColor=t.status==='נפתר'?'var(--ok)':t.status==='ממתין לתשובה'?'var(--warn)':'var(--muted)';
+        html+='<div class="card" style="margin:0;padding:14px;display:flex;flex-direction:column;gap:8px;">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+          +'<span style="font-size:13px;font-weight:700;color:var(--text);">'+t.name+' — '+t.topic+'</span>'
+          +'<span style="font-size:11px;color:'+statusColor+';font-weight:600;">'+t.status+'</span>'
+          +'</div>'
+          +'<div style="font-size:13px;color:var(--text);white-space:pre-wrap;">'+t.msg+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);">'+new Date(t.date).toLocaleDateString('he-IL')+'</div>'
+          +(t.reply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;">💬 <b>תשובה שלך:</b> '+t.reply+'</div>':'')
+          +'<div style="display:flex;gap:8px;margin-top:4px;">'
+          +'<input id="sup-reply-'+t.id+'" placeholder="תשובה לעובד..." style="flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
+          +'<button onclick="replyTicket(\''+t.id+'\')" style="padding:8px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">שלח</button>'
+          +'<button onclick="resolveTicket(\''+t.id+'\')" style="padding:8px 12px;background:var(--ok);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✓ נפתר</button>'
+          +'</div>'
+          +'</div>';
+      });
+    }
+  }
+
+  body.innerHTML=html;
+  openModal('modal-support');
+}
+function submitTicket(){
+  var topic=(document.getElementById('sup-topic')||{}).value||'';
+  var msg=((document.getElementById('sup-msg')||{}).value||'').trim();
+  if(!msg){showToast('תאר את הבעיה');return;}
+  var tickets=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+  tickets.push({
+    id:Date.now().toString(36),
+    uid:(_umUser&&_umUser.empId)||'mgr',
+    name:(_umUser&&_umUser.name)||'מנהל',
+    topic:topic,msg:msg,
+    date:new Date().toISOString(),
+    status:'ממתין לתשובה',reply:''
+  });
+  localStorage.setItem('ws3_support_tickets',JSON.stringify(tickets));
+  showToast('✅ קריאה נשלחה בהצלחה');
+  openSupportModal();
+}
+function replyTicket(id){
+  var inp=document.getElementById('sup-reply-'+id);
+  var reply=(inp?inp.value:'').trim();
+  if(!reply){showToast('כתוב תשובה');return;}
+  var tickets=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+  var t=tickets.find(function(x){return x.id===id;});
+  if(t){t.reply=reply;t.status='נענה';}
+  localStorage.setItem('ws3_support_tickets',JSON.stringify(tickets));
+  showToast('✅ תשובה נשלחה');
+  openSupportModal();
+}
+function resolveTicket(id){
+  var tickets=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+  var t=tickets.find(function(x){return x.id===id;});
+  if(t)t.status='נפתר';
+  localStorage.setItem('ws3_support_tickets',JSON.stringify(tickets));
+  showToast('✓ קריאה סומנה כנפתרה');
+  openSupportModal();
+}
+window.openSupportModal=openSupportModal;
+window.submitTicket=submitTicket;
+window.replyTicket=replyTicket;
+window.resolveTicket=resolveTicket;
+
 function copyStoreCode(){
   var code=getStoreCode();
   if(navigator.clipboard){navigator.clipboard.writeText(code).then(function(){showToast('קוד חנות הועתק: '+code);});}
