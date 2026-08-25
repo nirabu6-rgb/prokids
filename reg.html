@@ -419,13 +419,13 @@ function submitReg(){
     }
   }
   if(approved&&approved.status==='approved'){
-    var appUrl=location.href.replace(/reg\.html.*/,'')+'weightstock.html';
+    var appUrl=location.origin+location.pathname.replace(/\/[^/]*$/,'/')+'weightstock.html';
     document.querySelector('.card').innerHTML=
       '<div class="pending-screen" style="display:block;">'
       +'<div class="icon">✅</div>'
       +'<h2>החשבון אושר!</h2>'
       +'<p style="margin-bottom:16px;">ברכות! העסק שלך אושר במערכת.<br>לחץ כאן להיכנס לאפליקציה:</p>'
-      +'<a href="'+appUrl+'" style="display:block;background:var(--ok);color:#fff;border-radius:12px;padding:13px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;">כניסה לאפליקציה ›</a>'
+      +'<a href="'+appUrl+'" onclick="location.href=\''+appUrl+'\';return false;" style="display:block;background:var(--ok);color:#fff;border-radius:12px;padding:13px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;">⚖️ כניסה לאפליקציה ›</a>'
       +'<button onclick="clearAndRestart()" style="margin-top:12px;width:100%;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline;">הרשם מחדש עם פרטים חדשים</button>'
       +'</div>';
     return;
