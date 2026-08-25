@@ -83,8 +83,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
       <div style="font-size:13px;font-weight:700;color:var(--text);margin:16px 0 14px;">👤 פרטים אישיים — בעל העסק / מנהל</div>
       <div id="err1" class="err"></div>
       <div class="row2">
-        <div class="fld"><label>שם פרטי *</label><input id="r-firstname" placeholder="ישראל" autocomplete="given-name"></div>
-        <div class="fld"><label>שם משפחה *</label><input id="r-lastname" placeholder="ישראלי" autocomplete="family-name"></div>
+        <div class="fld"><label>שם פרטי *</label><input id="r-firstname" placeholder="ישראל" autocomplete="given-name" oninput="saveDraft()"></div>
+        <div class="fld"><label>שם משפחה *</label><input id="r-lastname" placeholder="ישראלי" autocomplete="family-name" oninput="saveDraft()"></div>
       </div>
       <div class="fld">
         <label>מגדר *</label>
@@ -103,11 +103,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
       </div>
       <div class="fld">
         <label>טלפון נייד *</label>
-        <input id="r-phone" type="tel" placeholder="050-0000000" autocomplete="tel">
+        <input id="r-phone" type="tel" placeholder="050-0000000" autocomplete="tel" oninput="saveDraft()">
       </div>
       <div class="fld">
         <label>כתובת מייל *</label>
-        <input id="r-email" type="email" placeholder="manager@example.com" autocomplete="email">
+        <input id="r-email" type="email" placeholder="manager@example.com" autocomplete="email" oninput="saveDraft()">
       </div>
       <div class="btns" style="margin-top:20px;">
         <button class="btn btn-primary" onclick="toStep2()">הבא — פרטי העסק ›</button>
@@ -118,7 +118,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
     <div class="step" id="s2">
       <div style="font-size:13px;font-weight:700;color:var(--text);margin:16px 0 14px;">🏢 פרטי העסק</div>
       <div id="err2" class="err"></div>
-      <div class="fld"><label>שם העסק *</label><input id="r-bizname" placeholder="חנות כהן בע&quot;מ" autocomplete="organization"></div>
+      <div class="fld"><label>שם העסק *</label><input id="r-bizname" placeholder="חנות כהן בע&quot;מ" autocomplete="organization" oninput="saveDraft()"></div>
       <div class="fld">
         <label>סוג עסק *</label>
         <select id="r-biztype">
@@ -139,10 +139,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
         </select>
       </div>
       <div class="row2">
-        <div class="fld"><label>עיר *</label><input id="r-city" placeholder="תל אביב" autocomplete="address-level2"></div>
+        <div class="fld"><label>עיר *</label><input id="r-city" placeholder="תל אביב" autocomplete="address-level2" oninput="saveDraft()"></div>
         <div class="fld"><label>רחוב</label><input id="r-street" placeholder="הרצל 1" autocomplete="street-address"></div>
       </div>
-      <div class="fld"><label>טלפון עסק</label><input id="r-bizphone" type="tel" placeholder="03-0000000"></div>
+      <div class="fld"><label>טלפון עסק</label><input id="r-bizphone" type="tel" placeholder="03-0000000" oninput="saveDraft()"></div>
       <div class="fld">
         <label>מספר עובדים משוער</label>
         <input id="r-empcount" type="tel" inputmode="numeric" placeholder="5" oninput="this.value=this.value.replace(/\D/g,'')">
@@ -200,6 +200,30 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
 
 <script>
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ── Draft auto-save / restore ── */
+var DRAFT_KEY='ws3_reg_draft';
+var DRAFT_FIELDS=['r-firstname','r-lastname','r-phone','r-email','r-bizname','r-city','r-bizphone','r-storecode'];
+function saveDraft(){
+  var d={};
+  DRAFT_FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)d[id]=el.value;});
+  var gEl=document.querySelector('input[name="r-gender"]:checked');
+  if(gEl)d.gender=gEl.value;
+  var btEl=document.getElementById('r-biztype');
+  if(btEl)d['r-biztype']=btEl.value;
+  try{localStorage.setItem(DRAFT_KEY,JSON.stringify(d));}catch(e){}
+}
+function restoreDraft(){
+  try{
+    var raw=localStorage.getItem(DRAFT_KEY);
+    if(!raw)return;
+    var d=JSON.parse(raw);
+    DRAFT_FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&d[id])el.value=d[id];});
+    if(d.gender){var r=document.querySelector('input[name="r-gender"][value="'+d.gender+'"]');if(r){r.checked=true;highlightGender&&highlightGender();}}
+    if(d['r-biztype']){var bt=document.getElementById('r-biztype');if(bt)bt.value=d['r-biztype'];}
+  }catch(e){}
+}
+function clearDraft(){try{localStorage.removeItem(DRAFT_KEY);}catch(e){}}
 
 function fmtDate(ts){
   if(!ts)return '—';
@@ -390,6 +414,7 @@ function submitReg(){
     empCount:empcount,ts:Date.now()
   }));
 
+  clearDraft(); /* registration submitted — clear draft */
   /* show pending screen */
   document.getElementById('s1').classList.remove('active');
   document.getElementById('s2').classList.remove('active');
@@ -446,6 +471,9 @@ function submitReg(){
       +'קוד עסק: <b style="color:var(--accent);">'+esc(pending.storeCode||'—')+'</b>';
   }
 })();
+
+/* restore draft on page load (after pending-check above) */
+restoreDraft();
 </script>
 </body>
 </html>
