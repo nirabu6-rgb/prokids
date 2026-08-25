@@ -2664,6 +2664,22 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 <!-- PRINT AREA FOR PDF EXPORT -->
 <div id="ws3-print-area"></div>
 
+<!-- MANAGER PIN UNLOCK MODAL -->
+<div id="modal-mgr-unlock" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--card);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;box-shadow:0 8px 40px rgba(0,0,0,.25);text-align:center;">
+    <div style="font-size:36px;margin-bottom:10px;">🔐</div>
+    <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px;">אזור נעול</div>
+    <div id="mgr-unlock-label" style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5;">הכנס את קוד המנהל כדי לגשת לאזור זה עד להתנתקות הבאה</div>
+    <input id="mgr-unlock-input" type="password" inputmode="numeric" placeholder="קוד מנהל" maxlength="20"
+      style="width:100%;box-sizing:border-box;padding:12px 14px;border:2px solid var(--border);border-radius:12px;font-size:18px;text-align:center;letter-spacing:4px;font-family:monospace;background:var(--card2);color:var(--text);outline:none;margin-bottom:8px;"
+      onkeydown="if(event.key==='Enter')mgrUnlockSubmit()">
+    <div id="mgr-unlock-err" style="display:none;color:var(--crit);font-size:12px;margin-bottom:8px;font-weight:600;">קוד שגוי — נסה שוב</div>
+    <div style="display:flex;gap:10px;margin-top:6px;">
+      <button onclick="closeMgrUnlock()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:none;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">ביטול</button>
+      <button onclick="mgrUnlockSubmit()" style="flex:1;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">פתח 🔓</button>
+    </div>
+  </div>
+</div>
 <!-- SIDEBAR NAV (desktop) -->
 <nav id="sidebar-nav" style="display:none;">
   <!-- User greeting block — top of sidebar -->
@@ -3810,12 +3826,70 @@ function umEnterApp(){
   showToast(greeting);
 }
 
+var _unlockedSections={};
+var _mgrUnlockCallback=null;
+
+function openMgrUnlock(label,cb){
+  _mgrUnlockCallback=cb||null;
+  var lbl=document.getElementById('mgr-unlock-label');
+  if(lbl)lbl.textContent=label||'הכנס את קוד המנהל כדי לגשת לאזור זה עד להתנתקות הבאה';
+  var inp=document.getElementById('mgr-unlock-input');
+  if(inp)inp.value='';
+  var err=document.getElementById('mgr-unlock-err');
+  if(err)err.style.display='none';
+  var m=document.getElementById('modal-mgr-unlock');
+  if(m){m.style.display='flex';}
+  setTimeout(function(){if(inp)inp.focus();},120);
+}
+function closeMgrUnlock(){
+  var m=document.getElementById('modal-mgr-unlock');
+  if(m)m.style.display='none';
+  _mgrUnlockCallback=null;
+}
+function mgrUnlockSubmit(){
+  var inp=document.getElementById('mgr-unlock-input');
+  var err=document.getElementById('mgr-unlock-err');
+  var pin=(inp?inp.value:'').trim();
+  /* Find manager PIN from employees list */
+  var emps=LS.get('employees')||[];
+  var mgr=emps.find(function(e){return e.isManager;});
+  var correctPin=mgr?mgr.pin:'';
+  if(!correctPin||pin!==correctPin){
+    if(err)err.style.display='';
+    if(inp){inp.value='';inp.focus();}
+    return;
+  }
+  /* Correct PIN — unlock */
+  closeMgrUnlock();
+  _unlockedSections['__all__']=true;
+  applyUserPerms();
+  if(_mgrUnlockCallback){
+    var cb=_mgrUnlockCallback;
+    _mgrUnlockCallback=null;
+    setTimeout(cb,80);
+  }
+}
+window.openMgrUnlock=openMgrUnlock;
+window.closeMgrUnlock=closeMgrUnlock;
+window.mgrUnlockSubmit=mgrUnlockSubmit;
+
 function _lockEl(el,lock){
   if(!el)return;
+  /* If session is unlocked by manager PIN, treat all as unlocked */
+  if(lock&&_unlockedSections['__all__'])lock=false;
   if(lock){
     el.classList.add('nav-locked');
     if(!el._lockHandler){
-      el._lockHandler=function(e){e.stopPropagation();e.preventDefault();showToast('🔒 אין לך הרשאה לפעולה זו');};
+      el._lockHandler=function(e){
+        e.stopPropagation();e.preventDefault();
+        /* Capture the original onclick before opening modal */
+        var origOnclick=el.getAttribute('onclick');
+        openMgrUnlock('הכנס את קוד המנהל כדי לגשת לאזור זה עד להתנתקות הבאה',function(){
+          if(origOnclick){
+            try{(new Function(origOnclick))();}catch(ex){console.warn(ex);}
+          }
+        });
+      };
       el.addEventListener('click',el._lockHandler,true);
     }
   } else {
@@ -3902,6 +3976,7 @@ window.applyUserPerms=applyUserPerms;
 function umLogout(){
   LS.del('um_session');
   _umUser=null;
+  _unlockedSections={};
   showUMLogin();
 }
 window.umLogout=umLogout;
