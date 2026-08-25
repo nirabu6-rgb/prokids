@@ -5918,7 +5918,12 @@ function openSupportModal(){
         +'</div>'
         +'<div style="font-size:13px;color:var(--text);white-space:pre-wrap;">'+t.msg+'</div>'
         +'<div style="font-size:11px;color:var(--muted);">'+new Date(t.date).toLocaleDateString('he-IL')+'</div>'
-        +(t.reply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;color:var(--text);">💬 <b>תשובה:</b> '+t.reply+'</div>':'')
+        +(t.reply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;color:var(--text);white-space:pre-wrap;">💬 <b>'+(t.autoReply?'תשובה אוטומטית:':'תשובה:')+'</b> '+t.reply+'</div>':'')
+        +(t.autoReply&&!t.resolved&&t.status==='נענה-אוטומטי'
+          ?'<div style="display:flex;gap:8px;margin-top:8px;">'
+          +'<button onclick="ticketResolved(\''+t.id+'\',true)" style="flex:1;padding:9px;background:var(--ok);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">✅ כן, הסתדרתי</button>'
+          +'<button onclick="ticketResolved(\''+t.id+'\',false)" style="flex:1;padding:9px;background:var(--warn);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🔔 לא, צריך נציג</button>'
+          +'</div>':'')
         +(isMgr?'<div style="display:flex;gap:8px;margin-top:4px;">'
           +'<input id="sup-reply-'+t.id+'" placeholder="תשובה לעובד..." style="flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
           +'<button onclick="replyTicket(\''+t.id+'\')" style="padding:8px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">שלח</button>'
@@ -5934,15 +5939,15 @@ function openSupportModal(){
     if(others.length){
       html+='<div style="font-size:13px;font-weight:700;color:var(--muted);margin-top:4px;">כל קריאות העובדים</div>';
       others.slice().reverse().forEach(function(t){
-        var statusColor=t.status==='נפתר'?'var(--ok)':t.status==='ממתין לתשובה'?'var(--warn)':'var(--muted)';
-        html+='<div class="card" style="margin:0;padding:14px;display:flex;flex-direction:column;gap:8px;">'
+        var statusColor=t.status==='נפתר'?'var(--ok)':t.status==='ממתין לנציג'?'var(--crit)':t.status==='ממתין לתשובה'?'var(--warn)':'var(--muted)';
+        html+='<div class="card" style="margin:0;padding:14px;display:flex;flex-direction:column;gap:8px;'+(t.status==='ממתין לנציג'?'border:2px solid var(--crit);':'')+'border-radius:12px;">'
           +'<div style="display:flex;justify-content:space-between;align-items:center;">'
           +'<span style="font-size:13px;font-weight:700;color:var(--text);">'+t.name+' — '+t.topic+'</span>'
-          +'<span style="font-size:11px;color:'+statusColor+';font-weight:600;">'+t.status+'</span>'
+          +'<span style="font-size:11px;color:'+statusColor+';font-weight:600;">'+(t.status==='ממתין לנציג'?'🔔 '+t.status:t.status)+'</span>'
           +'</div>'
           +'<div style="font-size:13px;color:var(--text);white-space:pre-wrap;">'+t.msg+'</div>'
           +'<div style="font-size:11px;color:var(--muted);">'+new Date(t.date).toLocaleDateString('he-IL')+'</div>'
-          +(t.reply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;">💬 <b>תשובה שלך:</b> '+t.reply+'</div>':'')
+          +(t.reply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;white-space:pre-wrap;">💬 <b>תשובה:</b> '+t.reply+'</div>':'')
           +'<div style="display:flex;gap:8px;margin-top:4px;">'
           +'<input id="sup-reply-'+t.id+'" placeholder="תשובה לעובד..." style="flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
           +'<button onclick="replyTicket(\''+t.id+'\')" style="padding:8px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">שלח</button>'
@@ -5956,21 +5961,67 @@ function openSupportModal(){
   body.innerHTML=html;
   openModal('modal-support');
 }
+/* ── Auto-reply engine ── */
+var _autoReplies=[
+  {keys:['סיסמ','קוד','התחבר','כניסה','נעול'],reply:'לשינוי סיסמה: היכנס להגדרות → "שינוי סיסמת מנהל". אם שכחת את הסיסמה פנה למנהל המערכת שיאפס אותה עבורך.'},
+  {keys:['מחיר','מחירים','עלות','תמחיר'],reply:'עדכון מחירים: היכנס לאזור "מחירים ורווח" בתפריט הצד. שים לב שהאזור דורש הרשאת מנהל.'},
+  {keys:['פריט','מלאי','כמות','שקילה','להוסיף','הוספ'],reply:'ניהול פריטים: לחץ על "פריטים" בתפריט → "פעולה חדשה" להוספת פריט. לעדכון כמות — לחץ על הפריט הקיים.'},
+  {keys:['היסטוריה','דוח','דוחות','נתון','סטטיסטיק'],reply:'דוחות והיסטוריה נמצאים בתפריט הצד. ניתן לסנן לפי תאריך ולפריט ספציפי.'},
+  {keys:['התראה','אזהרה','התראות'],reply:'התראות מוגדרות אוטומטית כשמלאי פריט מגיע לכמות המינימום שהגדרת. בדוק את הגדרות הפריט.'},
+  {keys:['עובד','עובדים','הרשאה','הרשאות'],reply:'ניהול עובדים: נמצא בהגדרות → "ניהול עובדים". שם ניתן להוסיף/לערוך עובדים ולהגדיר הרשאות.'},
+  {keys:['גיבוי','ייצוא','csv','נתונים'],reply:'ייצוא נתונים: היכנס לדוחות → "ייצוא CSV". ניתן לגבות את כל הנתונים משם.'},
+  {keys:['הזמנה','הזמנות','ספק'],reply:'ניהול הזמנות: אזור "הזמנות" בתפריט מאפשר לעקוב אחרי הזמנות מספקים ולעדכן אותן.'},
+  {keys:['קטגוריה','קטגוריות','סיווג'],reply:'קטגוריות מנוהלות בתפריט → "קטגוריות". שם תוכל להוסיף, לערוך ולמחוק קטגוריות.'},
+  {keys:['שגיאה','בעיה','לא עובד','תקלה','לא פועל'],reply:'אנחנו מצטערים על הבעיה! נסה לרענן את הדף. אם הבעיה נמשכת, פרט מה בדיוק קורה ונעביר לטיפול נציג.'},
+  {keys:['מנוי','תשלום','חיוב','פלאן','חבילה'],reply:'פרטי המנוי נמצאים בהגדרות → "מנוי WeightStock". לשאלות בנוגע לחיוב — פנה לנציג.'},
+];
+function getAutoReply(topic,msg){
+  var m=(msg||'').toLowerCase();
+  var t=(topic||'').toLowerCase();
+  for(var i=0;i<_autoReplies.length;i++){
+    var r=_autoReplies[i];
+    for(var j=0;j<r.keys.length;j++){
+      if(m.includes(r.keys[j])||t.includes(r.keys[j]))return r.reply;
+    }
+  }
+  if(t.includes('הצעה')||t.includes('שיפור'))return 'תודה על ההצעה! רשמנו אותה ונשקול אותה בגרסאות הבאות של המערכת.';
+  if(t.includes('בקשה'))return 'קיבלנו את הבקשה שלך ונבדק אותה בהקדם. אנחנו כאן אם יש שאלות נוספות.';
+  return 'תודה שפנית לתמיכה! קיבלנו את פנייתך ונחזור אליך בהקדם. בינתיים, האם יש מידע נוסף שיעזור לנו לטפל בפנייה?';
+}
+
 function submitTicket(){
   var topic=(document.getElementById('sup-topic')||{}).value||'';
   var msg=((document.getElementById('sup-msg')||{}).value||'').trim();
   if(!msg){showToast('כתוב את תוכן הפנייה');return;}
+  var autoReply=getAutoReply(topic,msg);
+  var ticketId=Date.now().toString(36);
   var tickets=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
   tickets.push({
-    id:Date.now().toString(36),
+    id:ticketId,
     uid:(_umUser&&_umUser.empId)||'mgr',
     name:(_umUser&&_umUser.name)||'מנהל',
     topic:topic,msg:msg,
     date:new Date().toISOString(),
-    status:'ממתין לתשובה',reply:''
+    status:'נענה-אוטומטי',
+    reply:autoReply+'\n\n❓ האם זה עזר לך להסתדר?',
+    autoReply:true,
+    resolved:false
   });
   localStorage.setItem('ws3_support_tickets',JSON.stringify(tickets));
-  showToast('✅ קריאה נשלחה בהצלחה');
+  showToast('✅ קריאה נשלחה — קיבלת תשובה אוטומטית');
+  openSupportModal();
+}
+
+function ticketResolved(id,yes){
+  var tickets=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+  var t=tickets.find(function(x){return x.id===id;});
+  if(t){
+    if(yes){t.status='נפתר';t.resolved=true;}
+    else{t.status='ממתין לנציג';t.escalated=true;t.reply=(t.reply||'')+'\n\n🔔 הפנייה הועברה לטיפול נציג — נחזור אליך בהקדם.';}
+  }
+  localStorage.setItem('ws3_support_tickets',JSON.stringify(tickets));
+  if(yes)showToast('שמחים שהסתדרת! ✓');
+  else showToast('הפנייה הועברה לנציג 🔔');
   openSupportModal();
 }
 function replyTicket(id){
@@ -5994,6 +6045,7 @@ function resolveTicket(id){
 }
 window.openSupportModal=openSupportModal;
 window.submitTicket=submitTicket;
+window.ticketResolved=ticketResolved;
 window.replyTicket=replyTicket;
 window.resolveTicket=resolveTicket;
 
