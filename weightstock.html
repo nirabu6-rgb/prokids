@@ -2695,7 +2695,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 
     <!-- Step 2: PIN entry -->
     <div id="mu-step2" style="display:none;padding:24px 20px 28px;text-align:center;">
-      <button onclick="document.getElementById('mu-step1').style.display='flex';document.getElementById('mu-step2').style.display='none';" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:12px;">‹ חזור לרשימה</button>
+      <button onclick="closeMgrUnlock()" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:12px;">‹ ביטול</button>
       <div style="font-size:32px;margin-bottom:8px;">🔐</div>
       <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;">הזן קוד גישה</div>
       <div id="mgr-unlock-label" style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5;"></div>
@@ -3874,34 +3874,18 @@ var SECTION_LABELS={
 };
 var SECTION_ICONS2={'reports':'📊','categories':'🗂️','orders':'🛒','items':'📦','history':'⏱️','alerts':'🔔','tvmode':'📺','employees':'👥','prices':'💰','addemp':'➕','actlog':'📋','fab':'⚡'};
 
-/* ── Step 1: open checklist of locked sections ── */
+/* ── Open unlock: skip checklist, go directly to PIN entry ── */
 function openMgrUnlock(sectionKey,label,cb){
   _mgrUnlockPrimaryKey=sectionKey||'unknown';
+  _mgrUnlockPendingKeys=[sectionKey||'unknown'];
   if(cb)_lockedSectionCallbacks[sectionKey]=cb;
-
-  /* Collect currently locked sections (have nav-locked class) */
-  var locked=[];
-  Object.keys(SECTION_LABELS).forEach(function(k){
-    if(!_unlockedSections[k]) locked.push(k);
-  });
-
-  var rows=locked.map(function(k){
-    var checked=(k===sectionKey)?'checked':'';
-    return '<label style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;border:2px solid '+(k===sectionKey?'var(--accent)':'var(--border)')+';background:'+(k===sectionKey?'rgba(0,168,89,.07)':'var(--card2)')+';cursor:pointer;user-select:none;transition:all .15s;" onclick="muToggle(this,\''+k+'\')">'
-      +'<span style="font-size:20px;">'+( SECTION_ICONS2[k]||'🔒')+'</span>'
-      +'<span style="flex:1;font-size:14px;font-weight:600;color:var(--text);">'+SECTION_LABELS[k]+'</span>'
-      +'<span class="mu-check" style="width:22px;height:22px;border-radius:6px;border:2px solid '+(k===sectionKey?'var(--accent)':'var(--border)')+';display:flex;align-items:center;justify-content:center;font-size:14px;background:'+(k===sectionKey?'var(--accent)':'transparent')+';color:#fff;flex-shrink:0;">'+(k===sectionKey?'✓':'')+'</span>'
-      +'<input type="checkbox" data-key="'+k+'" '+ checked+' style="display:none;">'
-      +'</label>';
-  }).join('');
 
   var el=document.getElementById('modal-mgr-unlock');
   if(el){
-    var body=document.getElementById('mu-step1-body');
-    if(body)body.innerHTML=rows;
-    document.getElementById('mu-step1').style.display='';
-    document.getElementById('mu-step2').style.display='none';
-    var inp=document.getElementById('mgr-unlock-input');if(inp)inp.value='';
+    document.getElementById('mu-step1').style.display='none';
+    document.getElementById('mu-step2').style.display='';
+    var inp=document.getElementById('mgr-unlock-input');
+    if(inp){inp.value='';setTimeout(function(){inp.focus();},80);}
     var err=document.getElementById('mgr-unlock-err');if(err)err.style.display='none';
     el.style.display='flex';
   }
