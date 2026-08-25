@@ -2334,9 +2334,13 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <span style="color:var(--muted);">›</span>
         </button>
       </div>
-      <!-- התנתק -->
+      <!-- החלף משתמש + התנתק -->
       <div class="card" style="margin:0;padding:0;overflow:hidden;">
-        <button onclick="logoutApp()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--crit);">
+        <button onclick="switchUserConfirm()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);">
+          <div style="display:flex;align-items:center;gap:10px;font-weight:700;">🔄 החלף משתמש</div>
+          <span style="color:var(--muted);">›</span>
+        </button>
+        <button onclick="logoutApp()" style="width:100%;background:none;border:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--crit);border-top:1px solid var(--border);">
           <div style="display:flex;align-items:center;gap:10px;font-weight:700;">🚪 התנתק</div>
           <span>›</span>
         </button>
@@ -2718,7 +2722,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
   <button class="sidebtn" onclick="openTVMode()"><span class="sic"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>מצב תצוגה</button>
   <button class="sidebtn" id="side-screen-employees" onclick="navTo('screen-employees')" style="display:none;"><span class="sic">👥</span>עובדים</button>
   <button class="sidebtn" onclick="openSettings()"><span class="sic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>הגדרות</button>
-  <button class="sidebtn" id="side-switch-user" onclick="umLogout()" style="display:none;border-top:1px solid rgba(255,255,255,.1);margin-top:4px;"><span class="sic"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>החלף משתמש</button>
+  <button class="sidebtn" id="side-switch-user" onclick="switchUserConfirm()" style="display:none;border-top:1px solid rgba(255,255,255,.1);margin-top:4px;"><span class="sic"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>החלף משתמש</button>
 </nav>
 
 <!-- SPLASH -->
@@ -4084,6 +4088,12 @@ function umLogout(){
   showUMLogin();
 }
 window.umLogout=umLogout;
+function switchUserConfirm(){
+  if(!confirm('להחליף משתמש? תצא מהחשבון הנוכחי.'))return;
+  closeModal('modal-settings');
+  umLogout();
+}
+window.switchUserConfirm=switchUserConfirm;
 
 /* ── Employee CRUD ── */
 function openEmployees(){
@@ -5969,7 +5979,7 @@ function openSupportTicket(){
 window.openSupportTicket=openSupportTicket;
 
 function logoutApp(){
-  if(!confirm('להתנתק? הנתונים ישמרו.'))return;
+  if(!confirm('בטוח שאתה רוצה להתנתק?\nכל הנתונים ישמרו.'))return;
   LS.del('session'); LS.del('um_session'); _DR=null; _umUser=null; _unlockedSections={}; _tempCodes={};
   closeModal('modal-settings');
   document.querySelectorAll('.modal-overlay').forEach(function(m){m.classList.remove('show');});
