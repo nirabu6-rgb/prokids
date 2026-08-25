@@ -1772,30 +1772,160 @@ function removeEquip(id){
 function getTickets(){return lsGet('admin_tickets',[]);}
 function setTickets(arr){lsSet('admin_tickets',arr);}
 
+function getAllTickets(){
+  /* merge admin tickets + ws3 support tickets from all localStorage keys */
+  var all=getTickets().map(function(tk){
+    var biz=_bizList.find(function(t){return t.id===tk.tenantId;});
+    return Object.assign({},tk,{
+      _bizName:biz&&biz.settings&&biz.settings.bizName?biz.settings.bizName:(tk.tenantId||'—'),
+      _sender:tk.senderName||'—',
+      _ts:tk.ts||0,
+      _source:'admin'
+    });
+  });
+  /* ws3_support_tickets are stored per-tenant in localStorage */
+  try{
+    var raw=localStorage.getItem('ws3_support_tickets');
+    if(raw){
+      var ws=JSON.parse(raw);
+      ws.forEach(function(t){
+        all.push({
+          id:t.id||('ws'+Date.now()),
+          _bizName:t.bizName||'WeightStock',
+          _sender:t.name||'—',
+          _ts:new Date(t.date||0).getTime(),
+          subject:t.topic||'פנייה',
+          text:t.msg||'',
+          status:t.status==='נפתר'?'closed':t.status==='נענה'?'answered':'open',
+          response:t.reply||'',
+          responseTs:null,
+          _source:'ws3',
+          _wsRef:t
+        });
+      });
+    }
+  }catch(e){}
+  return all.sort(function(a,b){return b._ts-a._ts;});
+}
+
 function renderSupport(){
   var el=document.getElementById('support-content');
-  var tickets=getTickets();
-  if(!tickets.length){el.innerHTML='<div class="empty"><div class="ei">🎧</div><b>אין קריאות תמיכה</b></div>';return;}
-  el.innerHTML=tickets.map(function(tk){
-    var biz=_bizList.find(function(t){return t.id===tk.tenantId;});
-    var bizName=biz&&biz.settings&&biz.settings.bizName?biz.settings.bizName:'—';
-    return '<div class="ticket-row" id="tk-row-'+tk.id+'">'
-      +'<div class="ticket-head" onclick="toggleTicket(\''+tk.id+'\')">'
-        +'<span class="ticket-status '+(tk.status==='open'?'open':'closed')+'">'+(tk.status==='open'?'פתוח':'סגור')+'</span>'
-        +'<span class="ticket-subject">'+esc(tk.subject)+'</span>'
-        +'<span style="font-size:11px;color:var(--muted);margin-right:auto;">'+esc(bizName)+' · '+fmtDt(tk.ts)+'</span>'
+  var all=getAllTickets();
+
+  var filterHtml='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">'
+    +'<input id="sup-search" oninput="filterSupport()" placeholder="🔍 חיפוש לפי נושא / עסק / שולח..." style="flex:1;min-width:180px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
+    +'<select id="sup-status" onchange="filterSupport()" style="padding:9px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
+    +'<option value="">כל הסטטוסים</option><option value="open">פתוח</option><option value="answered">נענה</option><option value="closed">סגור</option>'
+    +'</select>'
+    +'<select id="sup-biz-filter" onchange="filterSupport()" style="padding:9px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;">'
+    +'<option value="">כל העסקים</option>'
+    +[...new Set(all.map(function(t){return t._bizName;}))].map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+'</option>';}).join('')
+    +'</select>'
+    +'</div>';
+
+  el.innerHTML=filterHtml+'<div id="sup-list"></div>';
+  window._allTicketsCache=all;
+  filterSupport();
+}
+
+function filterSupport(){
+  var search=(document.getElementById('sup-search')||{}).value||'';
+  var status=(document.getElementById('sup-status')||{}).value||'';
+  var bizF=(document.getElementById('sup-biz-filter')||{}).value||'';
+  var all=window._allTicketsCache||[];
+  var q=search.toLowerCase();
+  var filtered=all.filter(function(tk){
+    if(status&&tk.status!==status)return false;
+    if(bizF&&tk._bizName!==bizF)return false;
+    if(q&&!(tk.subject.toLowerCase().includes(q)||tk._bizName.toLowerCase().includes(q)||(tk._sender||'').toLowerCase().includes(q)||(tk.text||'').toLowerCase().includes(q)))return false;
+    return true;
+  });
+  var list=document.getElementById('sup-list');
+  if(!list)return;
+  if(!filtered.length){list.innerHTML='<div class="empty"><div class="ei">🎧</div><b>אין תוצאות</b></div>';return;}
+  var statusLabel={'open':'פתוח','answered':'נענה','closed':'סגור'};
+  var statusColor={'open':'#ef4444','answered':'#f59e0b','closed':'#10b981'};
+  list.innerHTML=filtered.map(function(tk){
+    var dt=tk._ts?new Date(tk._ts).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    return '<div class="ticket-row" id="tk-row-'+tk.id+'" style="margin-bottom:10px;border-radius:12px;border:1.5px solid var(--border);overflow:hidden;">'
+      +'<div class="ticket-head" onclick="toggleTicket(\''+tk.id+'\')" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:var(--card2);">'
+        +'<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:'+(statusColor[tk.status]||'#94a3b8')+'22;color:'+(statusColor[tk.status]||'#94a3b8')+';white-space:nowrap;">'+(statusLabel[tk.status]||tk.status)+'</span>'
+        +'<span style="font-size:13px;font-weight:700;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(tk.subject)+'</span>'
+        +'<span style="font-size:11px;color:var(--muted);white-space:nowrap;">'+esc(tk._bizName)+'</span>'
       +'</div>'
-      +'<div class="ticket-body" id="tkb-'+tk.id+'">'
-        +'<p style="font-size:13px;margin-bottom:10px;">'+esc(tk.text)+'</p>'
-        +(tk.response?'<div style="background:var(--card2);border-radius:8px;padding:10px;font-size:12px;margin-bottom:10px;"><b>תגובה ('+fmtDt(tk.responseTs)+'):</b><br>'+esc(tk.response)+'</div>':'')
-        +(tk.status==='open'?'<textarea class="note-inp" id="tk-resp-'+tk.id+'" placeholder="כתוב תגובה..." rows="2"></textarea>'
-          +'<div style="display:flex;gap:8px;margin-top:8px;">'
-          +'<button class="btn-action blue" onclick="respondTicket(\''+tk.id+'\')">שלח תגובה</button>'
-          +'<button class="btn-action green" onclick="closeTicket(\''+tk.id+'\')">סגור קריאה</button>'
-          +'</div>':'<button class="btn-action orange" onclick="reopenTicket(\''+tk.id+'\')">פתח מחדש</button>')
+      +'<div class="ticket-body" id="tkb-'+tk.id+'" style="display:none;padding:14px;background:var(--card);border-top:1px solid var(--border);">'
+        +'<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:12px;font-size:12px;color:var(--muted);">'
+          +'<span>🏢 <b>'+esc(tk._bizName)+'</b></span>'
+          +'<span>👤 <b>'+esc(tk._sender)+'</b></span>'
+          +'<span>🕐 <b>'+dt+'</b></span>'
+        +'</div>'
+        +'<p style="font-size:13px;margin-bottom:12px;white-space:pre-wrap;color:var(--text);">'+esc(tk.text)+'</p>'
+        +(tk.response?'<div style="background:rgba(0,168,89,.08);border-right:3px solid #10b981;border-radius:0 8px 8px 0;padding:10px 12px;font-size:12px;margin-bottom:12px;color:var(--text);"><b>תגובתך:</b> '+esc(tk.response)+'</div>':'')
+        +(tk.status!=='closed'
+          ?'<textarea id="tk-resp-'+tk.id+'" placeholder="כתוב תגובה לעובד/לקוח..." rows="2" style="width:100%;box-sizing:border-box;padding:9px;border-radius:9px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-family:inherit;resize:vertical;margin-bottom:8px;"></textarea>'
+          +'<div style="display:flex;gap:8px;">'
+          +'<button class="btn-action blue" onclick="adminRespondTicket(\''+tk.id+'\',\''+tk._source+'\')">📨 שלח תגובה</button>'
+          +'<button class="btn-action green" onclick="adminCloseTicket(\''+tk.id+'\',\''+tk._source+'\')">✓ סגור קריאה</button>'
+          +'</div>'
+          :'<button class="btn-action orange" onclick="adminReopenTicket(\''+tk.id+'\',\''+tk._source+'\')">↩ פתח מחדש</button>')
       +'</div>'
     +'</div>';
   }).join('');
+}
+
+function toggleTicket(id){
+  var b=document.getElementById('tkb-'+id);
+  if(b)b.style.display=b.style.display==='none'?'':'none';
+}
+
+function adminRespondTicket(id,src){
+  var inp=document.getElementById('tk-resp-'+id);
+  var resp=(inp?inp.value:'').trim();
+  if(!resp){showToast('כתוב תגובה');return;}
+  if(src==='ws3'){
+    var ws=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+    var t=ws.find(function(x){return x.id===id;});
+    if(t){t.reply=resp;t.status='נענה';}
+    localStorage.setItem('ws3_support_tickets',JSON.stringify(ws));
+  } else {
+    var tickets=getTickets();
+    var tk=tickets.find(function(t){return t.id===id;});
+    if(tk){tk.response=resp;tk.responseTs=Date.now();tk.status='answered';}
+    setTickets(tickets);
+  }
+  showToast('✅ תגובה נשלחה');
+  renderSupport();
+}
+
+function adminCloseTicket(id,src){
+  if(src==='ws3'){
+    var ws=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+    var t=ws.find(function(x){return x.id===id;});
+    if(t)t.status='נפתר';
+    localStorage.setItem('ws3_support_tickets',JSON.stringify(ws));
+  } else {
+    var tickets=getTickets();
+    var tk=tickets.find(function(t){return t.id===id;});
+    if(tk)tk.status='closed';
+    setTickets(tickets);
+  }
+  showToast('קריאה סגורה');
+  renderSupport();
+}
+
+function adminReopenTicket(id,src){
+  if(src==='ws3'){
+    var ws=JSON.parse(localStorage.getItem('ws3_support_tickets')||'[]');
+    var t=ws.find(function(x){return x.id===id;});
+    if(t)t.status='ממתין לתשובה';
+    localStorage.setItem('ws3_support_tickets',JSON.stringify(ws));
+  } else {
+    var tickets=getTickets();
+    var tk=tickets.find(function(t){return t.id===id;});
+    if(tk)tk.status='open';
+    setTickets(tickets);
+  }
+  renderSupport();
 }
 
 function toggleTicket(id){
@@ -1859,6 +1989,12 @@ function reopenTicket(id){
   if(tk){tk.status='open';}
   setTickets(tickets);renderSupport();showToast('קריאה נפתחה מחדש');
 }
+
+window.filterSupport=filterSupport;
+window.toggleTicket=toggleTicket;
+window.adminRespondTicket=adminRespondTicket;
+window.adminCloseTicket=adminCloseTicket;
+window.adminReopenTicket=adminReopenTicket;
 
 /* ── SETTINGS ── */
 function renderSettings(){
