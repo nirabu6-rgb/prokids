@@ -3926,10 +3926,13 @@ function mgrUnlockSubmit(){
   var pin=(inp?inp.value:'').trim();
   var keys=_mgrUnlockPendingKeys.length?_mgrUnlockPendingKeys:[_mgrUnlockPrimaryKey||'unknown'];
 
-  /* Check temp code from localStorage (persisted, reusable until manager deletes) */
+  /* Check temp code from localStorage (persisted, one-time use) */
   var storedCodes=LS.get('ws3_temp_codes',{});
   if(storedCodes[pin]!==undefined){
     var allowed=storedCodes[pin];
+    delete storedCodes[pin];
+    LS.set('ws3_temp_codes',storedCodes);
+    delete _tempCodes[pin];
     if(!Array.isArray(allowed))allowed=[allowed];
     _doUnlockSections(allowed);
     return;
@@ -3938,6 +3941,7 @@ function mgrUnlockSubmit(){
   /* Check in-memory temp codes (same session) */
   if(_tempCodes[pin]!==undefined){
     var allowed2=_tempCodes[pin];
+    delete _tempCodes[pin];
     if(!Array.isArray(allowed2))allowed2=[allowed2];
     _doUnlockSections(allowed2);
     return;
