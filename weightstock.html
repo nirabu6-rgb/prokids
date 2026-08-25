@@ -2666,6 +2666,17 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
 
 <!-- SIDEBAR NAV (desktop) -->
 <nav id="sidebar-nav" style="display:none;">
+  <!-- User greeting block — top of sidebar -->
+  <div id="sidebar-user-block" style="padding:16px 14px 14px;border-bottom:1px solid var(--border);margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:6px;letter-spacing:.4px;text-transform:uppercase;" id="sidebar-greeting-word">בוקר טוב</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div id="sidebar-user-avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#00A859);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;">?</div>
+      <div style="min-width:0;">
+        <div id="sidebar-user-name" style="font-size:15px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+        <div id="sidebar-user-role" style="font-size:11px;color:var(--muted);margin-top:1px;">—</div>
+      </div>
+    </div>
+  </div>
   <div class="sidebar-logo">
     <div class="sidebar-logo-icon"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="15" fill="rgba(74,143,232,.15)" stroke="rgba(74,143,232,.35)" stroke-width="1"/><rect x="14.5" y="10" width="3" height="16" rx="1.5" fill="#475569"/><rect x="4" y="10" width="24" height="3" rx="1.5" fill="#4A8FE8"/><circle cx="16" cy="11.5" r="2" fill="#93c5fd"/><ellipse cx="8" cy="19" rx="5" ry="1.8" fill="#3b82f6" opacity=".8"/><ellipse cx="24" cy="19" rx="5" ry="1.8" fill="#10b981" opacity=".8"/><line x1="8" y1="13" x2="6" y2="19" stroke="rgba(148,197,253,.7)" stroke-width="1.2"/><line x1="8" y1="13" x2="10" y2="19" stroke="rgba(148,197,253,.7)" stroke-width="1.2"/><line x1="24" y1="13" x2="22" y2="19" stroke="rgba(148,197,253,.7)" stroke-width="1.2"/><line x1="24" y1="13" x2="26" y2="19" stroke="rgba(148,197,253,.7)" stroke-width="1.2"/><rect x="7" y="24" width="18" height="2.5" rx="1.25" fill="#1e3a5f"/></svg></div>
     <div>
@@ -3868,6 +3879,20 @@ function applyUserPerms(){
   /* Current user chip in dashboard header */
   var uchip=document.getElementById('db-user-chip');
   if(uchip&&_umUser)uchip.textContent=(_umUser.isManager?'👑 ':'👤 ')+_umUser.name;
+  /* Sidebar user greeting block */
+  var sName=document.getElementById('sidebar-user-name');
+  var sRole=document.getElementById('sidebar-user-role');
+  var sAvatar=document.getElementById('sidebar-user-avatar');
+  var sWord=document.getElementById('sidebar-greeting-word');
+  if(_umUser&&sName){
+    sName.textContent=_umUser.name||'—';
+    var h=new Date().getHours();
+    if(sWord)sWord.textContent=h<12?'בוקר טוב':h<17?'צהריים טובים':'ערב טוב';
+    var g=_umUser.gender||'';
+    if(sRole)sRole.textContent=_umUser.isManager?(g==='female'?'מנהלת':'מנהל'):(g==='female'?'עובדת':'עובד');
+    if(sAvatar)sAvatar.textContent=(_umUser.name||'?')[0];
+    if(sAvatar)sAvatar.style.background=_umUser.isManager?'linear-gradient(135deg,#003B71,#005aaa)':'linear-gradient(135deg,#00A859,#007a40)';
+  }
 }
 window.applyUserPerms=applyUserPerms;
 
