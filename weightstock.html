@@ -3850,10 +3850,9 @@ function mgrUnlockSubmit(){
   var inp=document.getElementById('mgr-unlock-input');
   var err=document.getElementById('mgr-unlock-err');
   var pin=(inp?inp.value:'').trim();
-  /* Find manager PIN from employees list */
-  var emps=LS.get('employees')||[];
-  var mgr=emps.find(function(e){return e.isManager;});
-  var correctPin=mgr?mgr.pin:'';
+  /* Find manager PIN from um_manager */
+  var mgr=LS.get('um_manager',null);
+  var correctPin=mgr?(mgr.pin||mgr.password||''):'';
   if(!correctPin||pin!==correctPin){
     if(err)err.style.display='';
     if(inp){inp.value='';inp.focus();}
