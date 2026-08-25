@@ -3914,31 +3914,55 @@ function openTempCodeModal(){
   if(!_umUser||!_umUser.isManager){showToast('רק מנהל יכול ליצור קוד זמני');return;}
   var sections=Object.keys(SECTION_LABELS);
   var opts=sections.map(function(k){return '<option value="'+k+'">'+SECTION_LABELS[k]+'</option>';}).join('');
+  var emps=getEmployees?getEmployees():[];
+  var empOpts='<option value="">— בחר עובד (אופציונלי) —</option>'
+    +emps.filter(function(e){return !e.isManager;}).map(function(e){
+      return '<option value="'+e.id+'">'+e.name+'</option>';
+    }).join('');
   var html='<div id="modal-tempcode" style="display:flex;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:950;align-items:center;justify-content:center;padding:20px;">'
-    +'<div style="background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:320px;text-align:center;font-family:inherit;">'
+    +'<div style="background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:340px;text-align:center;font-family:inherit;">'
     +'<div style="font-size:32px;margin-bottom:8px;">🔑</div>'
-    +'<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;">קוד זמני לעובד</div>'
-    +'<div style="font-size:12px;color:var(--muted);margin-bottom:16px;">הקוד יפתח אזור אחד בלבד, שימוש חד-פעמי</div>'
-    +'<select id="tc-section" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-family:inherit;font-size:14px;margin-bottom:14px;direction:rtl;">'+opts+'</select>'
+    +'<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;">קוד זמני לעובד</div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">הקוד יפתח אזור אחד בלבד, שימוש חד-פעמי</div>'
+    +'<select id="tc-emp" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-family:inherit;font-size:14px;margin-bottom:10px;direction:rtl;">'+empOpts+'</select>'
+    +'<select id="tc-section" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-family:inherit;font-size:14px;margin-bottom:10px;direction:rtl;">'+opts+'</select>'
+    +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">'
+    +'<input id="tc-custom-code" type="tel" inputmode="numeric" maxlength="6" placeholder="הכנס קוד 4-6 ספרות" oninput="this.value=this.value.replace(/\\D/g,\'\').slice(0,6)" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-family:inherit;font-size:16px;text-align:center;letter-spacing:4px;font-weight:700;">'
+    +'</div>'
+    +'<div id="tc-err" style="display:none;color:var(--crit);font-size:12px;margin-bottom:8px;"></div>'
     +'<div id="tc-result" style="display:none;background:var(--card2);border-radius:12px;padding:14px;margin-bottom:14px;">'
-    +'<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">קוד לעובד:</div>'
-    +'<div id="tc-code" style="font-size:32px;font-weight:900;letter-spacing:6px;color:var(--accent);font-variant-numeric:tabular-nums;"></div>'
-    +'<div style="font-size:11px;color:var(--muted);margin-top:6px;">שלח קוד זה לעובד — שימוש אחד בלבד</div>'
+    +'<div id="tc-for-emp" style="font-size:12px;color:var(--muted);margin-bottom:4px;"></div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">קוד לאזור: <b id="tc-for-section" style="color:var(--text);"></b></div>'
+    +'<div id="tc-code" style="font-size:34px;font-weight:900;letter-spacing:6px;color:var(--accent);font-variant-numeric:tabular-nums;margin:6px 0;"></div>'
+    +'<div style="font-size:11px;color:var(--muted);">שלח קוד זה לעובד — שימוש אחד בלבד</div>'
     +'</div>'
     +'<div style="display:flex;gap:10px;">'
     +'<button onclick="document.getElementById(\'modal-tempcode\').remove()" style="flex:1;padding:11px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>'
-    +'<button onclick="generateTempCode()" style="flex:1;padding:11px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">צור קוד 🎲</button>'
+    +'<button onclick="generateTempCode()" style="flex:1;padding:11px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">✓ שמור קוד</button>'
     +'</div>'
     +'</div></div>';
   document.body.insertAdjacentHTML('beforeend',html);
 }
 function generateTempCode(){
   var sel=document.getElementById('tc-section');
-  if(!sel)return;
+  var inp=document.getElementById('tc-custom-code');
+  var errEl=document.getElementById('tc-err');
+  if(!sel||!inp)return;
   var sectionKey=sel.value;
-  /* Generate random 6-digit code */
-  var code=String(Math.floor(100000+Math.random()*900000));
+  var code=(inp.value||'').trim();
+  if(!code||code.length<4){
+    if(errEl){errEl.textContent='הכנס קוד בין 4 ל-6 ספרות';errEl.style.display='';}
+    inp.focus();return;
+  }
+  if(errEl)errEl.style.display='none';
   _tempCodes[code]=sectionKey;
+  /* show result */
+  var empSel=document.getElementById('tc-emp');
+  var empName=empSel&&empSel.selectedIndex>0?empSel.options[empSel.selectedIndex].text:'';
+  var forEmp=document.getElementById('tc-for-emp');
+  if(forEmp)forEmp.textContent=empName?'עבור: '+empName:'';
+  var forSec=document.getElementById('tc-for-section');
+  if(forSec)forSec.textContent=SECTION_LABELS[sectionKey]||sectionKey;
   var codeEl=document.getElementById('tc-code');
   if(codeEl)codeEl.textContent=code;
   var res=document.getElementById('tc-result');
