@@ -183,6 +183,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
         <button class="btn btn-primary" onclick="checkStatus()" style="flex:1;min-width:140px;">🔍 בדוק סטטוס</button>
         <a href="weightstock.html" class="btn" style="flex:1;min-width:140px;background:var(--card2);border:1.5px solid var(--border);color:var(--text);text-decoration:none;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;border-radius:12px;padding:12px;">⚖️ כניסה לאפליקציה</a>
       </div>
+      <button onclick="clearAndRestart()" style="margin-top:14px;width:100%;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline;">הרשם מחדש עם פרטים חדשים</button>
     </div>
 
   </div>
@@ -295,6 +296,7 @@ function clearReg(){
   }
   location.reload();
 }
+function clearAndRestart(){clearReg();}
 
 function showErr(id,msg){var e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
 function hideErr(id){var e=document.getElementById(id);if(e)e.style.display='none';}
@@ -424,6 +426,7 @@ function submitReg(){
       +'<h2>החשבון אושר!</h2>'
       +'<p style="margin-bottom:16px;">ברכות! העסק שלך אושר במערכת.<br>לחץ כאן להיכנס לאפליקציה:</p>'
       +'<a href="'+appUrl+'" style="display:block;background:var(--ok);color:#fff;border-radius:12px;padding:13px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;">כניסה לאפליקציה ›</a>'
+      +'<button onclick="clearAndRestart()" style="margin-top:12px;width:100%;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline;">הרשם מחדש עם פרטים חדשים</button>'
       +'</div>';
     return;
   }
