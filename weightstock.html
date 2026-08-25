@@ -4128,6 +4128,14 @@ function generateTempCode(){
   if(forSec)forSec.textContent=_tcSelectedSections.map(function(k){return SECTION_LABELS[k];}).join(', ');
   var codeEl=document.getElementById('tc-code');if(codeEl)codeEl.textContent=code;
   var res=document.getElementById('tc-result');if(res)res.style.display='';
+  /* Copy code and close */
+  try{navigator.clipboard.writeText(code);}catch(e){
+    var ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  }
+  setTimeout(function(){
+    var m=document.getElementById('modal-tempcode');if(m)m.remove();
+    showToast('קוד '+code+' הועתק ונשמר ✓');
+  },600);
 }
 window.openTempCodeModal=openTempCodeModal;
 window.generateTempCode=generateTempCode;
