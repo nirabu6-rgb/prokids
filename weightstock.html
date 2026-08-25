@@ -1673,7 +1673,7 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <input id="wh-filter-item" placeholder="🔍 סנן לפי פריט..." oninput="renderWeighHistory()" list="history-items-list" style="flex:1;margin-top:0;">
       <datalist id="history-items-list"></datalist>
-      <button class="btn sm danger" onclick="clearWeighHistory()">נקה</button>
+      <button class="btn sm sec" onclick="clearHistFilter()">נקה סינון</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:12px;">
       <input id="wh-date-from" type="date" style="flex:1;margin-top:0;font-size:13px;" oninput="renderWeighHistory()">
@@ -7141,6 +7141,15 @@ function renderWeighHistory(){
       '</div></div>';
   }).join('');
 }
+function clearHistFilter(){
+  var f=document.getElementById('wh-filter-item');
+  var df=document.getElementById('wh-date-from');
+  var dt=document.getElementById('wh-date-to');
+  if(f)f.value='';
+  if(df)df.value='';
+  if(dt)dt.value='';
+  renderWeighHistory();
+}
 function clearWeighHistory(){
   if(!confirm('למחוק את כל היסטוריית השקילות?'))return;
   LS.set('weigh_history',[]);
@@ -7148,6 +7157,7 @@ function clearWeighHistory(){
 }
 window.renderWeighHistory=renderWeighHistory;
 window.clearWeighHistory=clearWeighHistory;
+window.clearHistFilter=clearHistFilter;
 
 /* ════════════════════════════════════════════════════
    REPORTS
