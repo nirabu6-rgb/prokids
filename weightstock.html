@@ -2274,6 +2274,10 @@ label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-top
           <div style="display:flex;align-items:center;gap:10px;font-size:13px;">🔑 שינוי סיסמת מנהל</div>
           <span style="color:var(--muted);">›</span>
         </button>
+        <button onclick="openTempCodeModal();" style="width:100%;background:none;border:none;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);border-top:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;">🎲 קוד זמני לעובד</div>
+          <span style="color:var(--muted);">›</span>
+        </button>
       </div>
       <div id="st-actlog-btn" style="display:none;"></div>
 
@@ -3826,13 +3830,26 @@ function umEnterApp(){
   showToast(greeting);
 }
 
+/* _unlockedSections: sectionKey → true (session only, cleared on logout) */
 var _unlockedSections={};
+/* _tempCodes: code(string) → sectionKey (one-time, set by manager) */
+var _tempCodes={};
 var _mgrUnlockCallback=null;
+var _mgrUnlockSectionKey=null;
 
-function openMgrUnlock(label,cb){
+/* Section label map for display */
+var SECTION_LABELS={
+  'reports':'דוחות','categories':'קטגוריות','orders':'הזמנות',
+  'items':'פריטים','history':'היסטוריה','alerts':'התראות',
+  'tvmode':'מצב תצוגה','employees':'עובדים','prices':'מחירים ורווח',
+  'addemp':'הוספת עובד','actlog':'יומן פעולות','fab':'הוספה מהירה'
+};
+
+function openMgrUnlock(sectionKey,label,cb){
   _mgrUnlockCallback=cb||null;
+  _mgrUnlockSectionKey=sectionKey||'unknown';
   var lbl=document.getElementById('mgr-unlock-label');
-  if(lbl)lbl.textContent=label||'הכנס את קוד המנהל כדי לגשת לאזור זה עד להתנתקות הבאה';
+  if(lbl)lbl.textContent=label||'הכנס את קוד המנהל כדי לגשת לאזור זה';
   var inp=document.getElementById('mgr-unlock-input');
   if(inp)inp.value='';
   var err=document.getElementById('mgr-unlock-err');
@@ -3845,22 +3862,42 @@ function closeMgrUnlock(){
   var m=document.getElementById('modal-mgr-unlock');
   if(m)m.style.display='none';
   _mgrUnlockCallback=null;
+  _mgrUnlockSectionKey=null;
 }
 function mgrUnlockSubmit(){
   var inp=document.getElementById('mgr-unlock-input');
   var err=document.getElementById('mgr-unlock-err');
   var pin=(inp?inp.value:'').trim();
-  /* Find manager PIN from um_manager */
+  var sectionKey=_mgrUnlockSectionKey||'unknown';
+
+  /* Check temp code first (one-time, section-specific) */
+  if(_tempCodes[pin]){
+    var allowedSection=_tempCodes[pin];
+    delete _tempCodes[pin]; /* one-time use */
+    if(allowedSection===sectionKey){
+      _doUnlockSection(sectionKey);
+      return;
+    } else {
+      /* Code is for a different section */
+      if(err){err.textContent='הקוד הזמני הוא לאזור אחר';err.style.display='';}
+      if(inp){inp.value='';inp.focus();}
+      return;
+    }
+  }
+
+  /* Check manager PIN — unlocks only the requested section */
   var mgr=LS.get('um_manager',null);
   var correctPin=mgr?(mgr.pin||mgr.password||''):'';
   if(!correctPin||pin!==correctPin){
-    if(err)err.style.display='';
+    if(err){err.textContent='קוד שגוי — נסה שוב';err.style.display='';}
     if(inp){inp.value='';inp.focus();}
     return;
   }
-  /* Correct PIN — unlock */
+  _doUnlockSection(sectionKey);
+}
+function _doUnlockSection(sectionKey){
   closeMgrUnlock();
-  _unlockedSections['__all__']=true;
+  _unlockedSections[sectionKey]=true;
   applyUserPerms();
   if(_mgrUnlockCallback){
     var cb=_mgrUnlockCallback;
@@ -3872,21 +3909,59 @@ window.openMgrUnlock=openMgrUnlock;
 window.closeMgrUnlock=closeMgrUnlock;
 window.mgrUnlockSubmit=mgrUnlockSubmit;
 
-function _lockEl(el,lock){
+/* ── Temp code generator (manager only) ── */
+function openTempCodeModal(){
+  if(!_umUser||!_umUser.isManager){showToast('רק מנהל יכול ליצור קוד זמני');return;}
+  var sections=Object.keys(SECTION_LABELS);
+  var opts=sections.map(function(k){return '<option value="'+k+'">'+SECTION_LABELS[k]+'</option>';}).join('');
+  var html='<div id="modal-tempcode" style="display:flex;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:950;align-items:center;justify-content:center;padding:20px;">'
+    +'<div style="background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:320px;text-align:center;font-family:inherit;">'
+    +'<div style="font-size:32px;margin-bottom:8px;">🔑</div>'
+    +'<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;">קוד זמני לעובד</div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:16px;">הקוד יפתח אזור אחד בלבד, שימוש חד-פעמי</div>'
+    +'<select id="tc-section" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-family:inherit;font-size:14px;margin-bottom:14px;direction:rtl;">'+opts+'</select>'
+    +'<div id="tc-result" style="display:none;background:var(--card2);border-radius:12px;padding:14px;margin-bottom:14px;">'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">קוד לעובד:</div>'
+    +'<div id="tc-code" style="font-size:32px;font-weight:900;letter-spacing:6px;color:var(--accent);font-variant-numeric:tabular-nums;"></div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-top:6px;">שלח קוד זה לעובד — שימוש אחד בלבד</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;">'
+    +'<button onclick="document.getElementById(\'modal-tempcode\').remove()" style="flex:1;padding:11px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>'
+    +'<button onclick="generateTempCode()" style="flex:1;padding:11px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">צור קוד 🎲</button>'
+    +'</div>'
+    +'</div></div>';
+  document.body.insertAdjacentHTML('beforeend',html);
+}
+function generateTempCode(){
+  var sel=document.getElementById('tc-section');
+  if(!sel)return;
+  var sectionKey=sel.value;
+  /* Generate random 6-digit code */
+  var code=String(Math.floor(100000+Math.random()*900000));
+  _tempCodes[code]=sectionKey;
+  var codeEl=document.getElementById('tc-code');
+  if(codeEl)codeEl.textContent=code;
+  var res=document.getElementById('tc-result');
+  if(res)res.style.display='';
+}
+window.openTempCodeModal=openTempCodeModal;
+window.generateTempCode=generateTempCode;
+
+function _lockEl(el,lock,sectionKey){
   if(!el)return;
-  /* If session is unlocked by manager PIN, treat all as unlocked */
-  if(lock&&_unlockedSections['__all__'])lock=false;
+  var key=sectionKey||el.id||el.getAttribute('data-section')||'unknown';
+  el._sectionKey=key;
+  /* Check if this section was individually unlocked */
+  if(lock&&_unlockedSections[key])lock=false;
   if(lock){
     el.classList.add('nav-locked');
     if(!el._lockHandler){
       el._lockHandler=function(e){
         e.stopPropagation();e.preventDefault();
-        /* Capture the original onclick before opening modal */
+        var sLabel=SECTION_LABELS[el._sectionKey]||'אזור זה';
         var origOnclick=el.getAttribute('onclick');
-        openMgrUnlock('הכנס את קוד המנהל כדי לגשת לאזור זה עד להתנתקות הבאה',function(){
-          if(origOnclick){
-            try{(new Function(origOnclick))();}catch(ex){console.warn(ex);}
-          }
+        openMgrUnlock(el._sectionKey,'הכנס קוד מנהל או קוד זמני לפתיחת: '+sLabel,function(){
+          if(origOnclick){try{(new Function(origOnclick))();}catch(ex){console.warn(ex);}}
         });
       };
       el.addEventListener('click',el._lockHandler,true);
@@ -3901,51 +3976,51 @@ function applyUserPerms(){
   var mgr=_umUser.isManager;
   /* Financial cards — lock for employees without permission */
   var vb=document.getElementById('db-value-bar');
-  if(vb){vb.style.display='';_lockEl(vb,!(mgr||canDo('seePrices')||canDo('seeProfit')));}
+  if(vb){vb.style.display='';_lockEl(vb,!(mgr||canDo('seePrices')||canDo('seeProfit')),'prices');}
   /* Bottom nav tabs — show locked */
   var repNav=document.getElementById('nav-screen-reports');
-  if(repNav){repNav.style.display='';_lockEl(repNav,!(mgr||canDo('seeReports')));}
+  if(repNav){repNav.style.display='';_lockEl(repNav,!(mgr||canDo('seeReports')),'reports');}
   var catNav=document.getElementById('nav-screen-categories');
-  if(catNav){catNav.style.display='';_lockEl(catNav,!(mgr||canDo('seeCategories')));}
+  if(catNav){catNav.style.display='';_lockEl(catNav,!(mgr||canDo('seeCategories')),'categories');}
   /* Sidebar items — show locked */
   var sideRep=document.getElementById('side-screen-reports');
-  if(sideRep){sideRep.style.display='';_lockEl(sideRep,!(mgr||canDo('seeReports')));}
+  if(sideRep){sideRep.style.display='';_lockEl(sideRep,!(mgr||canDo('seeReports')),'reports');}
   var sideCat=document.getElementById('side-screen-categories');
-  if(sideCat){sideCat.style.display='';_lockEl(sideCat,!(mgr||canDo('seeCategories')));}
+  if(sideCat){sideCat.style.display='';_lockEl(sideCat,!(mgr||canDo('seeCategories')),'categories');}
   /* FAB add button — lock */
   var fabAdd=document.getElementById('fab-btn');
-  if(fabAdd){fabAdd.style.display='';_lockEl(fabAdd,!(mgr||canDo('addItems')));}
+  if(fabAdd){fabAdd.style.display='';_lockEl(fabAdd,!(mgr||canDo('addItems')),'fab');}
   /* Manager-only settings items — show locked */
   var empBtn=document.getElementById('st-emp-btn');
-  if(empBtn){empBtn.style.display='';_lockEl(empBtn,!mgr);}
+  if(empBtn){empBtn.style.display='';_lockEl(empBtn,!mgr,'employees');}
   var logBtn=document.getElementById('st-actlog-btn');
-  if(logBtn){logBtn.style.display='';_lockEl(logBtn,!mgr);}
+  if(logBtn){logBtn.style.display='';_lockEl(logBtn,!mgr,'actlog');}
   /* Manager-only FAB section — show locked */
   var fabMgr=document.getElementById('fab-mgr-section');
-  if(fabMgr){fabMgr.style.display='block';_lockEl(fabMgr,!mgr);}
+  if(fabMgr){fabMgr.style.display='block';_lockEl(fabMgr,!mgr,'fab');}
   /* Orders — sidebar + bottom nav */
   var sideOrd=document.querySelector('.sidebtn[onclick*="screen-autoorders"]');
-  if(sideOrd){sideOrd.style.display='flex';_lockEl(sideOrd,!(mgr||canDo('seeOrders')));}
+  if(sideOrd){sideOrd.style.display='flex';_lockEl(sideOrd,!(mgr||canDo('seeOrders')),'orders');}
   var navOrd=document.querySelector('.navbtn[onclick*="autoorders"]');
-  if(navOrd){navOrd.style.display='';_lockEl(navOrd,!(mgr||canDo('seeOrders')));}
+  if(navOrd){navOrd.style.display='';_lockEl(navOrd,!(mgr||canDo('seeOrders')),'orders');}
   /* Items sidebar — lock if no item permissions at all */
   var canItems=mgr||canDo('editItems')||canDo('addItems')||canDo('deleteItems')||canDo('editQty');
   var sideItems=document.getElementById('side-screen-items');
-  if(sideItems){sideItems.style.display='flex';_lockEl(sideItems,!canItems);}
+  if(sideItems){sideItems.style.display='flex';_lockEl(sideItems,!canItems,'items');}
   var navItems=document.getElementById('nav-screen-items');
-  if(navItems){navItems.style.display='';_lockEl(navItems,!canItems);}
+  if(navItems){navItems.style.display='';_lockEl(navItems,!canItems,'items');}
   /* History — show locked if no manager */
   var sideHist=document.getElementById('side-screen-history');
-  if(sideHist){sideHist.style.display='flex';_lockEl(sideHist,!mgr);}
+  if(sideHist){sideHist.style.display='flex';_lockEl(sideHist,!mgr,'history');}
   /* Alerts — show locked if no manager */
   var sideAlerts=document.getElementById('side-screen-alerts');
-  if(sideAlerts){sideAlerts.style.display='flex';_lockEl(sideAlerts,!mgr);}
+  if(sideAlerts){sideAlerts.style.display='flex';_lockEl(sideAlerts,!mgr,'alerts');}
   /* TV mode — lock if no permission */
   var sideTv=document.querySelector('.sidebtn[onclick*="openTVMode"]');
-  if(sideTv){sideTv.style.display='flex';_lockEl(sideTv,!(mgr||canDo('tvMode')));}
+  if(sideTv){sideTv.style.display='flex';_lockEl(sideTv,!(mgr||canDo('tvMode')),'tvmode');}
   /* Sidebar employees — show locked for non-manager */
   var sideEmp=document.getElementById('side-screen-employees');
-  if(sideEmp){sideEmp.style.display='flex';_lockEl(sideEmp,!mgr);}
+  if(sideEmp){sideEmp.style.display='flex';_lockEl(sideEmp,!mgr,'employees');}
   /* Sidebar switch user */
   var swBtn=document.getElementById('side-switch-user');
   if(swBtn)swBtn.style.display='flex';
@@ -3983,6 +4058,7 @@ function umLogout(){
   LS.del('um_session');
   _umUser=null;
   _unlockedSections={};
+  _tempCodes={};
   showUMLogin();
 }
 window.umLogout=umLogout;
@@ -5872,7 +5948,7 @@ window.openSupportTicket=openSupportTicket;
 
 function logoutApp(){
   if(!confirm('להתנתק? הנתונים ישמרו.'))return;
-  LS.del('session'); LS.del('um_session'); _DR=null; _umUser=null; _unlockedSections={};
+  LS.del('session'); LS.del('um_session'); _DR=null; _umUser=null; _unlockedSections={}; _tempCodes={};
   closeModal('modal-settings');
   document.querySelectorAll('.modal-overlay').forEach(function(m){m.classList.remove('show');});
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
