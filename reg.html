@@ -68,7 +68,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;min-height:100vh
   <div class="card">
     <div class="card-header">
       <h1>הרשמת עסק חדש</h1>
-      <p>מלא את הפרטים — לאחר האישור תקבל גישה מלאה למערכת</p>
+      <p>מלא את הפרטים — תקבל גישה מיידית למערכת</p>
     </div>
 
     <!-- progress -->
@@ -404,27 +404,50 @@ function submitReg(){
   var bizphone=document.getElementById('r-bizphone').value.trim();
   var empcount=parseInt(document.getElementById('r-empcount').value)||0;
 
-  var regKey='ws3_pending_reg_'+sc+'_'+Date.now();
-  localStorage.setItem(regKey,JSON.stringify({
-    bizName:biz,bizType:btype,storeCode:sc,
-    mgrName:fn+' '+ln,firstname:fn,lastname:ln,
-    gender:(document.querySelector('input[name="r-gender"]:checked')||{value:''}).value,
-    idnum:id,phone:ph,mgrEmail:em,pin:pin,
-    bizCity:city,bizStreet:street,bizPhone:bizphone,
-    empCount:empcount,ts:Date.now()
+  /* Register immediately — no owner approval needed */
+  var gender=(document.querySelector('input[name="r-gender"]:checked')||{value:''}).value;
+  var tenantId='t_'+sc+'_'+Date.now();
+  var newTenant={
+    id:tenantId,
+    settings:{
+      bizName:biz,bizType:btype,storeCode:sc,
+      bizCity:city,bizStreet:street,bizPhone:bizphone,
+      empCount:empcount
+    },
+    manager:{
+      name:fn+' '+ln,firstname:fn,lastname:ln,
+      gender:gender,idnum:id,phone:ph,email:em,pin:pin
+    },
+    ts:Date.now()
+  };
+  /* Save to tenants list */
+  var tenants=[];
+  try{tenants=JSON.parse(localStorage.getItem('ws3_tenants')||'[]');}catch(e){}
+  tenants.push(newTenant);
+  localStorage.setItem('ws3_tenants',JSON.stringify(tenants));
+  /* Save manager separately for this tenant */
+  localStorage.setItem('ws3_um_manager_'+sc,JSON.stringify({
+    name:fn+' '+ln,firstname:fn,lastname:ln,
+    gender:gender,email:em,pin:pin,storeCode:sc,bizName:biz
   }));
 
-  clearDraft(); /* registration submitted — clear draft */
-  /* show pending screen */
+  clearDraft();
+  /* Show success screen */
   document.getElementById('s1').classList.remove('active');
   document.getElementById('s2').classList.remove('active');
   document.querySelector('.progress').style.display='none';
   document.getElementById('s-pending').style.display='block';
+  document.getElementById('s-pending').querySelector('.icon').textContent='✅';
+  document.getElementById('s-pending').querySelector('h2').textContent='ההרשמה הושלמה!';
+  document.getElementById('s-pending').querySelector('p').textContent='העסק שלך נרשם בהצלחה. לחץ על "כניסה לאפליקציה" כדי להתחיל.';
   document.getElementById('pending-info').innerHTML=
     'שם: <b>'+esc(fn+' '+ln)+'</b><br>'
     +'מייל: <b>'+esc(em)+'</b><br>'
     +'עסק: <b>'+esc(biz)+'</b><br>'
     +'קוד עסק: <b style="color:var(--accent);">'+esc(sc)+'</b>';
+  /* Hide "בדוק סטטוס" button — not needed anymore */
+  var statusBtn=document.querySelector('[onclick="checkStatus()"]');
+  if(statusBtn)statusBtn.style.display='none';
 }
 
 /* check if already pending on load */
