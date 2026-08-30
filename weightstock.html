@@ -5983,7 +5983,7 @@ function openSupportModal(){
         +'<span style="font-size:11px;color:'+statusColor+';font-weight:700;white-space:nowrap;">'+(hasBadge?'🔔 ':'')+t.status+'</span>'
         +'<span style="font-size:16px;color:var(--muted);transition:transform .2s;" id="arr-'+bodyId+'">›</span>'
       +'</div>'
-      +'<div id="'+bodyId+'" style="display:none;padding:14px;border-top:1px solid var(--border);display:none;flex-direction:column;gap:8px;">'
+      +'<div id="'+bodyId+'" style="display:none;padding:14px;border-top:1px solid var(--border);flex-direction:column;gap:8px;">'
         +'<div style="font-size:13px;color:var(--text);white-space:pre-wrap;">'+t.msg+'</div>'
         +(t.autoReply?'<div style="background:rgba(0,168,89,.1);border-right:3px solid var(--ok);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;color:var(--text);white-space:pre-wrap;">💬 <b>תשובה אוטומטית:</b> '+t.autoReply+'</div>':'')
         +(t.ownerReply?'<div style="background:rgba(59,130,246,.1);border-right:3px solid #3b82f6;border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;color:var(--text);white-space:pre-wrap;">💬 <b>תגובת הנציג:</b> '+t.ownerReply+'</div>':'')
