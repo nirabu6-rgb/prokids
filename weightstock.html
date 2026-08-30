@@ -4014,25 +4014,34 @@ async function readFirebaseScale() {
     const data = await response.json();
     if (!data || typeof data.weight !== "number") return;
 
-    const weight = Math.round(data.weight);
+ const weight = Math.round(data.weight);
 
-    // שומרים קריאה חדשה רק כשהמשקל השתנה
-    if (weight === lastFirebaseWeight) return;
-    lastFirebaseWeight = weight;
+switchToUser();
 
-    const shelves = getShelves();
-    if (!shelves || shelves.length === 0) {
-      console.log("אין עדיין משטח באפליקציה");
-      return;
-    }
+const shelves = getShelves();
+if (!shelves || shelves.length === 0) {
+  console.log("אין עדיין משטח באפליקציה");
+  return;
+}
 
-    // בשלב הבדיקה: scale1 מחובר למשטח הראשון
-    const shelf = shelves[0];
-    addReading(shelf.id, weight);
+const shelf = shelves[0];
 
-    if (typeof renderDash === "function") renderDash();
+// נשמור גם 0 גרם, ונעדכן את הזמן בכל שינוי
+if (weight !== lastFirebaseWeight) {
+  addReading(shelf.id, weight);
+  lastFirebaseWeight = weight;
+}
 
-    console.log("Firebase weight:", weight);
+// רענון המסכים
+if (typeof renderDash === "function") {
+  renderDash();
+}
+
+if (activeSc === "screen-shelf-detail" && curSh === shelf.id) {
+  renderSh(shelf.id);
+}
+
+console.log("Firebase weight:", weight);
   } catch (error) {
     console.log("Firebase connection error:", error);
   }
