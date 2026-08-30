@@ -3993,79 +3993,124 @@ window.printItemLabel=printItemLabel;
   renderDailyTip();
 })();
 /* =========================================
-   FIREBASE LIVE SCALE
-   scale1 -> המשטח הראשון באפליקציה
+   FIREBASE LIVE SCALE - WEIGHTSTOCK
+   scale1 = המשטח הראשון
    ========================================= */
 
 const FIREBASE_SCALE_URL =
   "https://weightstock-1422c-default-rtdb.firebaseio.com/scales/scale1.json";
 
 let lastFirebaseWeight = null;
+let lastFirebaseSaveTime = 0;
 
 async function readFirebaseScale() {
+
   try {
-    const response = await fetch(FIREBASE_SCALE_URL, { cache: "no-store" });
+
+    // קריאת הנתונים מ-Firebase
+    const response = await fetch(
+      FIREBASE_SCALE_URL + "?t=" + Date.now(),
+      {
+        method: "GET",
+        cache: "no-store"
+      }
+    );
 
     if (!response.ok) {
-      console.log("Firebase error:", response.status);
+      console.log("Firebase HTTP error:", response.status);
       return;
     }
 
     const data = await response.json();
-    if (!data || typeof data.weight !== "number") return;
 
- const weight = Math.round(data.weight);
+    console.log("Firebase data:", data);
 
-switchToUser();
+    // בדיקה שקיבלנו משקל
+    if (!data || typeof data.weight !== "number") {
+      console.log("Firebase: weight not found");
+      return;
+    }
 
-const shelves = getShelves();
-if (!shelves || shelves.length === 0) {
-  console.log("אין עדיין משטח באפליקציה");
-  return;
-}
+    const weight = Math.round(data.weight);
 
-const shelf = shelves[0];
+    // יציאה ממצב DEMO
+    switchToUser();
 
-// נשמור גם 0 גרם, ונעדכן את הזמן בכל שינוי
-if (weight !== lastFirebaseWeight) {
-  addReading(shelf.id, weight);
-  lastFirebaseWeight = weight;
-}
+    // קבלת רשימת המשטחים
+    const shelves = getShelves();
 
-// רענון המסכים
-if (typeof renderDash === "function") {
-  renderDash();
-}
+    if (!shelves || shelves.length === 0) {
+      console.log("Firebase: no shelves");
+      return;
+    }
 
-if (activeSc === "screen-shelf-detail" && curSh === shelf.id) {
-  renderSh(shelf.id);
-}
+    // כרגע scale1 שייך למשטח הראשון
+    const shelf = shelves[0];
 
-console.log("Firebase weight:", weight);
+    const now = Date.now();
+
+    // שמירת קריאה:
+    // כאשר המשקל השתנה
+    // או פעם ב-30 שניות
+    if (
+      weight !== lastFirebaseWeight ||
+      now - lastFirebaseSaveTime >= 30000
+    ) {
+
+      const reading = addReading(
+        shelf.id,
+        weight
+      );
+
+      if (reading) {
+
+        lastFirebaseWeight = weight;
+        lastFirebaseSaveTime = now;
+
+        console.log(
+          "ESP32 connected:",
+          weight,
+          "grams"
+        );
+      }
+    }
+
+    // רענון הדשבורד
+    if (typeof renderDash === "function") {
+      renderDash();
+    }
+
+    // רענון מסך המשטח אם הוא פתוח
+    if (
+      typeof renderSh === "function" &&
+      curSh === shelf.id
+    ) {
+      renderSh(shelf.id);
+    }
+
   } catch (error) {
-    console.log("Firebase connection error:", error);
+
+    console.log(
+      "Firebase connection error:",
+      error
+    );
+
   }
 }
 
-// קריאה ראשונה ולאחר מכן בדיקה כל שנייה
-setTimeout(readFirebaseScale, 1000);
-setInterval(readFirebaseScale, 1000);
+
+// קריאה ראשונה
+setTimeout(
+  readFirebaseScale,
+  1000
+);
 
 
-setInterval(function(){
-  if(isDemo())return;
-  var s=getSettings(); if(s.demo===false)return;
-  getShelves().forEach(function(sh){
-    var it=getItems().find(function(i){return i.id===sh.itemId;});
-    var uw=it?parseFloat(it.unitWeight)||5:5, tare=parseFloat(sh.tare)||0;
-    var reads=getReadings(sh.id), hw=HW[sh.profile]||HW.light;
-    var raw=reads.length?Math.max(tare,reads[reads.length-1].rawWeight-Math.floor(Math.random()*4)*uw+(Math.random()-0.5)*hw.acc*2):tare+uw*(50+Math.floor(Math.random()*50));
-    addReading(sh.id,Math.round(raw*10)/10);
-  });
-  if(activeSc==='screen-dashboard')renderDash();
-  if(activeSc==='screen-shelf-detail'&&curSh)renderSh(curSh);
-},30000);
-
+// בדיקה כל שנייה
+setInterval(
+  readFirebaseScale,
+  1000
+);
 })();
 </script>
 </body>
