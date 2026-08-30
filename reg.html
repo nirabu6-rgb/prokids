@@ -404,32 +404,31 @@ function submitReg(){
   var bizphone=document.getElementById('r-bizphone').value.trim();
   var empcount=parseInt(document.getElementById('r-empcount').value)||0;
 
-  /* Register immediately — no owner approval needed */
+  /* Register immediately — write keys that weightstock.html reads */
   var gender=(document.querySelector('input[name="r-gender"]:checked')||{value:''}).value;
-  var tenantId='t_'+sc+'_'+Date.now();
-  var newTenant={
-    id:tenantId,
-    settings:{
-      bizName:biz,bizType:btype,storeCode:sc,
-      bizCity:city,bizStreet:street,bizPhone:bizphone,
-      empCount:empcount
-    },
-    manager:{
-      name:fn+' '+ln,firstname:fn,lastname:ln,
-      gender:gender,idnum:id,phone:ph,email:em,pin:pin
-    },
-    ts:Date.now()
-  };
-  /* Save to tenants list */
-  var tenants=[];
-  try{tenants=JSON.parse(localStorage.getItem('ws3_tenants')||'[]');}catch(e){}
-  tenants.push(newTenant);
-  localStorage.setItem('ws3_tenants',JSON.stringify(tenants));
-  /* Save manager separately for this tenant */
-  localStorage.setItem('ws3_um_manager_'+sc,JSON.stringify({
-    name:fn+' '+ln,firstname:fn,lastname:ln,
-    gender:gender,email:em,pin:pin,storeCode:sc,bizName:biz
+  /* settings */
+  localStorage.setItem('ws3_settings',JSON.stringify({
+    bizName:biz,bizType:btype,storeCode:sc,
+    currency:'₪',defaultAlert:20,demo:false,
+    bizPhone:bizphone,bizCity:city,bizStreet:street
   }));
+  /* account */
+  localStorage.setItem('ws3_account',JSON.stringify({
+    fullname:fn+' '+ln,firstname:fn,lastname:ln,
+    gender:gender,idnum:id,phone:ph,email:em,
+    registeredAt:Date.now()
+  }));
+  /* manager — key weightstock.html reads */
+  localStorage.setItem('ws3_um_manager',JSON.stringify({
+    name:fn+' '+ln,firstname:fn,lastname:ln,
+    gender:gender,email:em,pin:pin,password:pin,loginCount:0
+  }));
+  /* template — pick 'custom' as default so onboarding is skipped */
+  localStorage.setItem('ws3_tmpl','custom');
+  /* mode */
+  localStorage.setItem('ws3_mode','user');
+  /* employees */
+  if(!localStorage.getItem('ws3_employees'))localStorage.setItem('ws3_employees','[]');
 
   clearDraft();
   /* Show success screen */
