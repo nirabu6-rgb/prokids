@@ -8358,6 +8358,27 @@ window.createAutoOrder=createAutoOrder;
     var savedLang=LS.get('lang','he');
     try{applyLang(savedLang||'he');}catch(e){console.warn('applyLang error',e);}
     applyAccent();
+
+    /* ── Auto-login from URL params: ?store=TAL&pin=12345 ── */
+    (function(){
+      var params=new URLSearchParams(window.location.search);
+      var storeParam=(params.get('store')||'').trim().toUpperCase();
+      var pinParam=(params.get('pin')||'').trim();
+      if(!storeParam||!pinParam)return;
+      var code=getStoreCode();
+      if(!code||code!==storeParam)return;
+      var mgr=LS.get('um_manager',null);
+      if(!mgr)return;
+      var ok=(mgr.password&&mgr.password===pinParam)||(mgr.pin&&mgr.pin===pinParam);
+      if(!ok)return;
+      mgr.loginCount=(mgr.loginCount||0)+1; mgr.lastLogin=Date.now();
+      LS.set('um_manager',mgr);
+      _umUser={isManager:true,empId:'manager',name:mgr.name,gender:mgr.gender||'',perms:null,loginTime:Date.now()};
+      LS.set('um_session',_umUser);
+      /* clean URL without reload */
+      try{history.replaceState(null,'',window.location.pathname);}catch(e){}
+    })();
+
     var vm=LS.get('tmpl',null);
     var mgr=LS.get('um_manager',null);
     if(!vm||!mgr){showUMLogin();return;}
