@@ -3993,6 +3993,58 @@ window.printItemLabel=printItemLabel;
   renderDailyTip();
 })();
 
+
+/* =========================================
+   FIREBASE LIVE SCALE
+   scale1 -> המשטח הראשון באפליקציה
+   ========================================= */
+
+const FIREBASE_SCALE_URL =
+  "https://weightstock-1422c-default-rtdb.firebaseio.com/scales/scale1.json";
+
+let lastFirebaseWeight = null;
+
+async function readFirebaseScale() {
+  try {
+    const response = await fetch(FIREBASE_SCALE_URL, { cache: "no-store" });
+
+    if (!response.ok) {
+      console.log("Firebase error:", response.status);
+      return;
+    }
+
+    const data = await response.json();
+    if (!data || typeof data.weight !== "number") return;
+
+    const weight = Math.round(data.weight);
+
+    // שומרים קריאה חדשה רק כשהמשקל השתנה
+    if (weight === lastFirebaseWeight) return;
+    lastFirebaseWeight = weight;
+
+    const shelves = getShelves();
+    if (!shelves || shelves.length === 0) {
+      console.log("אין עדיין משטח באפליקציה");
+      return;
+    }
+
+    // בשלב הבדיקה: scale1 מחובר למשטח הראשון
+    const shelf = shelves[0];
+    addReading(shelf.id, weight);
+
+    if (typeof renderDash === "function") renderDash();
+
+    console.log("Firebase weight:", weight);
+  } catch (error) {
+    console.log("Firebase connection error:", error);
+  }
+}
+
+// קריאה ראשונה ולאחר מכן בדיקה כל שנייה
+setTimeout(readFirebaseScale, 1000);
+setInterval(readFirebaseScale, 1000);
+
+
 setInterval(function(){
   if(isDemo())return;
   var s=getSettings(); if(s.demo===false)return;
