@@ -4002,10 +4002,10 @@ window.printItemLabel=printItemLabel;
    ========================================= */
 
 const FIREBASE_SCALE_URL =
-  "https://weightstock-1422c-default-rtdb.firebaseio.com/scales/scale1.json";
+  "https://weightstock-1422c-default-rtdb.firebaseio.com/scales.json";
 
-let lastFirebaseWeight = null;
-let lastFirebaseSaveTime = 0;
+let lastFirebaseWeight = {};
+let lastFirebaseSaveTime = {};
 
 async function readFirebaseScale() {
 
@@ -4030,74 +4030,76 @@ async function readFirebaseScale() {
     console.log("Firebase data:", data);
 
     // בדיקה שקיבלנו משקל
-    if (!data || typeof data.weight !== "number") {
-      console.log("Firebase: weight not found");
-      return;
-    }
-
-    const weight = Math.round(data.weight);
-
-    // יציאה ממצב DEMO
-    switchToUser();
-
-    // קבלת רשימת המשטחים
-    const shelves = getShelves();
-
-    if (!shelves || shelves.length === 0) {
-      console.log("Firebase: no shelves");
-      return;
-    }
-
-    // כרגע scale1 שייך למשטח הראשון
- const shelf = shelves.find(function(s) {
-  return s.scaleId === "scale1";
-});
-
-if (!shelf) {
- console.log('לא נמצא משטח שמוגדר כ-scale1');
+   if (!data || typeof data !== "object") {
+  console.log("Firebase: no scales found");
   return;
 }
 
-    const now = Date.now();
+switchToUser();
 
-    // שמירת קריאה:
-    // כאשר המשקל השתנה
-    // או פעם ב-30 שניות
-    if (
-      weight !== lastFirebaseWeight ||
-      now - lastFirebaseSaveTime >= 30000
-    ) {
+const shelves = getShelves();
 
-      const reading = addReading(
-        shelf.id,
-        weight
+if (!shelves || shelves.length === 0) {
+  console.log("Firebase: no shelves");
+  return;
+}
+
+const now = Date.now();
+
+Object.keys(data).forEach(function(scaleId) {
+
+  const scaleData = data[scaleId];
+
+  if (!scaleData || typeof scaleData.weight !== "number") {
+    return;
+  }
+
+  const shelf = shelves.find(function(s) {
+    return s.scaleId === scaleId;
+  });
+
+  if (!shelf) {
+    console.log("לא נמצא משטח שמוגדר כ-" + scaleId);
+    return;
+  }
+
+  const weight = Math.round(scaleData.weight);
+
+  if (
+    weight !== lastFirebaseWeight[scaleId] ||
+    now - (lastFirebaseSaveTime[scaleId] || 0) >= 30000
+  ) {
+
+    const reading = addReading(
+      shelf.id,
+      weight
+    );
+
+    if (reading) {
+      lastFirebaseWeight[scaleId] = weight;
+      lastFirebaseSaveTime[scaleId] = now;
+
+      console.log(
+        "ESP32 connected:",
+        scaleId,
+        weight,
+        "grams"
       );
-
-      if (reading) {
-
-        lastFirebaseWeight = weight;
-        lastFirebaseSaveTime = now;
-
-        console.log(
-          "ESP32 connected:",
-          weight,
-          "grams"
-        );
-      }
     }
+  }
 
-    // רענון הדשבורד
-    if (typeof renderDash === "function") {
-      renderDash();
-    }
+  if (
+    typeof renderSh === "function" &&
+    curSh === shelf.id
+  ) {
+    renderSh(shelf.id);
+  }
 
-    // רענון מסך המשטח אם הוא פתוח
-    if (
-      typeof renderSh === "function" &&
-      curSh === shelf.id
-    ) {
-      renderSh(shelf.id);
-    }
+});
+
+if (typeof renderDash === "function") {
+  renderDash();
+}
 
   } catch (error) {
 
