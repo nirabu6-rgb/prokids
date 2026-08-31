@@ -4160,12 +4160,9 @@ if (typeof renderDash === "function") {
 }
 
 // קריאה ראשונה
-loadShelvesFromFirebase();
-
-setTimeout(
-  readFirebaseScale,
-  1000
-);
+loadShelvesFromFirebase().then(function() {
+  readFirebaseScale();
+});
 
 
 // בדיקה כל שנייה
