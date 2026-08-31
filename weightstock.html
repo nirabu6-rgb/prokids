@@ -4052,6 +4052,7 @@ async function loadShelvesFromFirebase() {
     console.log("Shelves load Firebase error:", error);
   }
 }
+let lastFirebaseWeight = {};
 let lastFirebaseSaveTime = {};
 
 async function readFirebaseScale() {
