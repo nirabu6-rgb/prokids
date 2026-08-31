@@ -1255,7 +1255,8 @@ label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-top
     <select id="es-atype"><option value="qty">כמות יחידות</option><option value="weight">משקל (גרם)</option></select>
     <label>סף מינימלי</label><input id="es-aval" type="number">
     <label>הערות</label><textarea id="es-notes"></textarea>
-    <input type="hidden" id="es-id">
+     <label>משקל מחובר</label><select id="es-scaleid"><option value="">ללא משקל</option><option value="scale1">משקל 1</option><option value="scale2">משקל 2</option><option value="scale3">משקל 3</option></select>
+     <input type="hidden" id="es-id">
     <div class="row" style="margin-top:14px;">
       <button class="btn danger sm" onclick="deleteShelf()">מחק משטח</button>
       <button class="btn ok" onclick="saveEditShelf()">שמור</button>
@@ -2901,7 +2902,9 @@ function openEditShelf(){
   document.getElementById('es-id').value=sh.id; document.getElementById('es-name').value=sh.name||'';
   document.getElementById('es-zone').value=sh.zone||''; document.getElementById('es-tare').value=sh.tare||0;
   document.getElementById('es-atype').value=sh.alertType||'qty'; document.getElementById('es-aval').value=sh.alertValue||'';
-  document.getElementById('es-notes').value=sh.notes||''; openModal('modal-eshelf');
+  document.getElementById('es-notes').value=sh.notes||''; 
+   document.getElementById('es-scaleid').value=sh.scaleId||'';
+   openModel('modal-eshelf');
 }
 window.openEditShelf=openEditShelf;
 function saveEditShelf(){
@@ -2913,7 +2916,8 @@ function saveEditShelf(){
   shs[idx].alertType=document.getElementById('es-atype').value;
   shs[idx].alertValue=parseFloat(document.getElementById('es-aval').value)||0;
   shs[idx].notes=document.getElementById('es-notes').value.trim();
-  LS.set('shelves',shs); closeModal('modal-eshelf'); renderSh(id);
+   shs[idx].scaleId=document.getElementById('es-scaleid').value.trim();
+   LS.set('shelves',shs); closeModal('modal-eshelf'); renderSh(id);
 }
 window.saveEditShelf=saveEditShelf;
 function deleteShelf(){
@@ -4046,11 +4050,11 @@ async function readFirebaseScale() {
 
     // כרגע scale1 שייך למשטח הראשון
  const shelf = shelves.find(function(s) {
-  return s.name === "משקל 1";
+  return s.scaleId === "scale1";
 });
 
 if (!shelf) {
-  console.log('לא נמצא משטח בשם "משקל 1"');
+ console.log('לא נמצא משטח שמוגדר כ-scale1');
   return;
 }
 
