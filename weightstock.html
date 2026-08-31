@@ -4029,7 +4029,7 @@ const FIREBASE_SHELVES_URL =
   } catch (error) {
     console.log("Shelves Firebase error:", error);
   }
-
+            }
 async function loadShelvesFromFirebase() {
   try {
     const response = await fetch(
@@ -4051,6 +4051,7 @@ async function loadShelvesFromFirebase() {
   } catch (error) {
     console.log("Shelves load Firebase error:", error);
   }
+}
 let lastFirebaseSaveTime = {};
 
 async function readFirebaseScale() {
