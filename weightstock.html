@@ -4045,7 +4045,14 @@ async function readFirebaseScale() {
     }
 
     // כרגע scale1 שייך למשטח הראשון
-    const shelf = shelves[0];
+ const shelf = shelves.find(function(s) {
+  return s.name === "משקל 1";
+});
+
+if (!shelf) {
+  console.log('לא נמצא משטח בשם "משקל 1"');
+  return;
+}
 
     const now = Date.now();
 
