@@ -2904,7 +2904,7 @@ function openEditShelf(){
   document.getElementById('es-atype').value=sh.alertType||'qty'; document.getElementById('es-aval').value=sh.alertValue||'';
   document.getElementById('es-notes').value=sh.notes||''; 
    document.getElementById('es-scaleid').value=sh.scaleId||'';
-   openModel('modal-eshelf');
+   openModal('modal-eshelf');
 }
 window.openEditShelf=openEditShelf;
 function saveEditShelf(){
@@ -2917,14 +2917,17 @@ function saveEditShelf(){
   shs[idx].alertValue=parseFloat(document.getElementById('es-aval').value)||0;
   shs[idx].notes=document.getElementById('es-notes').value.trim();
    shs[idx].scaleId=document.getElementById('es-scaleid').value.trim();
-   LS.set('shelves',shs); closeModal('modal-eshelf'); renderSh(id);
+  LS.set('shelves',shs);
+saveShelvesToFirebase();
+closeModal('modal-eshelf'); renderSh(id);
 }
 window.saveEditShelf=saveEditShelf;
 function deleteShelf(){
   if(!confirm('למחוק משטח ואת כל הקריאות?'))return;
   var id=document.getElementById('es-id').value; switchToUser();
   LS.set('shelves',getShelves().filter(function(s){return s.id!==id;}));
-  var all=LS.get('readings',{}); delete all[id]; LS.set('readings',all);
+   saveShelvesToFirebase();
+   var all=LS.get('readings',{}); delete all[id]; LS.set('readings',all);
   closeModal('modal-eshelf'); navTo('screen-dashboard');
 }
 window.deleteShelf=deleteShelf;
@@ -4003,8 +4006,51 @@ window.printItemLabel=printItemLabel;
 
 const FIREBASE_SCALE_URL =
   "https://weightstock-1422c-default-rtdb.firebaseio.com/scales.json";
+const FIREBASE_SHELVES_URL =
+  "https://weightstock-1422c-default-rtdb.firebaseio.com/app/shelves.json";
 
-let lastFirebaseWeight = {};
+            async function saveShelvesToFirebase() {
+  const shelves = getShelves();
+
+  try {
+    const response = await fetch(FIREBASE_SHELVES_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(shelves)
+    });
+
+    if (response.ok) {
+      console.log("Shelves saved to Firebase");
+    } else {
+      console.log("Shelves save error:", response.status);
+    }
+  } catch (error) {
+    console.log("Shelves Firebase error:", error);
+  }
+
+async function loadShelvesFromFirebase() {
+  try {
+    const response = await fetch(
+      FIREBASE_SHELVES_URL + "?t=" + Date.now(),
+      { method: "GET", cache: "no-store" }
+    );
+
+    if (!response.ok) {
+      console.log("Shelves load error:", response.status);
+      return;
+    }
+
+    const shelves = await response.json();
+
+    if (shelves && Array.isArray(shelves)) {
+      LS.set('shelves', shelves);
+      console.log("Shelves loaded from Firebase");
+    }
+  } catch (error) {
+    console.log("Shelves load Firebase error:", error);
+  }
 let lastFirebaseSaveTime = {};
 
 async function readFirebaseScale() {
@@ -4111,8 +4157,9 @@ if (typeof renderDash === "function") {
   }
 }
 
-
 // קריאה ראשונה
+loadShelvesFromFirebase();
+
 setTimeout(
   readFirebaseScale,
   1000
