@@ -3982,7 +3982,7 @@ function printItemLabel(){
 }
 window.printItemLabel=printItemLabel;
 
-(function boot(){
+(async function boot(){
   applyTheme(LS.get('theme','light'));
   checkAutoTheme();
   var savedLang=LS.get('lang','he');
@@ -3996,7 +3996,8 @@ window.printItemLabel=printItemLabel;
   var sess=LS.get('session',false);
   if(!acc||!vm){showLogin();return;}  // הרשמה ראשונה
  if(!sess){showLogin();return;}         // יש חשבון, צריך להתחבר
-  renderDash();
+ await loadBusinessFromFirebase();
+   renderDash();
   updBell();
   updateDashLogo();
   applyAccent();
