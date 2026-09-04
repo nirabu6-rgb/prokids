@@ -2271,13 +2271,15 @@ function obFinish(){
 }
 window.obFinish=obFinish;
 
-function doLogin(){
+async function doLogin(){
   var idnum=document.getElementById('login-id').value.trim();
   var pw=document.getElementById('login-pw').value;
   var errEl=document.getElementById('login-err');
   errEl.style.display='none';
-  var acc=LS.get('account',null);
-  if(!acc){errEl.textContent='לא נמצא חשבון — הרשם תחילה';errEl.style.display='block';return;}
+  if(window.firebaseSignIn){try{await window.firebaseSignIn(pw);}catch(e){errEl.textContent='שם משתמש או סיסמה שגויים';errEl.style.display='block';return;}}
+   var acc=LS.get('account',null);
+  if(!acc){acc={idnum:idnum,pwHash:pwHash(pw),fullname:'TAL777'};LS.set('account',acc);}  
+   if(!acc){errEl.textContent='לא נמצא חשבון — הרשם תחילה';errEl.style.display='block';return;}
   if(acc.idnum!==idnum||acc.pwHash!==pwHash(pw)){
     errEl.textContent='תעודת זהות או סיסמה שגויים';errEl.style.display='block';
     document.getElementById('login-pw').value='';
@@ -3992,7 +3994,7 @@ window.printItemLabel=printItemLabel;
   var vm=LS.get('tmpl',null);
   var sess=LS.get('session',false);
   if(!acc||!vm){showOnboarding();return;}  // הרשמה ראשונה
-  if(!sess){showLogin();return;}           // יש חשבון, צריך להתחבר
+ if(!acc||!vm){showLogin();return;}         // יש חשבון, צריך להתחבר
   renderDash();
   updBell();
   updateDashLogo();
@@ -4171,6 +4173,29 @@ setInterval(
   1000
 );
 })();
+</script>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+   import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAIXG3U0z2pjqtks_sCwYdEEcUh5SVG9xE",
+    authDomain: "weightstock-1422c.firebaseapp.com",
+    databaseURL: "https://weightstock-1422c-default-rtdb.firebaseio.com",
+    projectId: "weightstock-1422c",
+    storageBucket: "weightstock-1422c.firebasestorage.app",
+    messagingSenderId: "504004724563",
+    appId: "1:504004724563:web:3c6d4cc2641bab511a83a6"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+   const auth = getAuth(app);
+   window.firebaseAuth = auth;
+   window.firebaseSignIn = function(password){ return signInWithEmailAndPassword(auth, "tal777@weightstock.app", password); };
 </script>
 </body>
 </html>
