@@ -2279,7 +2279,7 @@ async function doLogin(){
   if(window.firebaseSignIn){try{await window.firebaseSignIn(idnum,pw);}catch(e){errEl.textContent='שם משתמש או סיסמה שגויים';errEl.style.display='block';return;}}
    var acc={idnum:idnum,pwHash:pwHash(pw),fullname:idnum}; LS.set('account',acc);
  var businessLoaded=await loadBusinessFromFirebase();
-if(!businessLoaded && LS.get('items',[]).length>0){
+if(LS.get('items',[]).length>0){
   await saveBusinessToFirebase();
 }   if(!acc){errEl.textContent='לא נמצא חשבון — הרשם תחילה';errEl.style.display='block';return;}
   if(acc.idnum!==idnum||acc.pwHash!==pwHash(pw)){
