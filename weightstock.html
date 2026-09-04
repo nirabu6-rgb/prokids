@@ -2278,8 +2278,10 @@ async function doLogin(){
   errEl.style.display='none';
   if(window.firebaseSignIn){try{await window.firebaseSignIn(idnum,pw);}catch(e){errEl.textContent='שם משתמש או סיסמה שגויים';errEl.style.display='block';return;}}
    var acc={idnum:idnum,pwHash:pwHash(pw),fullname:idnum}; LS.set('account',acc);
- 
-   if(!acc){errEl.textContent='לא נמצא חשבון — הרשם תחילה';errEl.style.display='block';return;}
+ var businessLoaded=await loadBusinessFromFirebase();
+if(!businessLoaded && LS.get('items',[]).length>0){
+  await saveBusinessToFirebase();
+}   if(!acc){errEl.textContent='לא נמצא חשבון — הרשם תחילה';errEl.style.display='block';return;}
   if(acc.idnum!==idnum||acc.pwHash!==pwHash(pw)){
     errEl.textContent='תעודת זהות או סיסמה שגויים';errEl.style.display='block';
     document.getElementById('login-pw').value='';
@@ -4010,8 +4012,77 @@ const FIREBASE_SCALE_URL =
   "https://weightstock-1422c-default-rtdb.firebaseio.com/scales.json";
 const FIREBASE_SHELVES_URL =
   "https://weightstock-1422c-default-rtdb.firebaseio.com/app/shelves.json";
+const FIREBASE_BUSINESS_BASE =
+  "https://weightstock-1422c-default-rtdb.firebaseio.com/businesses/";
 
-            async function saveShelvesToFirebase() {
+function getBusinessId(){
+  var acc=LS.get('account',null);
+  return acc&&acc.idnum ? String(acc.idnum).trim().toLowerCase() : '';
+}
+
+function getBusinessUrl(){
+  var id=getBusinessId();
+  return id ? FIREBASE_BUSINESS_BASE+encodeURIComponent(id)+".json" : "";
+}
+
+async function loadBusinessFromFirebase(){
+  var url=getBusinessUrl();
+  if(!url)return false;
+
+  try{
+    var response=await fetch(url+"?t="+Date.now(),{
+      method:"GET",
+      cache:"no-store"
+    });
+
+    if(!response.ok)return false;
+
+    var data=await response.json();
+    if(!data)return false;
+
+    if(Array.isArray(data.shelves))LS.set('shelves',data.shelves);
+    if(Array.isArray(data.items))LS.set('items',data.items);
+    if(Array.isArray(data.cats))LS.set('cats',data.cats);
+    if(Array.isArray(data.suppliers))LS.set('suppliers',data.suppliers);
+    if(data.settings)LS.set('settings',data.settings);
+    if(data.readings)LS.set('readings',data.readings);
+    if(Array.isArray(data.alerts))LS.set('alerts',data.alerts);
+    if(data.tmpl)LS.set('tmpl',data.tmpl);
+    if(data.plan)LS.set('plan',data.plan);
+
+    return true;
+  }catch(e){
+    console.log("Business load error:",e);
+    return false;
+  }
+}
+
+async function saveBusinessToFirebase(){
+  var url=getBusinessUrl();
+  if(!url)return;
+
+  var data={
+    shelves:LS.get('shelves',[]),
+    items:LS.get('items',[]),
+    cats:LS.get('cats',[]),
+    suppliers:LS.get('suppliers',[]),
+    settings:LS.get('settings',{}),
+    readings:LS.get('readings',{}),
+    alerts:LS.get('alerts',[]),
+    tmpl:LS.get('tmpl',null),
+    plan:LS.get('plan',null)
+  };
+
+  try{
+    await fetch(url,{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(data)
+    });
+  }catch(e){
+    console.log("Business save error:",e);
+  }
+}            async function saveShelvesToFirebase() {
   const shelves = getShelves();
 
   try {
