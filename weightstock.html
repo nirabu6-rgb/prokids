@@ -2279,9 +2279,8 @@ async function doLogin(){
   if(window.firebaseSignIn){try{await window.firebaseSignIn(idnum,pw);}catch(e){errEl.textContent='שם משתמש או סיסמה שגויים';errEl.style.display='block';return;}}
    var acc={idnum:idnum,pwHash:pwHash(pw),fullname:idnum}; LS.set('account',acc);
  var businessLoaded=await loadBusinessFromFirebase();
-if(LS.get('items',[]).length>0){
-  await saveBusinessToFirebase();
-}   if(!acc){errEl.textContent='לא נמצא חשבון — הרשם תחילה';errEl.style.display='block';return;}
+
+   if(!acc){errEl.textContent='לא נמצא חשבון — הרשם תחילה';errEl.style.display='block';return;}
   if(acc.idnum!==idnum||acc.pwHash!==pwHash(pw)){
     errEl.textContent='תעודת זהות או סיסמה שגויים';errEl.style.display='block';
     document.getElementById('login-pw').value='';
