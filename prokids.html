@@ -394,6 +394,8 @@ footer p{font-size:11px;color:var(--w3);letter-spacing:.5px}
 #splashLogo{
   position:fixed;
   border-radius:50%;object-fit:cover;
+  border:2px solid #A8843C;
+  box-shadow:0 0 32px rgba(168,132,60,.35), 0 0 0 4px rgba(168,132,60,.12);
   opacity:0;animation:logoFadeIn .5s ease 1.65s forwards;
 }
 @keyframes bounceBall{
@@ -417,7 +419,8 @@ footer p{font-size:11px;color:var(--w3);letter-spacing:.5px}
   <img id="splashLogo" alt="PRO KIDS">
 </div>
 <script>
-  document.getElementById('splashLogo').src='https://nirabu6-rgb.github.io/prokids/logo.jpg';
+  var heroImg = document.querySelector('.hero-logo');
+  document.getElementById('splashLogo').src = heroImg ? heroImg.src : 'https://nirabu6-rgb.github.io/prokids/logo.jpg';
   window.addEventListener('load', function(){
     var hero = document.querySelector('.hero-logo');
     if(hero){

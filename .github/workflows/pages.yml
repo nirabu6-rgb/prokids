@@ -1,7 +1,8 @@
 name: Deploy to GitHub Pages
 on:
   push:
-    branches: [main]
+    branches: [main, claude/github-name-change-1luyrt]
+  workflow_dispatch: {}
 permissions:
   contents: read
   pages: write
