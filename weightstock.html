@@ -2276,9 +2276,9 @@ async function doLogin(){
   var pw=document.getElementById('login-pw').value;
   var errEl=document.getElementById('login-err');
   errEl.style.display='none';
-  if(window.firebaseSignIn){try{await window.firebaseSignIn(pw);}catch(e){errEl.textContent='שם משתמש או סיסמה שגויים';errEl.style.display='block';return;}}
+  if(window.firebaseSignIn){try{await window.firebaseSignIn(idnum,pw);}catch(e){errEl.textContent='שם משתמש או סיסמה שגויים';errEl.style.display='block';return;}}
    var acc=LS.get('account',null);
-  if(!acc){acc={idnum:idnum,pwHash:pwHash(pw),fullname:'TAL777'};LS.set('account',acc);}  
+ 
    if(!acc){errEl.textContent='לא נמצא חשבון — הרשם תחילה';errEl.style.display='block';return;}
   if(acc.idnum!==idnum||acc.pwHash!==pwHash(pw)){
     errEl.textContent='תעודת זהות או סיסמה שגויים';errEl.style.display='block';
@@ -4195,7 +4195,7 @@ setInterval(
   const app = initializeApp(firebaseConfig);
    const auth = getAuth(app);
    window.firebaseAuth = auth;
-   window.firebaseSignIn = function(password){ return signInWithEmailAndPassword(auth, "tal777@weightstock.app", password); };
+   window.firebaseSignIn = function(username,password){ return signInWithEmailAndPassword(auth, username.trim().toLowerCase()+"@weightstock.app", password); };
 </script>
 </body>
 </html>
