@@ -3993,8 +3993,8 @@ window.printItemLabel=printItemLabel;
   var acc=LS.get('account',null);
   var vm=LS.get('tmpl',null);
   var sess=LS.get('session',false);
-  if(!acc||!vm){showOnboarding();return;}  // הרשמה ראשונה
- if(!acc||!vm){showLogin();return;}         // יש חשבון, צריך להתחבר
+  if(!acc||!vm){showLogin();return;}  // הרשמה ראשונה
+ if(!sess){showLogin();return;}         // יש חשבון, צריך להתחבר
   renderDash();
   updBell();
   updateDashLogo();
