@@ -2277,7 +2277,7 @@ async function doLogin(){
   var errEl=document.getElementById('login-err');
   errEl.style.display='none';
   if(window.firebaseSignIn){try{await window.firebaseSignIn(idnum,pw);}catch(e){errEl.textContent='שם משתמש או סיסמה שגויים';errEl.style.display='block';return;}}
-   var acc=LS.get('account',null);
+   var acc={idnum:idnum,pwHash:pwHash(pw),fullname:idnum}; LS.set('account',acc);
  
    if(!acc){errEl.textContent='לא נמצא חשבון — הרשם תחילה';errEl.style.display='block';return;}
   if(acc.idnum!==idnum||acc.pwHash!==pwHash(pw)){
