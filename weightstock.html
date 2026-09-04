@@ -4240,6 +4240,22 @@ setInterval(
   readFirebaseScale,
   1000
 );
+setInterval(async function(){
+  var url=getBusinessUrl();
+  if(!url)return;
+  try{
+    var r=await fetch(url.replace(/\.json$/,'/items.json')+'?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return;
+    var items=await r.json();
+    if(Array.isArray(items)){
+      LS.set('items',items);
+      if(activeSc==='screen-items')renderItemsSc();
+      if(activeSc==='screen-shelf-detail' && curSh)renderSh(curSh);
+    }
+  }catch(e){
+    console.log('Items sync error:',e);
+  }
+},2000);
 })();
 </script>
 <script type="module">
