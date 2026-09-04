@@ -419,7 +419,8 @@ footer p{font-size:11px;color:var(--w3);letter-spacing:.5px}
   <img id="splashLogo" alt="PRO KIDS">
 </div>
 <script>
-  document.getElementById('splashLogo').src='https://nirabu6-rgb.github.io/prokids/logo.jpg';
+  var heroImg = document.querySelector('.hero-logo');
+  document.getElementById('splashLogo').src = heroImg ? heroImg.src : 'https://nirabu6-rgb.github.io/prokids/logo.jpg';
   window.addEventListener('load', function(){
     var hero = document.querySelector('.hero-logo');
     if(hero){
