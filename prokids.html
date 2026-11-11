@@ -402,6 +402,8 @@ footer p{font-size:11px;color:var(--w3);letter-spacing:.5px}
 }
 #splashLogo{
   position:fixed;
+  width:min(360px,70vw);height:min(360px,70vw);
+  left:50%;top:50%;transform:translate(-50%,-50%);
   border-radius:50%;object-fit:cover;
   opacity:0;animation:logoFadeIn .5s ease 1.65s forwards;
 }
@@ -428,17 +430,6 @@ footer p{font-size:11px;color:var(--w3);letter-spacing:.5px}
 <script>
   var heroImg = document.querySelector('.hero-logo');
   document.getElementById('splashLogo').src = heroImg ? heroImg.src : 'https://nirabu6-rgb.github.io/prokids/logo.jpg';
-  window.addEventListener('load', function(){
-    var hero = document.querySelector('.hero-logo');
-    if(hero){
-      var r = hero.getBoundingClientRect();
-      var sl = document.getElementById('splashLogo');
-      sl.style.width  = r.width  + 'px';
-      sl.style.height = r.height + 'px';
-      sl.style.left   = r.left   + 'px';
-      sl.style.top    = r.top    + 'px';
-    }
-  });
 </script>
 
 <!-- NAV -->
