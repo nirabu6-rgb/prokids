@@ -835,10 +835,13 @@ function sharePage(){
   </p>
 
 <!-- BUSINESS INFO -->
-<section id="business-info" style="background:var(--bg2);border-top:1px solid var(--line);padding:40px 5vw">
-  <div style="max-width:700px;margin:0 auto">
-    <h2 style="font-size:14px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:24px">פרטי העסק</h2>
-    <div style="display:flex;flex-direction:column;gap:14px">
+<section id="business-info" style="background:var(--bg2);border-top:1px solid var(--line)">
+  <button onclick="var d=document.getElementById('biz-content');var a=document.getElementById('biz-arrow');var open=d.style.display==='flex';d.style.display=open?'none':'flex';a.textContent=open?'▼':'▲';" style="width:100%;padding:20px 5vw;background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:var(--w1)">
+    <span style="font-size:14px;letter-spacing:3px;text-transform:uppercase;color:var(--gold)">פרטי העסק</span>
+    <span id="biz-arrow" style="color:var(--gold);font-size:12px">▼</span>
+  </button>
+  <div id="biz-content" style="display:none;padding:0 5vw 32px;max-width:700px;margin:0 auto">
+  <div style="display:flex;flex-direction:column;gap:14px">
       <div style="display:flex;gap:12px;align-items:flex-start">
         <span style="color:var(--gold);width:20px;flex-shrink:0">🏢</span>
         <div>
